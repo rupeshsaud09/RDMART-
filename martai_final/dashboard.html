@@ -257,8 +257,8 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 let pendingCreditDeleteId='';let pendingCreditDeleteTimer=null;const A=MartAI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));
-const PER_PAGE=15;const pgState={customers:1,credits:1,creditHistory:1,daily:1,payments:1,cheques:1};
-function paginationHTML(key,pg,total,per){const pages=Math.ceil(total/per);if(!total||pages<=1)return'';const from=(pg-1)*per+1;const to=Math.min(pg*per,total);return'<div style="display:flex;align-items:center;gap:8px;padding:10px 0 2px;border-top:1px solid rgba(255,255,255,.08);margin-top:8px"><span class="small" style="opacity:.5;margin-right:auto">'+from+'–'+to+' of '+total+'</span><button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="-1"'+(pg===1?' disabled':'')+'>&#8249; Prev</button><span class="small" style="min-width:3em;text-align:center">'+pg+' / '+pages+'</span><button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="1"'+(pg>=pages?' disabled':'')+'>Next &#8250;</button></div>'}
+const PER_PAGE=10;const pgState={customers:1,credits:1,creditHistory:1,daily:1,payments:1,cheques:1};
+function paginationHTML(key,pg,total,per){if(!total)return'';const pages=Math.ceil(total/per);const from=(pg-1)*per+1;const to=Math.min(pg*per,total);let h='<div style="display:flex;align-items:center;gap:8px;padding:10px 0 2px;border-top:1px solid rgba(255,255,255,.08);margin-top:8px"><span class="small" style="opacity:.5;margin-right:auto">'+from+'–'+to+' of '+total+'</span>';if(pages>1){h+='<button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="-1"'+(pg===1?' disabled':'')+'>&#8249; Prev</button><span class="small" style="min-width:3em;text-align:center">'+pg+' / '+pages+'</span><button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="1"'+(pg>=pages?' disabled':'')+'>Next &#8250;</button>'}return h+'</div>'}
 function session(){return A.getSession()||{}}
 function isStaff(){return session().role==='staff'}
 function isMainAdmin(){return session().role==='admin'}

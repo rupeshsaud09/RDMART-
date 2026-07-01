@@ -45,9 +45,19 @@
       <div class="card" id="profileDetails"><div class="section-title" style="margin-bottom:14px">Profile details</div><div class="profile-photo-row"><div class="profile-photo" id="profilePhoto">RD</div><div><label class="btn btn-soft btn-sm" for="avatarInput">Upload photo</label><input class="hidden" id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp"><p class="hint">Square photo works best.</p></div></div><div class="field"><label>Name</label><div class="readonly-box" id="profileName">-</div></div><div class="field"><label>Phone</label><div class="readonly-box" id="profilePhone">-</div></div><div class="field"><label>Email</label><div class="readonly-box" id="profileEmail">-</div></div><div class="field"><label>Address</label><div class="readonly-box" id="profileAddress">-</div></div><p class="hint">Contact the mart to update your name, phone, email, or address.</p></div>
       <form class="card" id="pinForm"><div class="section-title" style="margin-bottom:14px">Change PIN</div><div class="field"><label>New 4 digit PIN</label><input class="input" name="pin" maxlength="4" inputmode="numeric" required placeholder="1234"></div><div class="field"><label>Confirm PIN</label><input class="input" name="confirmPin" maxlength="4" inputmode="numeric" required placeholder="1234"></div><button class="btn btn-green full" type="submit">Update PIN</button><p class="hint">Next login will use this new PIN.</p></form>
     </div>
+    <div class="card" style="margin-top:16px;text-align:center;max-width:340px">
+      <div class="section-title" style="margin-bottom:4px">My Portal QR Code</div>
+      <p class="hint" style="margin-bottom:14px">Scan to open your credit portal directly</p>
+      <div style="display:flex;justify-content:center;margin-bottom:12px">
+        <canvas id="myQrCanvas" style="border-radius:10px;background:#fff;padding:10px;display:block"></canvas>
+      </div>
+      <p class="hint" id="myQrUrl" style="word-break:break-all;font-size:.76em;opacity:.55;margin-bottom:14px"></p>
+      <button class="btn btn-soft btn-sm" type="button" id="downloadMyQrBtn">Download QR PNG</button>
+    </div>
   </section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/martai-supabase-config.js"></script>
 <script src="assets/martai-store.js?v=photo-upload-v2"></script>
@@ -67,6 +77,7 @@ function bsParts(date){const iso=String(date||'').slice(0,10);let diff=daysBetwe
 function npDate(date){if(!date)return'-';try{const p=bsParts(date);return `${p.year}-${p.month}-${p.day} BS`}catch(e){return String(date)}}
 function updateCustomerClock(){const d=new Date();const iso=d.toISOString().slice(0,10);const day=d.toLocaleDateString('en-US',{weekday:'long'});const time=d.toLocaleTimeString('en-US',{hour12:true,hour:'2-digit',minute:'2-digit',second:'2-digit'});$('customerClockDay').textContent=day;$('customerClockDate').textContent=npDate(iso);$('customerClockTime').textContent=time}
 function renderProfileDetails(c){$('profileName').textContent=c.name||'-';$('profilePhone').textContent=c.phone||'-';$('profileEmail').textContent=c.email||'-';$('profileAddress').textContent=c.address||'-';const p=$('profilePhoto');if(c.avatarData){p.style.backgroundImage=`url(${c.avatarData})`;p.textContent=''}else{p.style.backgroundImage='';p.textContent=(c.name||'RD').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}}
+function renderMyQrCode(c){const base=window.location.href.replace(/customer\.html.*/,'index.html');const url=base+'?phone='+encodeURIComponent(c.phone||'');const urlEl=$('myQrUrl');if(urlEl)urlEl.textContent=url;const canvas=$('myQrCanvas');if(!canvas)return;if(typeof QRCode==='undefined'){canvas.style.display='none';return}QRCode.toCanvas(canvas,url,{width:180,margin:2,color:{dark:'#1e1b4b',light:'#ffffff'}},()=>{})}
 function imageToAvatarData(file){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith('image/'))return reject(new Error('Choose an image file'));const img=new Image();const reader=new FileReader();reader.onload=()=>{img.onload=()=>{const size=320;const canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;const ctx=canvas.getContext('2d');const scale=Math.max(size/img.width,size/img.height);const w=img.width*scale;const h=img.height*scale;ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);resolve(canvas.toDataURL('image/jpeg',.82))};img.onerror=()=>reject(new Error('Could not read image'));img.src=reader.result};reader.onerror=()=>reject(new Error('Could not read image'));reader.readAsDataURL(file)})}
 function render(){
   const d=db();
@@ -89,11 +100,13 @@ function render(){
   $('recentList').innerHTML=rows.length?rows.slice(0,5).map(r=>{const bal=A.num(r.amount)-A.num(r.paid);return `<div class="history-card"><div><b>${A.esc(r.items||'Credit entry')}</b><div class="small">${npDate(r.date)}${r.note?' - '+A.esc(r.note):''}</div></div><div style="text-align:right"><b>${A.money(r.amount)}</b><div class="small amount-green">Paid ${A.money(r.paid)}</div><div class="small ${bal>0?'amount-red':'amount-green'}">Balance ${A.money(bal)}</div></div></div>`}).join(''):'<div class="empty">No credit records yet.</div>';
   $('historyRows').innerHTML=rows.length?rows.map(r=>{const bal=A.num(r.amount)-A.num(r.paid);return `<tr><td>${npDate(r.date)}</td><td>${A.esc(r.items||'-')}</td><td>${A.money(r.amount)}</td><td class="amount-green">${A.money(r.paid)}</td><td><b class="${bal>0?'amount-red':'amount-green'}">${A.money(bal)}</b></td><td>${A.esc(r.note||r.paymentNote||'-')}</td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">No history available.</div></td></tr>';
   renderProfileDetails(c);
+  renderMyQrCode(c);
 }
 MartAI.ready.then(()=>{requireCustomer();updateCustomerClock();setInterval(updateCustomerClock,1000);render();polishCustomerUI()}).catch(err=>toast('Could not load database: '+err.message,'err'));
 $$('.customer-tab').forEach(btn=>btn.addEventListener('click',()=>{$$('.customer-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));$('tab-'+btn.dataset.tab).classList.add('active')}));
 $('logoutBtn').addEventListener('click',()=>{A.clearSession();location.href='index.html'});
 $('avatarInput').addEventListener('change',async e=>{const file=e.target.files[0];try{const avatarData=await imageToAvatarData(file);if(A.syncInfo().mode==='tables'){await A.updateCustomerAvatar(avatarData)}else{const d=db();const c=currentCustomer();c.avatarData=avatarData;A.saveDB(d)}render();toast('Profile photo updated')}catch(err){toast(err.message,'err')}finally{e.target.value=''}});
+$('downloadMyQrBtn')?.addEventListener('click',()=>{const canvas=$('myQrCanvas');if(!canvas)return;const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='my-portal-qr.png';document.body.appendChild(a);a.click();a.remove()});
 $('pinForm').addEventListener('submit',async e=>{e.preventDefault();const data=formData(e.target);try{if(data.pin!==data.confirmPin)throw new Error('PIN confirmation does not match');if(A.syncInfo().mode==='tables'){await A.updateCustomerPin(data.pin)}else{const d=db();A.updateCustomer(d,session.customerId,{pin:data.pin})}e.target.reset();toast('PIN updated')}catch(err){toast(err.message,'err')}});
 </script>
 </body>
