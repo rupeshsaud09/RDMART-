@@ -28,7 +28,7 @@
   function dbMode(){return (window.MARTAI_SUPABASE&&window.MARTAI_SUPABASE.mode)||'json'}
   function tableMode(){return dbMode()==='tables'}
   function isoDate(v){return String(v||today()).slice(0,10)}
-  function fromStoreRow(r){return{id:r.id,name:r.name||'Store',phone:r.phone||'',createdAt:r.created_at,isActive:r.is_active!==false}}
+  function fromStoreRow(r){return{id:r.id,name:r.name||'Store',phone:r.phone||'',qrData:r.qr_data||'',qrLabel:r.qr_label||'',createdAt:r.created_at,isActive:r.is_active!==false}}
   function fromCustomerRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),name:r.name||'',phone:r.phone||'',pin:'',avatarData:r.avatar_data||'',email:r.email||'',address:r.address||'',notes:r.notes||'',creditLimit:num(r.credit_limit)||0,createdAt:r.created_at,updatedAt:r.updated_at}}
   function fromCreditRow(r,customers){const c=customers.find(x=>x._tableId===r.customer_id)||{};return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),customerId:c.id||r.customer_id,customer:c.name||'',phone:c.phone||'',date:r.credit_date,items:r.items||'',amount:num(r.amount),paid:num(r.paid),note:r.note||'',paymentNote:r.payment_note||'',paidAt:r.paid_at,createdAt:r.created_at}}
   function fromSaleRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),date:r.sale_date,party:r.party||'Walk-in Customer',amount:num(r.amount),note:r.note||'',createdAt:r.created_at}}
@@ -62,7 +62,7 @@
       currentDB=normalizeDB({
         version:2,
         createdAt:now(),
-        settings:{martName:activeStore.name||settings.data?.mart_name||'RD MART',adminUser:'',adminPass:'',martPhone:activeStore.phone||settings.data?.mart_phone||''},
+        settings:{martName:activeStore.name||settings.data?.mart_name||'RD MART',adminUser:'',adminPass:'',martPhone:activeStore.phone||settings.data?.mart_phone||'',storePaymentQr:activeStore.qrData||'',storePaymentQrLabel:activeStore.qrLabel||''},
         stores,
         customers:customerRows,
         credits:(credits.data||[]).map(r=>fromCreditRow(r,customerRows)),
@@ -168,8 +168,11 @@
     const client=getSupabase();if(!client)return getDB();
     const result=await client.rpc('customer_portal',{raw_token:token});
     if(result.error)throw result.error;
-    const data=result.data||{};const c=data.customer||{};const customer={id:c.legacy_id||c.id,_tableId:c.id,name:c.name||'',phone:c.phone||'',avatarData:c.avatar_data||'',email:c.email||'',address:c.address||'',notes:c.notes||'',createdAt:c.created_at,updatedAt:c.updated_at};
-    currentDB=normalizeDB({version:2,createdAt:now(),settings:{martName:'RD MART',adminUser:'',adminPass:'',martPhone:''},customers:[customer],credits:(data.credits||[]).map(r=>fromCreditRow(r,[customer])),sales:[],dailySales:[],partyPayments:[],cheques:[],activity:[]});
+    const data=result.data||{};const c=data.customer||{};
+    const customer={id:c.legacy_id||c.id,_tableId:c.id,name:c.name||'',phone:c.phone||'',avatarData:c.avatar_data||'',email:c.email||'',address:c.address||'',notes:c.notes||'',createdAt:c.created_at,updatedAt:c.updated_at};
+    let storePaymentQr='';let storePaymentQrLabel='';let storeName='RD MART';
+    if(c.store_id){try{const sq=await client.from('mart_stores').select('name,qr_data,qr_label').eq('id',c.store_id).maybeSingle();if(!sq.error&&sq.data){storeName=sq.data.name||storeName;storePaymentQr=sq.data.qr_data||'';storePaymentQrLabel=sq.data.qr_label||''}}catch(e){}}
+    currentDB=normalizeDB({version:2,createdAt:now(),settings:{martName:storeName,adminUser:'',adminPass:'',martPhone:'',storePaymentQr,storePaymentQrLabel},customers:[customer],credits:(data.credits||[]).map(r=>fromCreditRow(r,[customer])),sales:[],dailySales:[],partyPayments:[],cheques:[],activity:[]});
     writeLocal(currentDB);remoteEnabled=true;remoteError='';return currentDB;
   }
   async function updateCustomerPin(newPin){
@@ -215,6 +218,7 @@
   function updateChequeStatus(db,idv,status){const ch=db.cheques.find(x=>x.id===idv);if(!ch)throw new Error('Cheque not found');ch.status=status;ch.updatedAt=now();addActivity(db,`Cheque ${ch.chequeNo} marked ${status}`,'cheque');saveDB(db)}
   function deleteCheque(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.cheques.find(x=>x.id===idv);deleteTableRow('cheques',r);db.cheques=db.cheques.filter(x=>x.id!==idv);addActivity(db,'Cheque deleted','cheque');saveDB(db)}
   function saveSettings(db,input){if(!isMainAdminSession())throw new Error('Only main admin can change settings');db.settings.martName=String(input.martName||db.settings.martName||'MartAI').trim();db.settings.martPhone=phoneClean(input.martPhone||db.settings.martPhone||'');const st=(db.stores||[]).find(x=>x.id===getActiveStoreId());if(st){st.name=db.settings.martName;st.phone=db.settings.martPhone}db.settings.adminUser=String(input.adminUser||db.settings.adminUser||'admin').trim();if(input.adminPass)db.settings.adminPass=String(input.adminPass);addActivity(db,'Settings updated','settings');saveDB(db)}
+  async function saveStoreQr(qrData,label){const db=getDB();db.settings.storePaymentQr=qrData||'';db.settings.storePaymentQrLabel=label||'';const storeId=getActiveStoreId();const store=(db.stores||[]).find(s=>s.id===storeId);if(store){store.qrData=qrData||'';store.qrLabel=label||''}if(tableMode()){const client=getSupabase();if(client){const r=await client.from('mart_stores').update({qr_data:qrData||'',qr_label:label||'',updated_at:now()}).eq('id',storeId);if(r.error)throw r.error}}saveDB(db)}
   async function addStaff(db,input){if(isStaffSession())throw new Error('Staff cannot manage staff');const email=String(input.email||'').trim().toLowerCase();const name=String(input.name||'').trim();if(!email.includes('@'))throw new Error('Enter staff email');if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_add_staff',{email_input:email,name_input:name});if(r.error)throw r.error;await loadTableDB();return r.data}if(db.staffAccounts.some(x=>x.email.toLowerCase()===email))throw new Error('Staff already exists');db.staffAccounts.unshift({id:id(),email,name,password:String(input.password||'1234'),active:true,createdAt:now()});saveDB(db)}
   async function setStaffActive(db,email,active){if(isStaffSession())throw new Error('Staff cannot manage staff');email=String(email||'').toLowerCase();if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_set_staff_active',{email_input:email,active_input:!!active});if(r.error)throw r.error;await loadTableDB();return}const s=db.staffAccounts.find(x=>x.email.toLowerCase()===email);if(s)s.active=!!active;saveDB(db)}
   function csvEscape(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
@@ -229,5 +233,5 @@
     remoteEnabled=!!getSupabase();return getDB();
   }
   const ready=initialize();
-  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,phoneClean,getDB,saveDB,resetDB,syncNow,syncInfo,ready,adminLogin,customerLogin,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateChequeStatus,deleteCheque,saveSettings,addStaff,setStaffActive,csvEscape,download,wa,byDate};
+  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,phoneClean,getDB,saveDB,resetDB,syncNow,syncInfo,ready,adminLogin,customerLogin,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateChequeStatus,deleteCheque,saveSettings,saveStoreQr,addStaff,setStaffActive,csvEscape,download,wa,byDate};
 })();

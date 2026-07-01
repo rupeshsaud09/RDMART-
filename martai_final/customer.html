@@ -34,6 +34,7 @@
   <section class="page active" id="tab-overview">
     <div class="grid grid-3" id="overviewCards"></div>
     <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Latest transactions</div><div class="section-sub">Recent credit and payment records</div></div></div><div id="recentList"></div></div>
+    <div id="payQrSection" style="margin-top:16px;display:none"></div>
   </section>
 
   <section class="page" id="tab-history">
@@ -99,6 +100,8 @@ function render(){
   const rows=[...b.rows].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   $('recentList').innerHTML=rows.length?rows.slice(0,5).map(r=>{const bal=A.num(r.amount)-A.num(r.paid);return `<div class="history-card"><div><b>${A.esc(r.items||'Credit entry')}</b><div class="small">${npDate(r.date)}${r.note?' - '+A.esc(r.note):''}</div></div><div style="text-align:right"><b>${A.money(r.amount)}</b><div class="small amount-green">Paid ${A.money(r.paid)}</div><div class="small ${bal>0?'amount-red':'amount-green'}">Balance ${A.money(bal)}</div></div></div>`}).join(''):'<div class="empty">No credit records yet.</div>';
   $('historyRows').innerHTML=rows.length?rows.map(r=>{const bal=A.num(r.amount)-A.num(r.paid);return `<tr><td>${npDate(r.date)}</td><td>${A.esc(r.items||'-')}</td><td>${A.money(r.amount)}</td><td class="amount-green">${A.money(r.paid)}</td><td><b class="${bal>0?'amount-red':'amount-green'}">${A.money(bal)}</b></td><td>${A.esc(r.note||r.paymentNote||'-')}</td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">No history available.</div></td></tr>';
+  const payQrSection=$('payQrSection');
+  if(payQrSection){const pqr=d.settings.storePaymentQr||'';const pqrLabel=d.settings.storePaymentQrLabel||'Payment QR';if(pqr){payQrSection.style.display='';payQrSection.innerHTML=`<div class="card" style="text-align:center"><div class="section-title" style="margin-bottom:4px">Pay via ${A.esc(pqrLabel)}</div><p class="hint" style="margin-bottom:16px">Scan this QR code to pay ${A.esc(d.settings.martName||'the mart')}</p><div style="display:flex;justify-content:center"><img src="${pqr}" alt="${A.esc(pqrLabel)}" style="max-width:220px;max-height:220px;object-fit:contain;border-radius:12px;background:#fff;padding:10px;border:2px solid rgba(255,255,255,.15)"></div></div>`}else{payQrSection.style.display='none'}}
   renderProfileDetails(c);
   renderMyQrCode(c);
 }
