@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RD MART Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/martai.css">
+</head>
+<body>
+<div class="center-page">
+  <div class="login-shell">
+    <section class="login-card glass float-card" style="animation-delay:.08s">
+      <div class="login-brand">
+        <div class="brand-logo brand-logo-rd">RD</div>
+        <div>
+          <div class="brand-title">RD MART</div>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" id="customerTab" type="button">Customer</button>
+        <button class="tab" id="adminTab" type="button">Admin</button>
+      </div>
+
+      <form id="adminForm" class="hidden">
+        <h2 class="form-title">Admin login</h2>
+        <div class="error" id="adminError"></div>
+        <div class="field"><label>Username</label><input class="input" id="adminUser" autocomplete="username" placeholder="Enter username"></div>
+        <div class="field"><label>Password</label><input class="input" id="adminPass" type="password" autocomplete="current-password" placeholder="Enter password"></div>
+        <button class="btn btn-primary full" type="submit">Open dashboard</button>
+      </form>
+
+      <form id="customerForm">
+        <h2 class="form-title">Customer portal</h2>
+        <div class="form-sub">Login with phone number and 4 digit PIN created by admin.</div>
+        <div class="error" id="customerError"></div>
+        <div class="field"><label>Customer phone number</label><input class="input" id="customerPhone" inputmode="numeric" placeholder="98XXXXXXXX"></div>
+        <div class="field"><label>Customer 4 digit PIN</label><input class="input" id="customerPin" type="password" maxlength="4" inputmode="numeric" placeholder="1234"></div>
+        <button class="btn btn-green full" type="submit">View my balance</button>
+        <p class="hint">If login fails, go to Admin → Customers and create that customer with a 4 digit PIN first.</p>
+      </form>
+    </section>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/martai-supabase-config.js"></script>
+<script src="assets/martai-store.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+function showError(id,msg){const el=$(id);el.textContent=msg;el.style.display='block'}
+function hideErrors(){['adminError','customerError'].forEach(id=>{$(id).style.display='none';$(id).textContent=''})}
+function switchTab(tab){hideErrors();const admin=tab==='admin';$('adminTab').classList.toggle('active',admin);$('customerTab').classList.toggle('active',!admin);$('adminForm').classList.toggle('hidden',!admin);$('customerForm').classList.toggle('hidden',admin);setTimeout(()=>{(admin?$('adminPass'):$('customerPhone')).focus()},80)}
+MartAI.ready.then(()=>{
+const db=MartAI.getDB();
+document.querySelector('#customerForm .hint').textContent='Use the phone number and 4 digit PIN given by RD MART.';
+const urlP=new URLSearchParams(window.location.search);const prePhone=urlP.get('phone');if(prePhone&&prePhone.length>=10){$('customerPhone').value=prePhone;switchTab('customer')}
+$('adminTab').addEventListener('click',()=>switchTab('admin'));
+$('customerTab').addEventListener('click',()=>switchTab('customer'));
+$('adminForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Signing in...';try{const ok=await MartAI.adminLogin($('adminUser').value.trim(),$('adminPass').value);if(ok){location.href='dashboard.html'}else{showError('adminError','Wrong username or password.');btn.disabled=false;btn.textContent='Open dashboard'}}catch(err){showError('adminError',err.message||'Wrong username or password.');btn.disabled=false;btn.textContent='Open dashboard'}});
+$('customerForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Checking...';try{const customer=await MartAI.customerLogin($('customerPhone').value,$('customerPin').value);if(customer){location.href='customer.html'}else{showError('customerError','Phone number or PIN is incorrect. Please check and try again.');btn.disabled=false;btn.textContent='View my balance'}}catch(err){console.error('Customer login failed:',err);showError('customerError',err.message&&err.message!=='Invalid phone or PIN'?err.message:'Phone number or PIN is incorrect. Please check and try again.');btn.disabled=false;btn.textContent='View my balance'}});
+const session=MartAI.getSession();if(session?.role==='admin'||session?.role==='staff'||session?.role==='store_admin')location.href='dashboard.html';if(session?.role==='customer')location.href='customer.html';
+}).catch(e=>showError('customerError','Could not load database: '+e.message));
+</script>
+</body>
+</html>

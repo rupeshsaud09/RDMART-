@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MartAI Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/martai.css">
+</head>
+<body>
+<div class="overlay" id="overlay"></div>
+<div class="toast-box" id="toasts"></div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="side-brand"><div class="brand-logo">M</div><div><div class="side-title" id="sideMartName">MartAI</div><div class="side-sub">Owner dashboard</div></div></div>
+    <div class="nav-group">Business</div>
+    <button class="nav-btn active" data-page="dashboard"><span class="nav-ico">📊</span>Dashboard</button>
+    <button class="nav-btn" data-page="customers"><span class="nav-ico">👥</span>Customers</button>
+    <button class="nav-btn" data-page="credits"><span class="nav-ico">📒</span>Credit Book</button>
+    <button class="nav-btn" data-page="daily"><span class="nav-ico">📅</span>Daily Sales</button>
+    <button class="nav-btn" data-page="payments"><span class="nav-ico">🏦</span>Party Payments</button>
+    <button class="nav-btn" data-page="cheques"><span class="nav-ico">🧾</span>Cheques</button>
+    <button class="nav-btn" data-page="reports"><span class="nav-ico">📈</span>Reports</button>
+    <div class="nav-group">System</div>
+    <button class="nav-btn" data-page="settings"><span class="nav-ico">⚙️</span>Settings</button>
+    <div class="side-footer"><div class="role-chip">Logged in as Admin</div><div class="small" id="syncStatus">Loading database...</div></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn btn-soft btn-sm mobile-menu" id="menuBtn">☰</button>
+        <div><div class="page-title" id="topTitle">Dashboard</div><div class="page-sub" id="topSub">Your mart summary</div></div>
+      </div>
+      <div class="top-actions">
+        <select class="select store-switcher" id="storeSelect" title="Active store"></select>
+        <div class="db-signal" id="dbSignal" title="Database connection status"><span></span><b>Checking DB</b></div>
+        <button class="btn btn-soft btn-sm hide-sm" id="backupBtn">⬇ Backup</button>
+        <button class="btn btn-primary btn-sm" data-page="customers">+ Customer</button>
+        <button class="btn btn-ghost btn-sm" id="logoutBtn">Sign out</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div id="backupReminderBanner" style="display:none"><div style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.28);border-radius:10px;padding:11px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:1.15em">&#9888;</span><span id="backupReminderText" style="flex:1;min-width:160px;font-size:.88em"></span><button class="btn btn-primary btn-sm" id="backupNowBtn">Backup now</button><button class="btn btn-ghost btn-sm" id="dismissReminderBtn">Remind later</button></div></div>
+      <section class="page active" id="page-dashboard">
+        <div class="hero-panel glass">
+          <div><div class="hero-kicker" id="greeting">Good day</div><div class="hero-heading">Welcome back, mart owner.</div><div class="hero-note" id="dashboardBrief">Your business summary is ready.</div></div>
+          <div class="hero-side"><div class="live-clock"><div class="clock-day" id="clockDay">Today</div><div class="clock-date" id="clockDate">2083-03-15 BS</div><div class="clock-time" id="clockTime">00:00:00</div></div><div class="quick-row"><button class="btn btn-primary" data-page="customers">+ Add customer</button><button class="btn btn-green" data-page="credits">+ Add credit</button><button class="btn btn-soft" data-page="daily">+ Daily sales</button></div></div>
+        </div>
+        <div class="grid grid-4" id="metricCards"></div>
+        <div class="grid grid-3 dashboard-grid" style="margin-top:16px">
+          <div class="card dash-card"><div class="section-head compact-head"><div><div class="section-title">Last 7 days revenue</div><div class="section-sub">Daily sales by date</div></div></div><div class="bar-list dash-scroll" id="weeklyBars"></div></div>
+          <div class="card dash-card"><div class="section-head compact-head"><div><div class="section-title">Customers to follow up</div><div class="section-sub">Pending credit balances</div></div><button class="btn btn-soft btn-sm" data-page="credits">View all</button></div><div class="dash-scroll" id="followList"></div></div>
+          <div class="card dash-card"><div class="section-head compact-head"><div><div class="section-title">Today's cheques</div><div class="section-sub">Cheques dated today</div></div><button class="btn btn-soft btn-sm" data-page="cheques">View all</button></div><div class="dash-scroll" id="todayChequeList"></div></div>
+        </div>
+        <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Recent activity</div><div class="section-sub">Latest saved actions</div></div></div><div class="activity-scroll" id="activityList"></div></div>
+      </section>
+
+      <section class="page" id="page-customers">
+        <div class="section-head"><div><div class="page-title">Customers</div><div class="page-sub">Create customer login and manage profiles</div></div><div class="section-head-actions"><button class="btn btn-soft btn-sm" id="showPortalQrBtn">Portal QR</button><button class="btn btn-soft btn-sm" id="downloadCustomersBtn">Export customers</button><input class="input search-input" id="customerSearch" placeholder="Search name or phone"></div></div>
+        <div class="hint" style="margin-bottom:12px">Customer PINs are hidden from the list and export for safer admin use.</div>
+        <div class="grid grid-2">
+          <form class="card" id="customerForm">
+            <div class="section-title" style="margin-bottom:14px">Add customer</div>
+            <div class="form-grid">
+              <div class="field"><label>Name</label><input class="input" name="name" required placeholder="Customer name"></div>
+              <div class="field"><label>Phone</label><input class="input" name="phone" required inputmode="numeric" placeholder="98XXXXXXXX"></div>
+              <div class="field"><label>4 digit PIN</label><input class="input" name="pin" required maxlength="4" inputmode="numeric" placeholder="1234"></div>
+              <div class="field"><label>Email optional</label><input class="input" name="email" type="email" placeholder="customer@email.com"></div>
+              <div class="field"><label>Address</label><input class="input" name="address" placeholder="Location"></div>
+              <div class="field"><label>Notes</label><input class="input" name="notes" placeholder="Optional notes"></div>
+              <div class="field"><label>Credit limit <span style="opacity:.55;font-weight:400">(0 = no limit)</span></label><input class="input" name="creditLimit" inputmode="decimal" placeholder="0"></div>
+            </div>
+            <button class="btn btn-primary full" type="submit">Save customer and enable portal login</button>
+            <p class="hint">Customer login = phone number + this 4 digit PIN.</p>
+          </form>
+          <div class="card"><div class="section-title" style="margin-bottom:14px">Customer summary</div><div class="grid grid-2" id="customerSummary"></div></div>
+        </div>
+        <div class="card" style="margin-top:16px"><div class="table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Balance</th><th>Limit</th><th>Portal</th><th>Actions</th></tr></thead><tbody id="customerRows"></tbody></table></div><div id="customersPagination" style="padding:4px 8px 2px"></div></div>
+      </section>
+
+      <section class="page" id="page-credits">
+        <div class="section-head"><div><div class="page-title">Credit Book</div><div class="page-sub">Track customer credit and received payments</div></div><div style="display:flex;gap:8px;align-items:center"><button class="btn btn-green btn-sm" id="bulkWaBtn" type="button">&#128241; Send Reminders</button><button class="btn btn-soft btn-sm" id="bulkSmsBtn" type="button">&#9993; SMS Reminders</button><input class="input search-input" id="creditSearch" placeholder="Search customer"></div></div>
+        <div class="grid grid-2">
+          <form class="card" id="creditForm">
+            <div class="section-title" style="margin-bottom:14px">Add credit</div>
+            <div class="form-grid">
+              <div class="field"><label>Customer</label><select class="select" name="customerId" required></select></div>
+              <div class="field"><label>Date BS</label><input class="input" name="date" data-bs-date-input readonly placeholder="2083-03-15"></div>
+              <div class="field"><label>Amount</label><input class="input" name="amount" inputmode="decimal" required placeholder="500"></div>
+              <div class="field"><label>Items</label><input class="input" name="items" placeholder="Rice, oil, etc."></div>
+              <div class="field span-2"><label>Note</label><input class="input" name="note" placeholder="Optional"></div>
+            </div>
+            <button class="btn btn-green full" type="submit">Save credit</button>
+          </form>
+          <form class="card" id="paymentFormInline">
+            <div class="section-title" style="margin-bottom:14px">Record received payment</div>
+            <div class="form-grid">
+              <div class="field"><label>Customer</label><select class="select" name="customerId" required></select></div>
+              <div class="field"><label>Amount received</label><input class="input" name="amount" inputmode="decimal" required placeholder="300"></div>
+              <div class="field span-2"><label>Note</label><input class="input" name="note" placeholder="Cash / FonePay / remark"></div>
+            </div>
+            <button class="btn btn-primary full" type="submit">Apply payment to old dues</button>
+          </form>
+        </div>
+        <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Outstanding balances</div><div class="section-sub">Grouped by customer</div></div><button class="btn btn-soft btn-sm" id="downloadBalanceBtn">Download CSV</button></div><div class="table-wrap"><table><thead><tr><th>Customer</th><th>Phone</th><th>Total taken</th><th>Total paid</th><th>Balance</th><th>Limit</th><th>Actions</th></tr></thead><tbody id="creditRows"></tbody></table></div><div id="creditsPagination" style="padding:4px 8px 2px"></div></div>
+        <div class="card" style="margin-top:16px">
+          <div class="section-head" style="margin-bottom:14px"><div><div class="section-title">Credit history</div><div class="section-sub">Every saved credit entry with balance breakdown</div></div></div>
+          <div class="filter-strip">
+            <div class="filter-field-wrap">
+              <span class="filter-field-label">From (BS)</span>
+              <button class="date-field" id="creditDateFromBtn" type="button" data-pick-bs-date="creditDateFrom">Pick date</button>
+              <input class="hidden" id="creditDateFrom">
+            </div>
+            <span class="filter-arrow">&#8594;</span>
+            <div class="filter-field-wrap">
+              <span class="filter-field-label">To (BS)</span>
+              <button class="date-field" id="creditDateToBtn" type="button" data-pick-bs-date="creditDateTo">Pick date</button>
+              <input class="hidden" id="creditDateTo">
+            </div>
+            <div class="filter-clear-wrap">
+              <button class="btn btn-soft btn-sm" id="clearCreditDateFilter" type="button">Clear filter</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>Date</th><th>Customer</th><th>Items</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Action</th></tr></thead><tbody id="creditHistoryRows"></tbody></table></div><div id="creditHistoryPagination" style="padding:4px 8px 2px"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-daily">
+        <div class="section-head"><div><div class="page-title">Daily Sales</div><div class="page-sub">Date-wise POS, FonePay, cash and finance total</div></div><button class="btn btn-soft btn-sm" id="downloadDailyBtn">Download CSV</button></div>
+        <form class="card" id="dailyForm"><div class="form-grid"><div class="field"><label>Date BS</label><input class="input" name="date" data-bs-date-input readonly placeholder="2083-03-15"></div><div class="field"><label>POS / Card</label><input class="input" name="pos" inputmode="decimal" placeholder="0"></div><div class="field"><label>FonePay</label><input class="input" name="fonepay" inputmode="decimal" placeholder="0"></div><div class="field"><label>Cash</label><input class="input" name="cash" inputmode="decimal" placeholder="0"></div><div class="field"><label>Finance</label><input class="input" name="finance" inputmode="decimal" placeholder="0"></div><div class="field"><label>Paid to Party</label><input class="input" id="dailyPartyInput" name="partyPayment" inputmode="decimal" placeholder="0"><span id="dailyPartyHint" style="font-size:.76em;opacity:.65;display:block;margin-top:3px"></span></div><div class="field"><label>Other</label><input class="input" name="other" inputmode="decimal" placeholder="0"></div><div class="field"><label>Note</label><input class="input" name="note" placeholder="Optional"></div></div><button class="btn btn-primary full" type="submit">Save daily sales</button></form>
+        <div class="card" style="margin-top:16px">
+          <div class="section-head" style="margin-bottom:14px"><div><div class="section-title">Daily sales history</div><div class="section-sub">Date-wise breakdown by payment method</div></div></div>
+          <div class="filter-strip">
+            <div class="filter-field-wrap">
+              <span class="filter-field-label">From (BS)</span>
+              <button class="date-field" id="dailyDateFromBtn" type="button" data-pick-bs-date="dailyDateFrom">Pick date</button>
+              <input class="hidden" id="dailyDateFrom">
+            </div>
+            <span class="filter-arrow">&#8594;</span>
+            <div class="filter-field-wrap">
+              <span class="filter-field-label">To (BS)</span>
+              <button class="date-field" id="dailyDateToBtn" type="button" data-pick-bs-date="dailyDateTo">Pick date</button>
+              <input class="hidden" id="dailyDateTo">
+            </div>
+            <div class="filter-clear-wrap">
+              <button class="btn btn-soft btn-sm" id="clearDailyDateFilter" type="button">Clear filter</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>Date</th><th>POS</th><th>FonePay</th><th>Cash</th><th>Finance</th><th>Party</th><th>Other</th><th>Total</th><th>Action</th></tr></thead><tbody id="dailyRows"></tbody></table></div><div id="dailyPagination" style="padding:4px 8px 2px"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-payments">
+        <div class="section-head"><div><div class="page-title">Party Payments</div><div class="page-sub">Track supplier/vendor payments</div></div><button class="btn btn-soft btn-sm" id="downloadPaymentsBtn">Download CSV</button></div>
+        <form class="card" id="partyPaymentForm"><div class="form-grid"><div class="field"><label>Date BS</label><input class="input" name="date" data-bs-date-input readonly placeholder="2083-03-15"></div><div class="field"><label>Party</label><input class="input" name="party" required placeholder="Vendor name"></div><div class="field"><label>Amount</label><input class="input" name="amount" required inputmode="decimal" placeholder="5000"></div><div class="field"><label>Method</label><select class="select" name="method"><option>Cash</option><option>FonePay</option><option>Bank Transfer</option><option>Cheque</option></select></div><div class="field"><label>Reference</label><input class="input" name="reference" placeholder="Txn / receipt no."></div><div class="field"><label>Note</label><input class="input" name="note" placeholder="Optional"></div></div><button class="btn btn-primary full" type="submit">Save party payment</button></form>
+        <div class="card" style="margin-top:16px">
+          <div class="section-head" style="margin-bottom:14px"><div><div class="section-title">Payment records</div><div class="section-sub">All saved supplier and party payments</div></div></div>
+          <div class="filter-strip">
+            <div class="filter-search-wrap">
+              <span class="filter-field-label">Search</span>
+              <input class="input" id="paymentSearch" placeholder="Party name, method, reference...">
+            </div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>Date</th><th>Party</th><th>Amount</th><th>Method</th><th>Reference</th><th>Action</th></tr></thead><tbody id="paymentRows"></tbody></table></div><div id="paymentsPagination" style="padding:4px 8px 2px"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-cheques">
+        <div class="section-head"><div><div class="page-title">Cheque Tracker</div><div class="page-sub">Save cheque and update clear / hold / bounced status</div></div><button class="btn btn-soft btn-sm" id="downloadChequesBtn">Download CSV</button></div>
+        <form class="card" id="chequeForm"><div class="form-grid"><div class="field"><label>Party</label><input class="input" name="party" required placeholder="Party name"></div><div class="field"><label>Cheque No.</label><input class="input" name="chequeNo" required placeholder="000123"></div><div class="field"><label>Amount</label><input class="input" name="amount" required inputmode="decimal" placeholder="10000"></div><div class="field"><label>Bank</label><input class="input" name="bank" placeholder="Bank name"></div><div class="field"><label>Cheque Date BS</label><input class="input" name="chequeDate" data-bs-date-input readonly placeholder="2083-03-15"></div><div class="field"><label>Status</label><select class="select" name="status"><option value="hold">Hold</option><option value="clear">Clear</option><option value="bounce">Bounced</option></select></div></div><button class="btn btn-primary full" type="submit">Save cheque</button></form>
+        <div class="card" style="margin-top:16px">
+          <div class="section-head" style="margin-bottom:14px"><div><div class="section-title">Cheque records</div><div class="section-sub">Search by party, cheque number or filter by date</div></div></div>
+          <div class="filter-strip">
+            <div class="filter-search-wrap">
+              <span class="filter-field-label">Search</span>
+              <input class="input" id="chequeSearch" placeholder="Party, cheque no, bank...">
+            </div>
+            <div class="filter-vdivider"></div>
+            <div class="filter-field-wrap">
+              <span class="filter-field-label">From (BS)</span>
+              <button class="date-field" id="chequeDateFromBtn" type="button" data-pick-bs-date="chequeDateFrom">Pick date</button>
+              <input class="hidden" id="chequeDateFrom">
+            </div>
+            <span class="filter-arrow">&#8594;</span>
+            <div class="filter-field-wrap">
+              <span class="filter-field-label">To (BS)</span>
+              <button class="date-field" id="chequeDateToBtn" type="button" data-pick-bs-date="chequeDateTo">Pick date</button>
+              <input class="hidden" id="chequeDateTo">
+            </div>
+            <div class="filter-clear-wrap">
+              <button class="btn btn-soft btn-sm" id="clearChequeDateFilter" type="button">Clear filter</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>Party</th><th>Cheque No.</th><th>Amount</th><th>Bank</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="chequeRows"></tbody></table></div><div id="chequesPagination" style="padding:4px 8px 2px"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-reports">
+        <div class="section-head"><div><div class="page-title">Reports</div><div class="page-sub">Download business data and check totals</div></div><button class="btn btn-primary btn-sm" id="downloadAllBtn">Download all CSV</button></div>
+        <div class="grid grid-4" id="reportCards"></div>
+        <div class="grid grid-3" style="margin-top:16px"><div class="card"><div class="section-title" style="margin-bottom:12px">Revenue bars</div><div class="bar-list" id="reportBars"></div></div><div class="card"><div class="section-title" style="margin-bottom:12px">Daily sales chart</div><div class="bar-list" id="dailySalesBars"></div></div><div class="card"><div class="section-title" style="margin-bottom:12px">Credit collection</div><div id="reportCreditBox"></div></div></div>
+        <div class="grid grid-2" style="margin-top:16px"><div class="card"><div class="section-title" style="margin-bottom:12px">Monthly trend (6 months)</div><div class="bar-list" id="monthlyTrendBars"></div></div><div class="card"><div class="section-title" style="margin-bottom:12px">Top customers by credit</div><div class="bar-list" id="topCreditBars"></div></div></div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="section-head"><div><div class="page-title">Settings</div><div class="page-sub">Admin login, mart name and data backup</div></div></div>
+        <div class="grid grid-2">
+          <form class="card" id="settingsForm"><div class="section-title" style="margin-bottom:14px">Mart settings</div><div class="hint" style="margin-bottom:14px;color:#fde68a">Change the default admin password before going live. Do not share admin login details.</div><div class="form-grid"><div class="field"><label>Mart name</label><input class="input" name="martName"></div><div class="field"><label>Mart WhatsApp phone</label><input class="input" name="martPhone"></div><div class="field"><label>Admin username</label><input class="input" name="adminUser"></div><div class="field"><label>New password</label><input class="input" name="adminPass" type="password" placeholder="Leave blank to keep old"></div></div><button class="btn btn-primary full" type="submit">Save settings</button></form>
+          <div class="card"><div class="section-title" style="margin-bottom:14px">Data tools</div><p class="small" id="syncStatusSettings">Checking database connection...</p><p class="small" style="margin-top:10px">Backup exports the current database as JSON.</p><div class="quick-row" style="margin-top:16px"><button class="btn btn-soft" id="backupJsonBtn">Download JSON backup</button><button class="btn btn-red" id="resetBtn">Reset all data</button></div><div class="hint">When Supabase is configured, data syncs to the shared online database. The browser keeps a local fallback copy only for recovery.</div></div>
+        </div>
+        <div class="card" style="margin-top:16px" id="storeManagerCard"><div class="section-head"><div><div class="section-title">Stores</div><div class="section-sub">Create another store with separate customers, sales, credits, cheques and reports.</div></div></div><form id="storeForm" class="form-grid" style="margin-bottom:14px"><div class="field"><label>Store name</label><input class="input" name="name" required placeholder="Branch / store name"></div><div class="field"><label>Store phone</label><input class="input" name="phone" inputmode="numeric" placeholder="98XXXXXXXX"></div><div class="field"><label>Store admin email</label><input class="input" name="adminEmail" type="email" required placeholder="store@example.com"></div><div class="field" style="align-self:end"><button class="btn btn-primary full" type="submit">Create store</button></div></form><div class="hint" style="margin-bottom:12px">Create this email in Supabase Authentication -> Users first. That email and password will login directly to this store.</div><div class="table-wrap"><table><thead><tr><th>Store</th><th>Phone</th><th>Status</th><th>Action</th></tr></thead><tbody id="storeRows"></tbody></table></div></div>
+        <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Staff access</div><div class="section-sub">Staff use the Admin tab, but they cannot delete records or open settings.</div></div></div><form id="staffForm" class="form-grid" style="margin-bottom:14px"><div class="field"><label>Staff email</label><input class="input" name="email" type="email" required placeholder="staff@example.com"></div><div class="field"><label>Staff name</label><input class="input" name="name" placeholder="Counter staff"></div><div class="field"><label>Local password</label><input class="input" name="password" placeholder="Only for local mode"></div><div class="field" style="align-self:end"><button class="btn btn-primary full" type="submit">Allow staff access</button></div></form><div class="hint" style="margin-bottom:12px">For live Supabase mode, first create/invite this email in Supabase Authentication, then allow it here.</div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Action</th></tr></thead><tbody id="staffRows"></tbody></table></div></div>
+        <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Login details</div><div class="section-sub">Latest admin and customer portal logins</div></div></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Type</th><th>Name / Email</th><th>Phone</th></tr></thead><tbody id="loginRows"></tbody></table></div></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="editCustomerModal"><form class="modal glass" id="editCustomerForm"><div class="modal-title">Edit customer</div><input type="hidden" name="id"><div class="form-grid"><div class="field"><label>Name</label><input class="input" name="name" required></div><div class="field"><label>Phone</label><input class="input" name="phone" required></div><div class="field"><label>New PIN</label><input class="input" name="pin" maxlength="4" placeholder="Leave blank to keep old"></div><div class="field"><label>Email</label><input class="input" name="email" type="email"></div><div class="field span-2"><label>Address</label><input class="input" name="address"></div><div class="field span-2"><label>Notes</label><input class="input" name="notes"></div><div class="field"><label>Credit limit <span style="opacity:.55;font-weight:400">(0 = no limit)</span></label><input class="input" name="creditLimit" inputmode="decimal" placeholder="0"></div></div><div class="modal-actions"><button class="btn btn-soft" type="button" data-close="editCustomerModal">Cancel</button><button class="btn btn-primary" type="submit">Save changes</button></div></form></div>
+
+<div class="modal-backdrop" id="quickPayModal"><form class="modal glass" id="quickPayForm"><div class="modal-title">Record payment</div><input type="hidden" name="customerId"><div class="field"><label>Customer</label><input class="input" name="customerName" readonly></div><div class="field"><label>Amount received</label><input class="input" name="amount" required inputmode="decimal" placeholder="500"></div><div class="field"><label>Note</label><input class="input" name="note" placeholder="Cash / online"></div><div class="modal-actions"><button class="btn btn-soft" type="button" data-close="quickPayModal">Cancel</button><button class="btn btn-green" type="submit">Apply payment</button></div></form></div>
+
+<div class="modal-backdrop" id="editStoreModal"><form class="modal glass" id="editStoreForm"><div class="modal-title">Edit store</div><input type="hidden" name="id"><div class="form-grid"><div class="field"><label>Store name</label><input class="input" name="name" required placeholder="Store name"></div><div class="field"><label>Phone</label><input class="input" name="phone" placeholder="98XXXXXXXX"></div></div><div class="modal-actions"><button class="btn btn-soft" type="button" data-close="editStoreModal">Cancel</button><button class="btn btn-primary" type="submit">Save changes</button></div></form></div>
+
+<div class="modal-backdrop" id="waReminderModal"><div class="modal glass" style="max-width:560px;width:100%"><div class="modal-title">WhatsApp Reminders</div><div class="field" style="margin-bottom:6px"><label>Message template</label><textarea class="input" id="waTemplate" rows="3" style="resize:vertical;min-height:72px;height:72px;font-family:inherit;line-height:1.5"></textarea></div><div class="small" style="margin-bottom:12px;opacity:.6">Placeholders: <b>{name}</b> &nbsp;<b>{amount}</b> &nbsp;<b>{mart}</b></div><div id="waReminderList" style="max-height:300px;overflow-y:auto;margin-bottom:12px"></div><div style="display:flex;gap:8px;align-items:center;padding-top:10px;border-top:1px solid rgba(255,255,255,.1)"><span id="waReminderCount" class="small" style="flex:1;opacity:.7"></span><button class="btn btn-soft btn-sm" type="button" data-close="waReminderModal">Close</button><button class="btn btn-green btn-sm" type="button" id="waSendNextBtn">Send Next &#8250;</button></div></div></div>
+
+<div class="modal-backdrop" id="qrModal"><div class="modal glass" style="max-width:340px;width:100%;text-align:center"><div class="modal-title" id="qrModalTitle">Customer Portal QR</div><div style="margin:16px auto 10px;display:flex;justify-content:center"><canvas id="qrCanvas" style="border-radius:8px;background:#fff;padding:10px;display:block"></canvas></div><p class="small" id="qrModalUrl" style="word-break:break-all;opacity:.45;margin:0 0 14px;padding:0 8px;font-size:.78em"></p><div class="modal-actions"><button class="btn btn-soft" type="button" data-close="qrModal">Close</button><button class="btn btn-primary" type="button" id="downloadQrBtn">Download PNG</button></div></div></div>
+
+<div class="modal-backdrop" id="smsReminderModal"><div class="modal glass" style="max-width:560px;width:100%"><div class="modal-title">&#9993; SMS Reminders</div><div class="field" style="margin-bottom:6px"><label>Message template <span style="opacity:.55;font-weight:400">(keep under 160 chars)</span></label><textarea class="input" id="smsTemplate" rows="3" style="resize:vertical;min-height:72px;height:72px;font-family:inherit;line-height:1.5"></textarea></div><div class="small" style="margin-bottom:4px;opacity:.6">Placeholders: <b>{name}</b> &nbsp;<b>{amount}</b> &nbsp;<b>{mart}</b></div><div class="small" style="margin-bottom:12px;opacity:.5">Opens your phone SMS app — tap Send for each customer.</div><div id="smsReminderList" style="max-height:300px;overflow-y:auto;margin-bottom:12px"></div><div style="display:flex;gap:8px;align-items:center;padding-top:10px;border-top:1px solid rgba(255,255,255,.1)"><span id="smsReminderCount" class="small" style="flex:1;opacity:.7"></span><button class="btn btn-soft btn-sm" type="button" data-close="smsReminderModal">Close</button><button class="btn btn-soft btn-sm" type="button" id="smsSendNextBtn">Send Next &#8250;</button></div></div></div>
+
+<div class="bsp-wrap" id="bspWrap">
+  <div class="bsp-header">
+    <button class="bsp-nav" id="bspPrev" type="button">&#8249;</button>
+    <div class="bsp-hcenter">
+      <button class="bsp-title-btn" id="bspYearBtn" type="button">2083</button>
+      <button class="bsp-title-btn" id="bspMonthBtn" type="button">Asar</button>
+    </div>
+    <button class="bsp-nav" id="bspNext" type="button">&#8250;</button>
+  </div>
+  <div class="bsp-panel" id="bspYearPanel"></div>
+  <div class="bsp-panel" id="bspMonthPanel"></div>
+  <div class="bsp-wdays"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+  <div class="bsp-grid" id="bspGrid"></div>
+  <div class="bsp-foot">
+    <button class="btn btn-soft btn-sm" id="bspToday" type="button">Today</button>
+    <button class="btn btn-ghost btn-sm" id="bspClose" type="button">Close</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/martai-supabase-config.js"></script>
+<script src="assets/martai-store.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+let pendingCreditDeleteId='';let pendingCreditDeleteTimer=null;const A=MartAI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));
+const PER_PAGE=15;const pgState={customers:1,credits:1,creditHistory:1,daily:1,payments:1,cheques:1};
+function paginationHTML(key,pg,total,per){const pages=Math.ceil(total/per);if(!total||pages<=1)return'';const from=(pg-1)*per+1;const to=Math.min(pg*per,total);return'<div style="display:flex;align-items:center;gap:8px;padding:10px 0 2px;border-top:1px solid rgba(255,255,255,.08);margin-top:8px"><span class="small" style="opacity:.5;margin-right:auto">'+from+'–'+to+' of '+total+'</span><button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="-1"'+(pg===1?' disabled':'')+'>&#8249; Prev</button><span class="small" style="min-width:3em;text-align:center">'+pg+' / '+pages+'</span><button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="1"'+(pg>=pages?' disabled':'')+'>Next &#8250;</button></div>'}
+function session(){return A.getSession()||{}}
+function isStaff(){return session().role==='staff'}
+function isMainAdmin(){return session().role==='admin'}
+function isStoreAdmin(){return session().role==='store_admin'}
+function isAdmin(){return session().role==='admin'}
+let currentPage='dashboard';
+const titles={dashboard:['Dashboard','Your mart summary'],customers:['Customers','Create customer portal login'],credits:['Credit Book','Customer credit and payments'],daily:['Daily Sales','Date-wise sales totals'],payments:['Party Payments','Supplier/vendor payment records'],cheques:['Cheque Tracker','Cheque status management'],reports:['Reports','CSV downloads and analytics'],settings:['Settings','Admin and data tools']};
+function requireAdmin(){const s=A.getSession();if(!s||!['admin','staff','store_admin'].includes(s.role))location.href='index.html'}
+function db(){return A.getDB()}function save(x){A.saveDB(x)}function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>el.remove(),240)},2600)}
+function updateSyncStatus(){const info=A.syncInfo();let text,label,state;if(!info.configured){text='Local fallback mode. Add Supabase URL and anon key to enable online sync.';label='Local DB';state='fallback'}else if(info.remoteEnabled){text='Connected to Supabase online storage.';label='DB Connected';state='connected'}else{text='Using local fallback. Supabase error: '+(info.remoteError||'not connected');label='DB Error';state='error'}['syncStatus','syncStatusSettings'].forEach(id=>{const el=$(id);if(el)el.textContent=text});const sig=$('dbSignal');if(sig){sig.className='db-signal '+state;sig.querySelector('b').textContent=label;sig.title=text}}
+function polishStaticText(){['DB','CU','CR','DS','PP','CH','RP','ST'].forEach((txt,i)=>{const el=$$('.nav-ico')[i];if(el)el.textContent=txt});$('menuBtn').textContent='Menu';$('backupBtn').textContent='Backup';$$('[data-page="settings"]').forEach(el=>el.style.display=isMainAdmin()?'':'none');if($('storeManagerCard'))$('storeManagerCard').style.display=isMainAdmin()?'':'none';if($('storeSelect'))$('storeSelect').style.display=isMainAdmin()?'':'none';const chip=document.querySelector('.role-chip');if(chip)chip.textContent=isStaff()?'Logged in as Staff':isStoreAdmin()?'Logged in as Store Admin':'Logged in as Main Admin'}
+function polishEmptyStates(){const copy={'No pending credit. Great work.':'No pending credit. Customers with dues will appear here.','No activity saved yet.':'No activity yet. Add a customer, credit, sale, payment, or cheque to start the log.','No customers found. Add the first customer above.':'No customers yet. Add your first customer to enable customer portal login.','No customers yet.':'No credit balances yet. Add a customer, then save a credit entry.','No credit records saved yet.':'No credit history yet. Save a credit entry to start tracking dues.','No sales saved yet.':'No sales saved yet. Add the first sale from the form above.','No cheques saved yet.':'No cheques saved yet. Add a cheque to track hold, clear, or bounced status.'};$$('.empty').forEach(el=>{if(copy[el.textContent])el.textContent=copy[el.textContent]})}
+function formData(form){const data=Object.fromEntries(new FormData(form).entries());form.querySelectorAll('[data-bs-date-input][name]').forEach(i=>{data[i.name]=adFromBsKey(i.value)});return data}
+function metric(label,value,sub,color){return `<div class="card metric" style="--m:${color}"><div class="metric-label">${label}</div><div class="metric-value">${value}</div><div class="metric-sub">${sub||''}</div></div>`}
+const BS_MONTH_NAMES=['Baisakh','Jestha','Asar','Shrawan','Bhadra','Aswin','Kartik','Mangsir','Poush','Magh','Falgun','Chaitra'];
+const BS_MONTHS={2070:[31,31,31,32,31,31,29,30,30,29,30,30],2071:[31,31,32,31,31,31,30,29,30,29,30,30],2072:[31,32,31,32,31,30,30,29,30,29,30,30],2073:[31,32,31,32,31,30,30,30,29,29,30,31],2074:[31,31,31,32,31,31,30,29,30,29,30,30],2075:[31,31,32,31,31,31,30,29,30,29,30,30],2076:[31,32,31,32,31,30,30,30,29,29,30,30],2077:[31,32,31,32,31,30,30,30,29,30,29,31],2078:[31,31,31,32,31,31,30,29,30,29,30,30],2079:[31,31,32,31,31,31,30,29,30,29,30,30],2080:[31,32,31,32,31,30,30,30,29,29,30,30],2081:[31,32,31,32,31,30,30,30,29,30,29,31],2082:[31,31,32,31,31,31,30,29,30,29,30,30],2083:[31,31,32,31,31,31,30,29,30,29,30,30],2084:[31,32,31,32,31,30,30,30,29,29,30,31],2085:[30,32,31,32,31,30,30,30,29,30,29,31],2086:[31,31,32,31,31,31,30,29,30,29,30,30],2087:[31,31,32,31,31,31,30,30,29,30,30,30],2088:[30,31,32,32,30,31,30,30,29,30,30,30],2089:[30,32,31,32,31,30,30,30,29,30,30,30],2090:[30,32,31,32,31,30,30,30,29,30,30,30]};
+const BS_ANCHOR={bsYear:2070,ad:'2013-04-14'};
+function pad2(n){return String(n).padStart(2,'0')}
+function addDaysIso(iso,days){const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)}
+function daysBetween(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000)}
+function bsParts(date){const iso=String(date||'').slice(0,10);let diff=daysBetween(BS_ANCHOR.ad,iso);let year=BS_ANCHOR.bsYear;if(diff<0)return{year:String(BS_ANCHOR.bsYear),month:'01',day:'01'};while(BS_MONTHS[year]){const yearDays=BS_MONTHS[year].reduce((s,x)=>s+x,0);if(diff<yearDays)break;diff-=yearDays;year++}if(!BS_MONTHS[year])year=Number(Object.keys(BS_MONTHS).at(-1));const months=BS_MONTHS[year];let month=1;for(const len of months){if(diff<len)break;diff-=len;month++}return{year:String(year),month:pad2(month),day:pad2(Math.max(1,diff+1))}}
+function bsToAd(year,month,day){year=Number(year);month=Number(month);day=Number(day);const years=Object.keys(BS_MONTHS).map(Number);year=Math.min(Math.max(year,years[0]),years[years.length-1]);month=Math.min(Math.max(month,1),12);day=Math.min(Math.max(day,1),BS_MONTHS[year][month-1]);let days=0;for(let y=BS_ANCHOR.bsYear;y<year;y++)days+=(BS_MONTHS[y]||[]).reduce((s,x)=>s+x,0);for(let m=1;m<month;m++)days+=BS_MONTHS[year][m-1];days+=day-1;return addDaysIso(BS_ANCHOR.ad,days)}
+function bsKey(date){if(!date)return'';try{const p=bsParts(date);return `${p.year}-${p.month}-${p.day}`}catch(e){return String(date)}}
+function npDate(date){if(!date)return'-';try{const p=bsParts(date);return p.year+' '+BS_MONTH_NAMES[Number(p.month)-1]+' '+Number(p.day)+' BS'}catch(e){return String(date)}}
+function npNum(v){return String(v)}
+function npDateTime(value){if(!value)return'-';try{return npDate(new Date(value).toISOString().slice(0,10))+' '+new Date(value).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}catch(e){return String(value)}}
+function cleanBsDate(v){return String(v||'').trim().replace(/[/.]/g,'-').replace(/[०-९]/g,d=>'०१२३४५६७८९'.indexOf(d))}
+function adFromBsKey(key){const k=cleanBsDate(key);const m=k.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);return m?bsToAd(m[1],m[2],m[3]):A.today()}
+function bsKeyToDisplay(key){if(!key)return'';const m=key.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);if(!m)return key;return m[1]+' '+BS_MONTH_NAMES[Number(m[2])-1]+' '+Number(m[3])}
+const BSP=(()=>{
+  let tgt=null,yr=2083,mo=1;
+  const g=id=>document.getElementById(id);
+  function fromAd(iso){const p=bsParts(iso);yr=Number(p.year);mo=Number(p.month);}
+  function hideAll(){g('bspYearPanel').classList.remove('open');g('bspMonthPanel').classList.remove('open');}
+  function move(d){mo+=d;if(mo<1){mo=12;yr=Math.max(2070,yr-1);}if(mo>12){mo=1;yr=Math.min(2090,yr+1);}hideAll();draw();}
+  function draw(){
+    g('bspYearBtn').textContent=yr;
+    g('bspMonthBtn').textContent=BS_MONTH_NAMES[mo-1];
+    g('bspYearPanel').innerHTML=Object.keys(BS_MONTHS).map(y=>`<button type="button" class="bsp-opt${Number(y)===yr?' bsp-on':''}" data-y="${y}">${y}</button>`).join('');
+    g('bspMonthPanel').innerHTML=BS_MONTH_NAMES.map((n,i)=>`<button type="button" class="bsp-opt${i+1===mo?' bsp-on':''}" data-m="${i+1}">${n}</button>`).join('');
+    const total=(BS_MONTHS[yr]||BS_MONTHS[2083])[mo-1]||30;
+    const lead=new Date(bsToAd(yr,mo,1)+'T00:00:00').getDay();
+    const todayAd=A.today(),selAd=tgt&&tgt.value?adFromBsKey(tgt.value):'';
+    let h='<span class="bsp-blank"></span>'.repeat(lead);
+    for(let d=1;d<=total;d++){
+      const iso=bsToAd(yr,mo,d),t=iso===todayAd,s=!!selAd&&iso===selAd;
+      h+=`<button type="button" class="bsp-day${t&&s?' bsp-today bsp-sel':s?' bsp-sel':t?' bsp-today':''}" data-ad="${iso}">${d}</button>`;
+    }
+    g('bspGrid').innerHTML=h;
+  }
+  function pos(el){
+    const w=g('bspWrap'),r=el.getBoundingClientRect(),pw=322,ph=430;
+    w.style.left=Math.max(8,Math.min(r.left,window.innerWidth-pw-8))+'px';
+    const t=r.bottom+6;w.style.top=(t+ph>window.innerHeight-8?Math.max(8,r.top-ph-6):t)+'px';
+  }
+  function open(inp,trigger){tgt=inp;fromAd(inp.value?adFromBsKey(inp.value):A.today());hideAll();draw();pos(trigger||inp);g('bspWrap').classList.add('open');}
+  function close(){g('bspWrap').classList.remove('open');tgt=null;}
+  function pick(adIso){if(!tgt)return;tgt.value=bsKey(adIso);close();syncDateButtons();renderAll();}
+  function init(){
+    g('bspPrev').addEventListener('click',()=>move(-1));
+    g('bspNext').addEventListener('click',()=>move(1));
+    g('bspToday').addEventListener('click',()=>{fromAd(A.today());hideAll();draw();});
+    g('bspClose').addEventListener('click',close);
+    g('bspYearBtn').addEventListener('click',()=>{g('bspYearPanel').classList.toggle('open');g('bspMonthPanel').classList.remove('open');});
+    g('bspMonthBtn').addEventListener('click',()=>{g('bspMonthPanel').classList.toggle('open');g('bspYearPanel').classList.remove('open');});
+    g('bspYearPanel').addEventListener('click',e=>{const b=e.target.closest('[data-y]');if(!b)return;yr=Number(b.dataset.y);g('bspYearPanel').classList.remove('open');draw();});
+    g('bspMonthPanel').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;mo=Number(b.dataset.m);g('bspMonthPanel').classList.remove('open');draw();});
+    g('bspGrid').addEventListener('click',e=>{const b=e.target.closest('[data-ad]');if(b)pick(b.dataset.ad);});
+    document.addEventListener('click',e=>{const w=g('bspWrap');if(!w||!w.classList.contains('open'))return;if(w.contains(e.target))return;if(e.target.closest('[data-pick-bs-date]')||e.target.closest('[data-bs-date-input]'))return;close();});
+  }
+  return{open,close,init};
+})();
+function syncDateButtons(){['creditDateFrom','creditDateTo','dailyDateFrom','dailyDateTo','chequeDateFrom','chequeDateTo'].forEach(id=>{const input=$(id),btn=$(id+'Btn');if(!btn)return;const v=input?.value||'';btn.textContent=v?bsKeyToDisplay(v)+' BS':'Pick date';btn.classList.toggle('has-value',!!v)})}
+function updateClock(){const d=new Date();const iso=d.toISOString().slice(0,10);const day=d.toLocaleDateString('en-US',{weekday:'long'});const time=d.toLocaleTimeString('en-US',{hour12:true,hour:'2-digit',minute:'2-digit',second:'2-digit'});if($('clockDay'))$('clockDay').textContent=day;if($('clockDate'))$('clockDate').textContent=npDate(iso);if($('clockTime'))$('clockTime').textContent=time}
+function totalDaily(x){return A.num(x.pos)+A.num(x.fonepay)+A.num(x.cash)+A.num(x.finance)+A.num(x.partyPayment)+A.num(x.other)}
+function allCustomerBalances(d){return d.customers.map(c=>({customer:c,...A.customerBalance(d,c.id)})).sort((a,b)=>b.balance-a.balance)}
+function updateNepaliDateHints(){}
+function setTodayInputs(){document.querySelectorAll('[data-bs-date-input]').forEach(i=>{if(!i.value)i.value=bsKey(A.today())})}
+function openModal(id){$(id).classList.add('active')}function closeModal(id){$(id).classList.remove('active')}
+function statusBadge(status){if(status==='clear')return '<span class="badge badge-green">Clear</span>';if(status==='bounce')return '<span class="badge badge-red">Bounced</span>';return '<span class="badge badge-amber">Hold</span>'}
+function nav(page){if(!isMainAdmin()&&page==='settings')page='dashboard';currentPage=page;$$('.page').forEach(p=>p.classList.remove('active'));$('page-'+page).classList.add('active');$$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('topTitle').textContent=titles[page][0];$('topSub').textContent=titles[page][1];$('sidebar').classList.remove('open');$('overlay').classList.remove('open');renderAll()}
+function renderStoreSelector(){const stores=A.getStores?A.getStores():[];const el=$('storeSelect');if(!el)return;const active=A.getActiveStoreId?A.getActiveStoreId():'';el.innerHTML=stores.length?stores.map(s=>`<option value="${A.esc(s.id)}">${A.esc(s.name)}</option>`).join(''):'<option value="default">RD MART</option>';if([...el.options].some(o=>o.value===active))el.value=active}
+function renderCustomerOptions(){const d=db();const opts=d.customers.map(c=>`<option value="${A.esc(c.id)}">${A.esc(c.name)} - ${A.esc(c.phone)}</option>`).join('');document.querySelectorAll('select[name="customerId"]').forEach(s=>{const old=s.value;s.innerHTML=opts||'<option value="">Add a customer first</option>';if([...s.options].some(o=>o.value===old))s.value=old})}
+function renderDashboard(){const d=db();const balances=allCustomerBalances(d);const creditPending=balances.reduce((s,x)=>s+x.balance,0);const dailyToday=d.dailySales.filter(x=>x.date===A.today()).reduce((s,x)=>s+totalDaily(x),0);const bounced=d.cheques.filter(x=>x.status==='bounce').length;$('sideMartName').textContent=d.settings.martName||'MartAI';const h=new Date().getHours();$('greeting').textContent=h<12?'Good morning':h<17?'Good afternoon':'Good evening';$('dashboardBrief').textContent=`${d.customers.length} customers, ${A.money(creditPending)} pending credit, ${A.money(dailyToday)} saved today.`;$('metricCards').innerHTML=[metric('Today daily sales',A.money(dailyToday),`${d.dailySales.filter(x=>x.date===A.today()).length} entries`,'rgba(6,182,212,.23)'),metric('Customers',d.customers.length,`${balances.filter(x=>x.balance>0).length} with pending credit`,'rgba(34,197,94,.20)'),metric('Credit pending',A.money(creditPending),'Outstanding balance','rgba(239,68,68,.18)'),metric('Cheque issues',bounced,`${d.cheques.length} total cheques`,'rgba(245,158,11,.20)')].join('');renderBars('weeklyBars',last7().map(date=>({label:shortDate(date),value:d.dailySales.filter(x=>x.date===date).reduce((s,x)=>s+totalDaily(x),0)})));const follow=balances.filter(x=>x.balance>0).slice(0,6);$('followList').innerHTML=follow.length?follow.map(x=>`<div class="history-card"><div><b>${A.esc(x.customer.name)}</b><div class="small">${A.esc(x.customer.phone)}</div></div><div style="text-align:right"><b class="amount-red">${A.money(x.balance)}</b><div style="margin-top:6px"><button class="btn btn-green btn-sm" data-pay="${x.customer.id}">Paid</button> <button class="btn btn-soft btn-sm" data-wa="${x.customer.id}">WhatsApp</button> <button class="btn btn-soft btn-sm" data-sms="${x.customer.id}">SMS</button></div></div></div>`).join(''):'<div class="empty">No pending credit. Great work.</div>';const todayCheques=A.byDate(d.cheques,'chequeDate').filter(x=>x.chequeDate===A.today()).slice(0,6);$('todayChequeList').innerHTML=todayCheques.length?todayCheques.map(x=>`<div class="history-card"><div><b>${A.esc(x.party)}</b><div class="small">Cheque ${A.esc(x.chequeNo)}${x.bank?' - '+A.esc(x.bank):''}</div></div><div style="text-align:right"><b>${A.money(x.amount)}</b><div style="margin-top:6px">${statusBadge(x.status)}</div></div></div>`).join(''):'<div class="empty">No cheques dated today.</div>';$('activityList').innerHTML=d.activity.length?d.activity.slice(0,10).map(a=>`<div class="history-card"><div><b>${A.esc(a.message)}</b><div class="small">${npDateTime(a.time)}</div></div><span class="badge badge-blue">${A.esc(a.type)}</span></div>`).join(''):'<div class="empty">No activity saved yet.</div>'}
+function shortDate(date){if(!date)return'-';try{const p=bsParts(date);return BS_MONTH_NAMES[Number(p.month)-1]+' '+Number(p.day)}catch(e){return String(date)}}function last7(){const arr=[];for(let i=6;i>=0;i--){const dt=new Date();dt.setDate(dt.getDate()-i);arr.push(dt.toISOString().slice(0,10))}return arr}
+function renderBars(id,items){const max=Math.max(1,...items.map(x=>x.value));$(id).innerHTML=items.map(x=>`<div class="bar-row"><div>${A.esc(x.label)}</div><div class="bar-bg"><div class="bar-fill" style="width:${x.value>0?Math.max(4,(x.value/max)*100):0}%"></div></div><div>${A.money(x.value)}</div></div>`).join('')}
+function updateDailyPartyHint(){const d=db();const dateInp=document.querySelector('#dailyForm [name="date"]');if(!dateInp)return;const adDate=adFromBsKey(dateInp.value);const payments=d.partyPayments.filter(x=>x.date===adDate);const sum=payments.reduce((s,x)=>s+A.num(x.amount),0);const hint=$('dailyPartyHint');if(!hint)return;if(payments.length>0){const partyInp=$('dailyPartyInput');if(partyInp&&(!partyInp.value||A.num(partyInp.value)===0))partyInp.value=sum;hint.innerHTML=payments.length+' party payment'+(payments.length!==1?'s':'')+' on this date = <b>'+A.money(sum)+'</b>'}else hint.textContent=''}
+function renderCustomers(){const d=db();const q=($('customerSearch')?.value||'').toLowerCase();const balances=Object.fromEntries(allCustomerBalances(d).map(x=>[x.customer.id,x]));const allRows=d.customers.filter(c=>(c.name+' '+c.phone).toLowerCase().includes(q));const tpCu=Math.ceil(allRows.length/PER_PAGE)||1;const pg=pgState.customers=Math.max(1,Math.min(pgState.customers,tpCu));const rows=allRows.slice((pg-1)*PER_PAGE,pg*PER_PAGE);$('customerSummary').innerHTML=[metric('Total customers',d.customers.length,'Saved profiles','rgba(6,182,212,.18)'),metric('Portal ready',d.customers.filter(c=>c.pin).length,'Can login with PIN','rgba(34,197,94,.18)'),metric('Pending customers',Object.values(balances).filter(x=>x.balance>0).length,'Need follow up','rgba(239,68,68,.16)'),metric('Total balance',A.money(Object.values(balances).reduce((s,x)=>s+x.balance,0)),'Outstanding','rgba(124,58,237,.19)')].join('');$('customerRows').innerHTML=rows.length?rows.map(c=>{const b=balances[c.id]||{balance:0};return `<tr><td><b>${A.esc(c.name)}</b><div class="small">${A.esc(c.email||c.address||'')}</div></td><td>${A.esc(c.phone)}</td><td><b class="${b.balance>0?'amount-red':'amount-green'}">${A.money(b.balance)}</b></td><td>${c.creditLimit>0?`<span class="badge ${b.balance>=c.creditLimit?'badge-red':b.balance>=c.creditLimit*.8?'badge-amber':'badge-blue'}">${A.money(c.creditLimit)}</span>`:'<span style="opacity:.35;font-size:.8em">no limit</span>'}</td><td><span class="badge badge-green">Portal access</span></td><td><button class="btn btn-soft btn-sm" data-edit-customer="${c.id}">Edit</button> <button class="btn btn-green btn-sm" data-pay="${c.id}">Paid</button> <button class="btn btn-soft btn-sm" data-wa="${c.id}">WhatsApp</button> <button class="btn btn-soft btn-sm" data-sms="${c.id}">SMS</button> <button class="btn btn-soft btn-sm" data-qr="${c.id}">QR</button> <button class="btn btn-red btn-sm" data-delete-customer="${c.id}">Delete</button></td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">No customers found. Add the first customer above.</div></td></tr>';if($('customersPagination'))$('customersPagination').innerHTML=paginationHTML('customers',pg,allRows.length,PER_PAGE)}
+function renderCredits(){const d=db();const q=($('creditSearch')?.value||'').toLowerCase();const from=cleanBsDate($('creditDateFrom')?.value);const to=cleanBsDate($('creditDateTo')?.value);const allBal=allCustomerBalances(d).filter(x=>(x.customer.name+' '+x.customer.phone).toLowerCase().includes(q));const tpC=Math.ceil(allBal.length/PER_PAGE)||1;const pgC=pgState.credits=Math.max(1,Math.min(pgState.credits,tpC));const balances=allBal.slice((pgC-1)*PER_PAGE,pgC*PER_PAGE);$('creditRows').innerHTML=allBal.length?balances.map(x=>`<tr><td><b>${A.esc(x.customer.name)}</b></td><td>${A.esc(x.customer.phone)}</td><td>${A.money(x.taken)}</td><td class="amount-green">${A.money(x.paid)}</td><td><b class="${x.balance>0?'amount-red':'amount-green'}">${A.money(x.balance)}</b></td><td>${x.customer.creditLimit>0?`<span class="badge ${x.balance>=x.customer.creditLimit?'badge-red':x.balance>=x.customer.creditLimit*.8?'badge-amber':'badge-blue'}">${A.money(x.customer.creditLimit)}</span>`:'<span style="opacity:.35;font-size:.8em">—</span>'}</td><td><button class="btn btn-green btn-sm" data-pay="${x.customer.id}">Record paid</button> <button class="btn btn-soft btn-sm" data-wa="${x.customer.id}">WhatsApp</button> <button class="btn btn-soft btn-sm" data-sms="${x.customer.id}">SMS</button></td></tr>`).join(''):'<tr><td colspan="7"><div class="empty">No customers yet.</div></td></tr>';if($('creditsPagination'))$('creditsPagination').innerHTML=paginationHTML('credits',pgC,allBal.length,PER_PAGE);const allHist=A.byDate(d.credits).filter(c=>(c.customer+' '+c.phone).toLowerCase().includes(q)).filter(c=>{const bs=bsKey(c.date);return(!from||bs>=from)&&(!to||bs<=to)});const tpH=Math.ceil(allHist.length/PER_PAGE)||1;const pgH=pgState.creditHistory=Math.max(1,Math.min(pgState.creditHistory,tpH));const hist=allHist.slice((pgH-1)*PER_PAGE,pgH*PER_PAGE);$('creditHistoryRows').innerHTML=allHist.length?hist.map(c=>{const bal=A.num(c.amount)-A.num(c.paid);const armed=pendingCreditDeleteId===c.id;return `<tr><td>${npDate(c.date)}</td><td>${A.esc(c.customer)}</td><td>${A.esc(c.items||'-')}</td><td>${A.money(c.amount)}</td><td class="amount-green">${A.money(c.paid)}</td><td><b class="${bal>0?'amount-red':'amount-green'}">${A.money(bal)}</b></td><td><button class="btn ${armed?'btn-amber':'btn-red'} btn-sm" data-delete-credit="${c.id}">${armed?'Confirm':'Delete'}</button></td></tr>`}).join(''):`<tr><td colspan="7"><div class="empty">${from||to?'No credit records found for this BS date filter.':'No credit records saved yet.'}</div></td></tr>`;if($('creditHistoryPagination'))$('creditHistoryPagination').innerHTML=paginationHTML('creditHistory',pgH,allHist.length,PER_PAGE)}
+function renderDaily(){const d=db();const from=cleanBsDate($('dailyDateFrom')?.value);const to=cleanBsDate($('dailyDateTo')?.value);const allDaily=A.byDate(d.dailySales).filter(x=>{const bs=bsKey(x.date);return(!from||bs>=from)&&(!to||bs<=to)});const tpD=Math.ceil(allDaily.length/PER_PAGE)||1;const pgD=pgState.daily=Math.max(1,Math.min(pgState.daily,tpD));const rows=allDaily.slice((pgD-1)*PER_PAGE,pgD*PER_PAGE);$('dailyRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${npDate(x.date)}</td><td>${A.money(x.pos)}</td><td>${A.money(x.fonepay)}</td><td>${A.money(x.cash)}</td><td>${A.money(x.finance)}</td><td>${A.money(x.partyPayment)}</td><td>${A.money(x.other)}</td><td><b>${A.money(totalDaily(x))}</b></td><td><button class="btn btn-red btn-sm" data-delete-daily="${x.id}">Delete</button></td></tr>`).join(''):`<tr><td colspan="9"><div class="empty">${from||to?'No daily sales records found for this BS date filter.':'No daily sales records yet.'}</div></td></tr>`;if($('dailyPagination'))$('dailyPagination').innerHTML=paginationHTML('daily',pgD,allDaily.length,PER_PAGE);updateDailyPartyHint()}
+function renderPayments(){const d=db();const q=($('paymentSearch')?.value||'').toLowerCase();const allPay=A.byDate(d.partyPayments).filter(x=>(x.party+' '+x.reference+' '+x.method).toLowerCase().includes(q));const tpP=Math.ceil(allPay.length/PER_PAGE)||1;const pgP=pgState.payments=Math.max(1,Math.min(pgState.payments,tpP));const rows=allPay.slice((pgP-1)*PER_PAGE,pgP*PER_PAGE);$('paymentRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${npDate(x.date)}</td><td>${A.esc(x.party)}</td><td><b>${A.money(x.amount)}</b></td><td>${A.esc(x.method)}</td><td>${A.esc(x.reference||'-')}</td><td><button class="btn btn-red btn-sm" data-delete-payment="${x.id}">Delete</button></td></tr>`).join(''):'<tr><td colspan="6"><div class="empty">No party payments saved yet.</div></td></tr>';if($('paymentsPagination'))$('paymentsPagination').innerHTML=paginationHTML('payments',pgP,allPay.length,PER_PAGE)}
+function renderCheques(){const d=db();const q=($('chequeSearch')?.value||'').toLowerCase();const from=cleanBsDate($('chequeDateFrom')?.value);const to=cleanBsDate($('chequeDateTo')?.value);const allCheq=A.byDate(d.cheques,'chequeDate').filter(x=>(x.party+' '+x.chequeNo+' '+x.bank).toLowerCase().includes(q)).filter(x=>{const bs=bsKey(x.chequeDate);return(!from||bs>=from)&&(!to||bs<=to)});const tpCh=Math.ceil(allCheq.length/PER_PAGE)||1;const pgCh=pgState.cheques=Math.max(1,Math.min(pgState.cheques,tpCh));const rows=allCheq.slice((pgCh-1)*PER_PAGE,pgCh*PER_PAGE);$('chequeRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${A.esc(x.party)}</td><td>${A.esc(x.chequeNo)}</td><td><b>${A.money(x.amount)}</b></td><td>${A.esc(x.bank||'-')}</td><td>${npDate(x.chequeDate)}</td><td>${statusBadge(x.status)}</td><td><button class="btn btn-green btn-sm" data-cheque-status="clear" data-id="${x.id}">Clear</button> <button class="btn btn-amber btn-sm" data-cheque-status="hold" data-id="${x.id}">Hold</button> <button class="btn btn-red btn-sm" data-cheque-status="bounce" data-id="${x.id}">Bounce</button> <button class="btn btn-soft btn-sm" data-delete-cheque="${x.id}">Delete</button></td></tr>`).join(''):`<tr><td colspan="7"><div class="empty">${q||from||to?'No cheques found for this search or BS date filter.':'No cheques saved yet.'}</div></td></tr>`;if($('chequesPagination'))$('chequesPagination').innerHTML=paginationHTML('cheques',pgCh,allCheq.length,PER_PAGE)}
+function renderReports(){const d=db();const balances=allCustomerBalances(d);const pending=balances.reduce((s,x)=>s+x.balance,0);const paid=balances.reduce((s,x)=>s+x.paid,0);const totalSales=d.dailySales.reduce((s,x)=>s+totalDaily(x),0);$('reportCards').innerHTML=[metric('Total daily sales',A.money(totalSales),`${d.dailySales.length} records`,'rgba(6,182,212,.20)'),metric('Credit pending',A.money(pending),'Need collection','rgba(239,68,68,.16)'),metric('Credit collected',A.money(paid),'Received from customers','rgba(34,197,94,.18)'),metric('Party payments',A.money(d.partyPayments.reduce((s,x)=>s+A.num(x.amount),0)),`${d.partyPayments.length} records`,'rgba(124,58,237,.18)')].join('');renderBars('reportBars',last7().map(date=>({label:shortDate(date),value:d.dailySales.filter(x=>x.date===date).reduce((s,x)=>s+totalDaily(x),0)})));renderBars('dailySalesBars',last7().map(date=>({label:shortDate(date),value:d.dailySales.filter(x=>x.date===date).reduce((s,x)=>s+totalDaily(x),0)})));const rate=paid+pending>0?Math.round((paid/(paid+pending))*100):100;$('reportCreditBox').innerHTML=`<div class="metric-label">Collection progress</div><div class="metric-value">${rate}%</div><div class="progress"><span style="width:${rate}%"></span></div><div class="small" style="margin-top:12px">Collected ${A.money(paid)} out of ${A.money(paid+pending)} total customer credit.</div>`;const nowD=new Date(),months=[];for(let i=5;i>=0;i--){const dt=new Date(nowD.getFullYear(),nowD.getMonth()-i,1);months.push(dt.toISOString().slice(0,7))}const adML=ym=>{const[,m]=ym.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(m)-1]};renderBars('monthlyTrendBars',months.map(ym=>({label:adML(ym),value:d.dailySales.filter(x=>String(x.date).startsWith(ym)).reduce((s,x)=>s+totalDaily(x),0)})));const topCr=allCustomerBalances(d).filter(x=>x.balance>0).sort((a,b)=>b.balance-a.balance).slice(0,5);renderBars('topCreditBars',topCr.length?topCr.map(x=>({label:x.customer.name,value:x.balance})):[{label:'No pending credit',value:0}])}
+function renderSettings(){const d=db();const f=$('settingsForm');f.martName.value=d.settings.martName||'MartAI';f.martPhone.value=d.settings.martPhone||'';f.adminUser.value=d.settings.adminUser||'admin';f.adminPass.value='';const stores=A.getStores?A.getStores():d.stores||[];$('storeRows').innerHTML=stores.length?stores.map(s=>`<tr><td><b>${A.esc(s.name)}</b></td><td>${A.esc(s.phone||'-')}</td><td>${s.id===A.getActiveStoreId()?'<span class="badge badge-green">Active now</span>':'<span class="badge badge-blue">Available</span>'}</td><td><button class="btn btn-soft btn-sm" data-edit-store="${A.esc(s.id)}">Edit</button> <button class="btn btn-red btn-sm" data-delete-store="${A.esc(s.id)}" ${stores.length<=1?'disabled':''}>Delete</button></td></tr>`).join(''):'<tr><td colspan="4"><div class="empty">No stores yet.</div></td></tr>';const staff=d.staffAccounts||[];$('staffRows').innerHTML=staff.length?staff.map(s=>`<tr><td>${A.esc(s.name||'-')}</td><td>${A.esc(s.email)}</td><td><span class="badge ${s.active!==false?'badge-green':'badge-red'}">${s.active!==false?'Active':'Blocked'}</span></td><td><button class="btn btn-soft btn-sm" data-staff-active="${A.esc(s.email)}" data-active="${s.active!==false?'false':'true'}">${s.active!==false?'Block':'Activate'}</button></td></tr>`).join(''):'<tr><td colspan="4"><div class="empty">No staff access added yet.</div></td></tr>';const rows=d.loginEvents||[];$('loginRows').innerHTML=rows.length?rows.slice(0,60).map(x=>`<tr><td>${npDateTime(x.time)}</td><td><span class="badge ${x.role==='customer'?'badge-green':'badge-blue'}">${A.esc(x.role)}</span></td><td>${A.esc(x.name||x.email||'-')}</td><td>${A.esc(x.phone||'-')}</td></tr>`).join(''):'<tr><td colspan="4"><div class="empty">No login records yet. New customer and admin logins will appear here.</div></td></tr>'}
+function applyStaffRestrictions(){if(!isStaff()&&!isStoreAdmin())return;['resetBtn','backupJsonBtn','backupBtn','downloadAllBtn'].forEach(id=>{const el=$(id);if(el)el.style.display='none'});if(isStaff())document.querySelectorAll('[data-delete-customer],[data-delete-credit],[data-delete-sale],[data-delete-daily],[data-delete-payment],[data-delete-cheque]').forEach(el=>el.style.display='none')}
+function renderAll(){updateSyncStatus();checkBackupReminder();polishStaticText();renderStoreSelector();renderCustomerOptions();setTodayInputs();syncDateButtons();if(currentPage==='dashboard')renderDashboard();if(currentPage==='customers')renderCustomers();if(currentPage==='credits')renderCredits();if(currentPage==='daily')renderDaily();if(currentPage==='payments')renderPayments();if(currentPage==='cheques')renderCheques();if(currentPage==='reports')renderReports();if(currentPage==='settings')renderSettings();applyStaffRestrictions();polishEmptyStates()}
+function submitWrap(fn){try{fn();renderAll();setTimeout(updateSyncStatus,400)}catch(e){toast(e.message,'err')}}
+async function asyncWrap(fn){try{await fn();renderAll();setTimeout(updateSyncStatus,400)}catch(e){toast(e.message,'err')}}
+function downloadCustomersCSV(){const d=db();let csv='Name,Phone,Email,Address,Balance\n';allCustomerBalances(d).forEach(x=>{const c=x.customer;csv+=[c.name,c.phone,c.email,c.address,x.balance].map(A.csvEscape).join(',')+'\n'});A.download('customers.csv',csv)}
+function downloadBalanceCSV(){const d=db();let csv='Customer,Phone,Total Taken,Total Paid,Balance\n';allCustomerBalances(d).forEach(x=>{csv+=[x.customer.name,x.customer.phone,x.taken,x.paid,x.balance].map(A.csvEscape).join(',')+'\n'});A.download('balance_sheet.csv',csv)}
+function downloadDailyCSV(){const d=db();let csv='Date,POS,FonePay,Cash,Finance,Party Payment,Other,Total,Note\n';A.byDate(d.dailySales).forEach(x=>{csv+=[x.date,x.pos,x.fonepay,x.cash,x.finance,x.partyPayment,x.other,totalDaily(x),x.note].map(A.csvEscape).join(',')+'\n'});A.download('daily_sales.csv',csv)}
+function downloadPaymentsCSV(){const d=db();let csv='Date,Party,Amount,Method,Reference,Note\n';A.byDate(d.partyPayments).forEach(x=>{csv+=[x.date,x.party,x.amount,x.method,x.reference,x.note].map(A.csvEscape).join(',')+'\n'});A.download('party_payments.csv',csv)}
+function downloadChequesCSV(){const d=db();let csv='Party,Cheque No,Amount,Bank,Date,Status,Note\n';A.byDate(d.cheques,'chequeDate').forEach(x=>{csv+=[x.party,x.chequeNo,x.amount,x.bank,x.chequeDate,x.status,x.note].map(A.csvEscape).join(',')+'\n'});A.download('cheques.csv',csv)}
+function downloadAll(){downloadBalanceCSV();setTimeout(downloadDailyCSV,150);setTimeout(downloadPaymentsCSV,300);setTimeout(downloadChequesCSV,450)}
+const BACKUP_DISMISS_KEY='martai_backup_dismissed';
+function markBackupDone(){localStorage.setItem('martai_last_backup_ts',new Date().toISOString());const b=$('backupReminderBanner');if(b)b.style.display='none'}
+function checkBackupReminder(){const b=$('backupReminderBanner');if(!b||!isMainAdmin()){if(b)b.style.display='none';return}if(localStorage.getItem(BACKUP_DISMISS_KEY)===A.today()){b.style.display='none';return}const ts=localStorage.getItem('martai_last_backup_ts');const days=ts?Math.floor((Date.now()-new Date(ts).getTime())/86400000):null;const txt=$('backupReminderText');if(days===null||days>=7){if(txt)txt.textContent=days===null?'You have never downloaded a backup. Keep your data safe by downloading a JSON backup.':'Last backup was '+days+' day'+(days!==1?'s':'')+' ago. Download a fresh backup to stay safe.';b.style.display=''}else b.style.display='none'}
+function getPortalUrl(){return window.location.href.replace(/dashboard\.html.*/,'index.html')}
+function openQrModal(url,title){$('qrModalTitle').textContent=title||'Customer Portal QR';$('qrModalUrl').textContent=url;const canvas=$('qrCanvas');if(typeof QRCode==='undefined'){toast('QR library not loaded. Check internet connection.','err');return}QRCode.toCanvas(canvas,url,{width:220,margin:2,color:{dark:'#1e1b4b',light:'#ffffff'}},err=>{if(err)toast('QR error: '+err.message,'err')});openModal('qrModal')}
+function backupJson(){A.download('martai_backup.json',JSON.stringify(db(),null,2));markBackupDone()}
+let waReminderIdx=0,waReminderQueue=[];
+function buildWaMsg(tmpl,name,amount,mart){return tmpl.replace(/{name}/g,name).replace(/{amount}/g,amount).replace(/{mart}/g,mart)}
+function renderWaReminderList(){$('waReminderList').innerHTML=waReminderQueue.length?waReminderQueue.map((x,i)=>`<div class="history-card" style="${waReminderIdx>i?'opacity:.38':''}"><div><b>${A.esc(x.customer.name)}</b><div class="small">${A.esc(x.customer.phone)}</div></div><div style="text-align:right"><b class="amount-red">${A.money(x.balance)}</b><div style="margin-top:6px"><button class="btn btn-green btn-sm" type="button" data-wa-send="${i}">Send</button></div></div></div>`).join(''):'<div class="empty">No customers with pending credit.</div>'}
+function openWaReminder(){const d=db();waReminderQueue=allCustomerBalances(d).filter(x=>x.balance>0).sort((a,b)=>b.balance-a.balance);waReminderIdx=0;const mart=d.settings.martName||'RD MART';$('waTemplate').value=`Namaste {name} ji, tapai ko ${mart} ma Rs. {amount} pending credit xa. Kripaya chitto payment garnu hola. Dhanyabad! - ${mart}`;renderWaReminderList();$('waReminderCount').textContent=`${waReminderQueue.length} customer${waReminderQueue.length!==1?'s':''} with pending credit`;openModal('waReminderModal')}
+function sendSms(phone,msg){const ph=A.phoneClean(phone);if(!ph)throw new Error('Phone missing');window.open('sms:+977'+ph+'?body='+encodeURIComponent(msg))}
+let smsReminderIdx=0,smsReminderQueue=[];
+function renderSmsReminderList(){$('smsReminderList').innerHTML=smsReminderQueue.length?smsReminderQueue.map((x,i)=>`<div class="history-card" style="${smsReminderIdx>i?'opacity:.38':''}"><div><b>${A.esc(x.customer.name)}</b><div class="small">${A.esc(x.customer.phone)}</div></div><div style="text-align:right"><b class="amount-red">${A.money(x.balance)}</b><div style="margin-top:6px"><button class="btn btn-soft btn-sm" type="button" data-sms-send="${i}">Send SMS</button></div></div></div>`).join(''):'<div class="empty">No customers with pending credit.</div>'}
+function openSmsReminder(){const d=db();smsReminderQueue=allCustomerBalances(d).filter(x=>x.balance>0).sort((a,b)=>b.balance-a.balance);smsReminderIdx=0;const mart=d.settings.martName||'RD MART';$('smsTemplate').value=`Namaste {name} ji, {mart} ma Rs. {amount} credit pending xa. Payment garnu hola. - {mart}`;renderSmsReminderList();$('smsReminderCount').textContent=`${smsReminderQueue.length} customer${smsReminderQueue.length!==1?'s':''} with pending credit`;openModal('smsReminderModal')}
+requireAdmin();
+$('menuBtn').addEventListener('click',()=>{$('sidebar').classList.add('open');$('overlay').classList.add('open')});$('overlay').addEventListener('click',()=>{$('sidebar').classList.remove('open');$('overlay').classList.remove('open')});$('logoutBtn').addEventListener('click',()=>{A.clearSession();location.href='index.html'});$('backupBtn').addEventListener('click',()=>{if(isStaff())return toast('Staff cannot download backups','err');backupJson()});$('backupJsonBtn')?.addEventListener('click',()=>{if(isStaff())return toast('Staff cannot download backups','err');backupJson()});$('downloadCustomersBtn')?.addEventListener('click',downloadCustomersCSV);$('resetBtn')?.addEventListener('click',()=>{if(isStaff())return toast('Staff cannot reset data','err');if(confirm('Delete all saved MartAI data, including Supabase state if configured?')){A.resetDB();toast('Data reset');nav('dashboard')}});
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.pickBsDate){const inp=$(b.dataset.pickBsDate);if(inp)BSP.open(inp,b);return}if(b.dataset.page){nav(b.dataset.page)}if(b.dataset.close){closeModal(b.dataset.close)}if(b.id==='bulkWaBtn'){openWaReminder();return}if(b.id==='bulkSmsBtn'){openSmsReminder();return}if(b.id==='showPortalQrBtn'){openQrModal(getPortalUrl(),'Customer Portal QR');return}if(b.dataset.qr){const c=A.customerById(db(),b.dataset.qr);if(c)openQrModal(getPortalUrl()+'?phone='+A.phoneClean(c.phone),'QR for '+c.name);return}if(b.id==='backupNowBtn'){backupJson();return}if(b.id==='dismissReminderBtn'){localStorage.setItem(BACKUP_DISMISS_KEY,A.today());$('backupReminderBanner').style.display='none';return}if(b.dataset.pg&&b.dataset.pgDir){pgState[b.dataset.pg]=Math.max(1,(pgState[b.dataset.pg]||1)+Number(b.dataset.pgDir));renderAll();return}if(b.id==='smsSendNextBtn'){if(!smsReminderQueue.length)return;if(smsReminderIdx>=smsReminderQueue.length){toast('All SMS sent! Restarting.');smsReminderIdx=0;renderSmsReminderList();$('smsReminderCount').textContent=`${smsReminderQueue.length} customer${smsReminderQueue.length!==1?'s':''} with pending credit`;return}const sx=smsReminderQueue[smsReminderIdx];const dx=db();sendSms(sx.customer.phone,buildWaMsg($('smsTemplate').value,sx.customer.name,A.money(sx.balance),dx.settings.martName||'RD MART'));smsReminderIdx++;renderSmsReminderList();$('smsReminderCount').textContent=smsReminderIdx>=smsReminderQueue.length?`All ${smsReminderQueue.length} sent! Click again to restart.`:`Sent ${smsReminderIdx} of ${smsReminderQueue.length} — click Send Next for more`;return}if('smsSend' in b.dataset){const si=Number(b.dataset.smsSend);const sx=smsReminderQueue[si];if(!sx)return;const dx=db();sendSms(sx.customer.phone,buildWaMsg($('smsTemplate').value,sx.customer.name,A.money(sx.balance),dx.settings.martName||'RD MART'));if(smsReminderIdx<=si)smsReminderIdx=si+1;renderSmsReminderList();$('smsReminderCount').textContent=`Sent ${smsReminderIdx} of ${smsReminderQueue.length}`;return}if(b.dataset.sms){submitWrap(()=>{const d=db();const c=A.customerById(d,b.dataset.sms);const bal=A.customerBalance(d,c.id).balance;sendSms(c.phone,`Namaste ${c.name} ji, ${d.settings.martName} ma Rs. ${A.money(bal)} credit pending xa. Payment garnu hola.`)});return}if(b.id==='waSendNextBtn'){if(!waReminderQueue.length)return;if(waReminderIdx>=waReminderQueue.length){toast('All reminders sent! Restarting.');waReminderIdx=0;renderWaReminderList();$('waReminderCount').textContent=`${waReminderQueue.length} customer${waReminderQueue.length!==1?'s':''} with pending credit`;return}const wx=waReminderQueue[waReminderIdx];const dx=db();A.wa(wx.customer.phone,buildWaMsg($('waTemplate').value,wx.customer.name,A.money(wx.balance),dx.settings.martName||'RD MART'));waReminderIdx++;renderWaReminderList();$('waReminderCount').textContent=waReminderIdx>=waReminderQueue.length?`All ${waReminderQueue.length} sent! Click again to restart.`:`Sent ${waReminderIdx} of ${waReminderQueue.length} — click Send Next for more`;return}if('waSend' in b.dataset){const wi=Number(b.dataset.waSend);const wx=waReminderQueue[wi];if(!wx)return;const dx=db();A.wa(wx.customer.phone,buildWaMsg($('waTemplate').value,wx.customer.name,A.money(wx.balance),dx.settings.martName||'RD MART'));if(waReminderIdx<=wi)waReminderIdx=wi+1;renderWaReminderList();$('waReminderCount').textContent=`Sent ${waReminderIdx} of ${waReminderQueue.length}`;return}if(b.dataset.staffActive){asyncWrap(()=>A.setStaffActive(db(),b.dataset.staffActive,b.dataset.active==='true'));return}if(b.dataset.deleteStore){asyncWrap(async()=>{if(!confirm('Delete this store and all data inside this store?'))return;await A.deleteStore(db(),b.dataset.deleteStore);toast('Store deleted')});return}if(b.dataset.editStore){const stores=A.getStores?A.getStores():db().stores||[];const s=stores.find(x=>x.id===b.dataset.editStore);if(s){const f=$('editStoreForm');f.elements.id.value=s.id;f.elements.name.value=s.name;f.elements.phone.value=s.phone||'';openModal('editStoreModal')}return}if(b.dataset.editCustomer){const c=A.customerById(db(),b.dataset.editCustomer);if(c){const f=$('editCustomerForm');f.elements.id.value=c.id;f.elements.name.value=c.name;f.elements.phone.value=c.phone;f.elements.pin.value='';f.elements.email.value=c.email||'';f.elements.address.value=c.address||'';f.elements.notes.value=c.notes||'';if(f.elements.creditLimit)f.elements.creditLimit.value=c.creditLimit||0;openModal('editCustomerModal')}}if(b.dataset.pay){const c=A.customerById(db(),b.dataset.pay);if(c){const f=$('quickPayForm');f.elements.customerId.value=c.id;f.elements.customerName.value=c.name+' - '+c.phone;f.elements.amount.value='';f.elements.note.value='';openModal('quickPayModal')}}if(b.dataset.wa){submitWrap(()=>{const d=db();const c=A.customerById(d,b.dataset.wa);const bal=A.customerBalance(d,c.id).balance;A.wa(c.phone,`Namaste ${c.name} ji, your pending credit balance is ${A.money(bal)}. Thank you. - ${d.settings.martName}`)})}if(isStaff()&&(b.dataset.deleteCustomer||b.dataset.deleteCredit||b.dataset.deleteDaily||b.dataset.deletePayment||b.dataset.deleteCheque))return toast('Staff cannot delete records','err');if(b.dataset.deleteCustomer){submitWrap(()=>{if(confirm('Delete this customer?'))A.deleteCustomer(db(),b.dataset.deleteCustomer)})}if(b.dataset.deleteCredit){const id=b.dataset.deleteCredit;if(pendingCreditDeleteId!==id){pendingCreditDeleteId=id;clearTimeout(pendingCreditDeleteTimer);pendingCreditDeleteTimer=setTimeout(()=>{pendingCreditDeleteId='';renderAll()},5000);renderAll();toast('Tap Confirm to delete this credit record','err');return}submitWrap(()=>{A.deleteCredit(db(),id);pendingCreditDeleteId='';clearTimeout(pendingCreditDeleteTimer);toast('Credit record deleted')})}if(b.dataset.deleteDaily){submitWrap(()=>{if(confirm('Delete this daily entry?'))A.deleteDaily(db(),b.dataset.deleteDaily)})}if(b.dataset.deletePayment){submitWrap(()=>{if(confirm('Delete this payment?'))A.deletePartyPayment(db(),b.dataset.deletePayment)})}if(b.dataset.deleteCheque){submitWrap(()=>{if(confirm('Delete this cheque?'))A.deleteCheque(db(),b.dataset.deleteCheque)})}if(b.dataset.chequeStatus){submitWrap(()=>{A.updateChequeStatus(db(),b.dataset.id,b.dataset.chequeStatus);toast('Cheque updated')})}});
+$('customerForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.addCustomer(db(),formData(e.target));e.target.reset();toast('Customer saved. Customer can login now.')})});
+$('editCustomerForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{const data=formData(e.target);A.updateCustomer(db(),data.id,data);closeModal('editCustomerModal');toast('Customer updated')})});
+$('creditForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.addCredit(db(),formData(e.target));e.target.reset();toast('Credit saved')})});
+$('paymentFormInline').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{const data=formData(e.target);const paid=A.addCreditPayment(db(),data.customerId,data.amount,data.note);if(paid<=0)throw new Error('No pending credit for this customer');e.target.reset();toast('Payment applied')})});
+$('quickPayForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{const data=formData(e.target);const paid=A.addCreditPayment(db(),data.customerId,data.amount,data.note);if(paid<=0)throw new Error('No pending credit for this customer');closeModal('quickPayModal');toast('Payment applied')})});
+$('dailyForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.addDaily(db(),formData(e.target));e.target.reset();toast('Daily sales saved')})});
+$('partyPaymentForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.addPartyPayment(db(),formData(e.target));e.target.reset();toast('Party payment saved')})});
+$('chequeForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.addCheque(db(),formData(e.target));e.target.reset();toast('Cheque saved')})});
+$('settingsForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.saveSettings(db(),formData(e.target));toast('Settings saved')})});
+$('storeSelect')?.addEventListener('change',e=>{asyncWrap(async()=>{A.setActiveStoreId(e.target.value);await A.syncNow();toast('Store changed')})});
+$('storeForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{await A.addStore(db(),formData(e.target));e.target.reset();toast('Store created')})});
+$('editStoreForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{const data=formData(e.target);await A.updateStore(db(),data.id,data);closeModal('editStoreModal');toast('Store updated')})});
+$('staffForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{await A.addStaff(db(),formData(e.target));e.target.reset();toast('Staff access saved')})});
+$('customerSearch')?.addEventListener('input',()=>{pgState.customers=1;renderAll()});
+$('creditSearch')?.addEventListener('input',()=>{pgState.credits=1;pgState.creditHistory=1;renderAll()});
+$('paymentSearch')?.addEventListener('input',()=>{pgState.payments=1;renderAll()});
+$('chequeSearch')?.addEventListener('input',()=>{pgState.cheques=1;renderAll()});
+['creditDateFrom','creditDateTo'].forEach(id=>$(id)?.addEventListener('input',()=>{pgState.creditHistory=1;renderAll()}));
+['dailyDateFrom','dailyDateTo'].forEach(id=>$(id)?.addEventListener('input',()=>{pgState.daily=1;renderAll()}));
+['chequeDateFrom','chequeDateTo'].forEach(id=>$(id)?.addEventListener('input',()=>{pgState.cheques=1;renderAll()}));
+document.querySelector('#dailyForm [name="date"]')?.addEventListener('input',updateDailyPartyHint);
+document.addEventListener('reset',()=>setTimeout(setTodayInputs,0));
+$('clearCreditDateFilter')?.addEventListener('click',()=>{$('creditDateFrom').value='';$('creditDateTo').value='';syncDateButtons();pgState.creditHistory=1;renderAll()});
+$('clearDailyDateFilter')?.addEventListener('click',()=>{$('dailyDateFrom').value='';$('dailyDateTo').value='';syncDateButtons();pgState.daily=1;renderAll()});
+$('clearChequeDateFilter')?.addEventListener('click',()=>{$('chequeSearch').value='';$('chequeDateFrom').value='';$('chequeDateTo').value='';syncDateButtons();pgState.cheques=1;renderAll()});
+document.addEventListener('click',e=>{const input=e.target.closest('[data-bs-date-input]');if(input)BSP.open(input,input);});
+BSP.init();
+$('downloadBalanceBtn').addEventListener('click',downloadBalanceCSV);$('downloadDailyBtn').addEventListener('click',downloadDailyCSV);$('downloadPaymentsBtn').addEventListener('click',downloadPaymentsCSV);$('downloadChequesBtn').addEventListener('click',downloadChequesCSV);$('downloadAllBtn').addEventListener('click',downloadAll);
+$('downloadQrBtn')?.addEventListener('click',()=>{const c=$('qrCanvas');const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='portal-qr.png';document.body.appendChild(a);a.click();a.remove()});
+$$('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('active')}));
+MartAI.ready.then(()=>{setTodayInputs();updateClock();setInterval(updateClock,1000);renderAll()}).catch(e=>{toast('Could not load database: '+e.message,'err');setTodayInputs();updateClock();setInterval(updateClock,1000);renderAll()});
+</script>
+</body>
+</html>

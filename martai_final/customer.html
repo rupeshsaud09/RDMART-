@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MartAI Customer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/martai.css">
+</head>
+<body>
+<div class="toast-box" id="toasts"></div>
+<div class="customer-shell">
+  <header class="customer-top">
+    <div class="brand"><div class="brand-logo">M</div><div><div class="brand-title" id="martName">MartAI</div><div class="brand-sub">Customer credit portal</div></div></div>
+    <button class="btn btn-ghost btn-sm" id="logoutBtn">Sign out</button>
+  </header>
+
+  <section class="customer-hero glass float-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div><div style="display:flex;align-items:center;gap:9px"><span class="status-dot"></span><div class="hero-kicker" id="helloText">Loading</div></div><div class="hero-heading" id="customerName">Checking account...</div><div class="hero-note" id="customerNote">Loading your credit details from the mart database.</div></div>
+      <div class="customer-hero-side"><div class="live-clock customer-clock"><div class="clock-day" id="customerClockDay">Today</div><div class="clock-date" id="customerClockDate">2083-03-15 BS</div><div class="clock-time" id="customerClockTime">00:00:00</div></div><div style="text-align:right"><div class="metric-label">Pending balance</div><div class="balance-big" id="balanceBig">Rs 0</div></div></div>
+    </div>
+    <div style="margin-top:22px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span class="small">Payment progress</span><b id="progressLabel">0%</b></div><div class="progress"><span id="progressFill"></span></div></div>
+  </section>
+
+  <div class="customer-nav">
+    <button class="customer-tab active" data-tab="overview">Overview</button>
+    <button class="customer-tab" data-tab="history">Credit history</button>
+    <button class="customer-tab" data-tab="profile">Profile</button>
+  </div>
+
+  <section class="page active" id="tab-overview">
+    <div class="grid grid-3" id="overviewCards"></div>
+    <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Latest transactions</div><div class="section-sub">Recent credit and payment records</div></div></div><div id="recentList"></div></div>
+  </section>
+
+  <section class="page" id="tab-history">
+    <div class="card"><div class="section-head"><div><div class="section-title">Full credit history</div><div class="section-sub">Taken amount, paid amount and remaining balance</div></div></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Items</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Note</th></tr></thead><tbody id="historyRows"></tbody></table></div></div>
+  </section>
+
+  <section class="page" id="tab-profile">
+    <div class="grid grid-2">
+      <div class="card" id="profileDetails"><div class="section-title" style="margin-bottom:14px">Profile details</div><div class="profile-photo-row"><div class="profile-photo" id="profilePhoto">RD</div><div><label class="btn btn-soft btn-sm" for="avatarInput">Upload photo</label><input class="hidden" id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp"><p class="hint">Square photo works best.</p></div></div><div class="field"><label>Name</label><div class="readonly-box" id="profileName">-</div></div><div class="field"><label>Phone</label><div class="readonly-box" id="profilePhone">-</div></div><div class="field"><label>Email</label><div class="readonly-box" id="profileEmail">-</div></div><div class="field"><label>Address</label><div class="readonly-box" id="profileAddress">-</div></div><p class="hint">Contact the mart to update your name, phone, email, or address.</p></div>
+      <form class="card" id="pinForm"><div class="section-title" style="margin-bottom:14px">Change PIN</div><div class="field"><label>New 4 digit PIN</label><input class="input" name="pin" maxlength="4" inputmode="numeric" required placeholder="1234"></div><div class="field"><label>Confirm PIN</label><input class="input" name="confirmPin" maxlength="4" inputmode="numeric" required placeholder="1234"></div><button class="btn btn-green full" type="submit">Update PIN</button><p class="hint">Next login will use this new PIN.</p></form>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/martai-supabase-config.js"></script>
+<script src="assets/martai-store.js?v=photo-upload-v2"></script>
+<script>
+const A=MartAI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));let session=A.getSession();
+function db(){return A.getDB()}function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>el.remove(),240)},2400)}
+function currentCustomer(){const d=db();return A.customerById(d,session?.customerId)||d.customers.find(c=>c._tableId===session?.customerTableId)}
+function requireCustomer(){if(!session||session.role!=='customer')location.href='index.html';const c=currentCustomer();if(!c){A.clearSession();location.href='index.html'}}
+function formData(form){return Object.fromEntries(new FormData(form).entries())}
+function metric(label,value,sub,color){return `<div class="card metric" style="--m:${color}"><div class="metric-label">${label}</div><div class="metric-value">${value}</div><div class="metric-sub">${sub||''}</div></div>`}
+function polishCustomerUI(){const note=$('customerNote');if(note)note.textContent='Your credit balance and payment progress are shown below.';const copy={'No credit records yet.':'No credit records yet. New credit entries from the mart will appear here.','No history available.':'No credit history is available for this account yet.'};$$('.empty').forEach(el=>{if(copy[el.textContent])el.textContent=copy[el.textContent]})}
+const BS_MONTHS={2070:[31,31,31,32,31,31,29,30,30,29,30,30],2071:[31,31,32,31,31,31,30,29,30,29,30,30],2072:[31,32,31,32,31,30,30,29,30,29,30,30],2073:[31,32,31,32,31,30,30,30,29,29,30,31],2074:[31,31,31,32,31,31,30,29,30,29,30,30],2075:[31,31,32,31,31,31,30,29,30,29,30,30],2076:[31,32,31,32,31,30,30,30,29,29,30,30],2077:[31,32,31,32,31,30,30,30,29,30,29,31],2078:[31,31,31,32,31,31,30,29,30,29,30,30],2079:[31,31,32,31,31,31,30,29,30,29,30,30],2080:[31,32,31,32,31,30,30,30,29,29,30,30],2081:[31,32,31,32,31,30,30,30,29,30,29,31],2082:[31,31,32,31,31,31,30,29,30,29,30,30],2083:[31,31,32,31,31,31,30,29,30,29,30,30],2084:[31,32,31,32,31,30,30,30,29,29,30,31],2085:[30,32,31,32,31,30,30,30,29,30,29,31],2086:[31,31,32,31,31,31,30,29,30,29,30,30],2087:[31,31,32,31,31,31,30,30,29,30,30,30],2088:[30,31,32,32,30,31,30,30,29,30,30,30],2089:[30,32,31,32,31,30,30,30,29,30,30,30],2090:[30,32,31,32,31,30,30,30,29,30,30,30]};
+const BS_ANCHOR={bsYear:2070,ad:'2013-04-14'};
+function pad2(n){return String(n).padStart(2,'0')}
+function daysBetween(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000)}
+function bsParts(date){const iso=String(date||'').slice(0,10);let diff=daysBetween(BS_ANCHOR.ad,iso);let year=BS_ANCHOR.bsYear;if(diff<0)return{year:String(BS_ANCHOR.bsYear),month:'01',day:'01'};while(BS_MONTHS[year]){const yearDays=BS_MONTHS[year].reduce((s,x)=>s+x,0);if(diff<yearDays)break;diff-=yearDays;year++}if(!BS_MONTHS[year])year=Number(Object.keys(BS_MONTHS).at(-1));const months=BS_MONTHS[year];let month=1;for(const len of months){if(diff<len)break;diff-=len;month++}return{year:String(year),month:pad2(month),day:pad2(Math.max(1,diff+1))}}
+function npDate(date){if(!date)return'-';try{const p=bsParts(date);return `${p.year}-${p.month}-${p.day} BS`}catch(e){return String(date)}}
+function updateCustomerClock(){const d=new Date();const iso=d.toISOString().slice(0,10);const day=d.toLocaleDateString('en-US',{weekday:'long'});const time=d.toLocaleTimeString('en-US',{hour12:true,hour:'2-digit',minute:'2-digit',second:'2-digit'});$('customerClockDay').textContent=day;$('customerClockDate').textContent=npDate(iso);$('customerClockTime').textContent=time}
+function renderProfileDetails(c){$('profileName').textContent=c.name||'-';$('profilePhone').textContent=c.phone||'-';$('profileEmail').textContent=c.email||'-';$('profileAddress').textContent=c.address||'-';const p=$('profilePhoto');if(c.avatarData){p.style.backgroundImage=`url(${c.avatarData})`;p.textContent=''}else{p.style.backgroundImage='';p.textContent=(c.name||'RD').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}}
+function imageToAvatarData(file){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith('image/'))return reject(new Error('Choose an image file'));const img=new Image();const reader=new FileReader();reader.onload=()=>{img.onload=()=>{const size=320;const canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;const ctx=canvas.getContext('2d');const scale=Math.max(size/img.width,size/img.height);const w=img.width*scale;const h=img.height*scale;ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);resolve(canvas.toDataURL('image/jpeg',.82))};img.onerror=()=>reject(new Error('Could not read image'));img.src=reader.result};reader.onerror=()=>reject(new Error('Could not read image'));reader.readAsDataURL(file)})}
+function render(){
+  const d=db();
+  const c=currentCustomer();
+  if(!c)return requireCustomer();
+  const b=A.customerBalance(d,c.id);
+  $('martName').textContent=d.settings.martName||'MartAI';
+  $('helloText').textContent=(new Date().getHours()<12?'Good morning':'Welcome')+',';
+  $('customerName').textContent=c.name;
+  $('balanceBig').textContent=A.money(b.balance);
+  const rate=b.taken>0?Math.round((b.paid/b.taken)*100):100;
+  $('progressLabel').textContent=rate+'%';
+  $('progressFill').style.width=rate+'%';
+  $('overviewCards').innerHTML=[
+    metric('Total taken',A.money(b.taken),`${b.rows.length} credit records`,'rgba(6,182,212,.20)'),
+    metric('Total paid',A.money(b.paid),'Amount received by mart','rgba(34,197,94,.20)'),
+    metric('Pending balance',A.money(b.balance),b.balance>0?'Please clear when possible':'No due balance','rgba(239,68,68,.16)')
+  ].join('');
+  const rows=[...b.rows].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  $('recentList').innerHTML=rows.length?rows.slice(0,5).map(r=>{const bal=A.num(r.amount)-A.num(r.paid);return `<div class="history-card"><div><b>${A.esc(r.items||'Credit entry')}</b><div class="small">${npDate(r.date)}${r.note?' - '+A.esc(r.note):''}</div></div><div style="text-align:right"><b>${A.money(r.amount)}</b><div class="small amount-green">Paid ${A.money(r.paid)}</div><div class="small ${bal>0?'amount-red':'amount-green'}">Balance ${A.money(bal)}</div></div></div>`}).join(''):'<div class="empty">No credit records yet.</div>';
+  $('historyRows').innerHTML=rows.length?rows.map(r=>{const bal=A.num(r.amount)-A.num(r.paid);return `<tr><td>${npDate(r.date)}</td><td>${A.esc(r.items||'-')}</td><td>${A.money(r.amount)}</td><td class="amount-green">${A.money(r.paid)}</td><td><b class="${bal>0?'amount-red':'amount-green'}">${A.money(bal)}</b></td><td>${A.esc(r.note||r.paymentNote||'-')}</td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">No history available.</div></td></tr>';
+  renderProfileDetails(c);
+}
+MartAI.ready.then(()=>{requireCustomer();updateCustomerClock();setInterval(updateCustomerClock,1000);render();polishCustomerUI()}).catch(err=>toast('Could not load database: '+err.message,'err'));
+$$('.customer-tab').forEach(btn=>btn.addEventListener('click',()=>{$$('.customer-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));$('tab-'+btn.dataset.tab).classList.add('active')}));
+$('logoutBtn').addEventListener('click',()=>{A.clearSession();location.href='index.html'});
+$('avatarInput').addEventListener('change',async e=>{const file=e.target.files[0];try{const avatarData=await imageToAvatarData(file);if(A.syncInfo().mode==='tables'){await A.updateCustomerAvatar(avatarData)}else{const d=db();const c=currentCustomer();c.avatarData=avatarData;A.saveDB(d)}render();toast('Profile photo updated')}catch(err){toast(err.message,'err')}finally{e.target.value=''}});
+$('pinForm').addEventListener('submit',async e=>{e.preventDefault();const data=formData(e.target);try{if(data.pin!==data.confirmPin)throw new Error('PIN confirmation does not match');if(A.syncInfo().mode==='tables'){await A.updateCustomerPin(data.pin)}else{const d=db();A.updateCustomer(d,session.customerId,{pin:data.pin})}e.target.reset();toast('PIN updated')}catch(err){toast(err.message,'err')}});
+</script>
+</body>
+</html>
