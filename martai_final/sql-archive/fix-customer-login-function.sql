@@ -1,3 +1,11 @@
+-- ============================================================
+-- SUPERSEDED — DO NOT RUN THIS FILE.
+-- Everything here is already included (in corrected form) in
+-- ../setup-complete.sql. Re-running this file can silently
+-- regress the database (older function versions, wrong unique
+-- constraints). Kept for historical reference only.
+-- ============================================================
+
 -- Fix customer login ambiguity error:
 -- column reference "phone" is ambiguous
 -- Run this in Supabase SQL Editor.

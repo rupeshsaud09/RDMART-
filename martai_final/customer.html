@@ -4,10 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MartAI Customer Portal</title>
+<meta name="theme-color" content="#07111f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css">
+<link rel="stylesheet" href="assets/martai.css?v=3">
 </head>
 <body>
 <div class="toast-box" id="toasts"></div>
@@ -35,10 +39,11 @@
     <div class="grid grid-3" id="overviewCards"></div>
     <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Latest transactions</div><div class="section-sub">Recent credit and payment records</div></div></div><div id="recentList"></div></div>
     <div id="payQrSection" style="margin-top:16px;display:none"></div>
+    <div id="payReportSection" style="margin-top:16px;display:none"></div>
   </section>
 
   <section class="page" id="tab-history">
-    <div class="card"><div class="section-head"><div><div class="section-title">Full credit history</div><div class="section-sub">Taken amount, paid amount and remaining balance</div></div></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Items</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Note</th></tr></thead><tbody id="historyRows"></tbody></table></div></div>
+    <div class="card"><div class="section-head"><div><div class="section-title">Full credit history</div><div class="section-sub">Taken amount, paid amount and remaining balance</div></div><button class="btn btn-soft btn-sm" type="button" id="printStatementBtn">Print statement</button></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Items</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Note</th></tr></thead><tbody id="historyRows"></tbody></table></div><div id="historyPagination" style="padding:4px 8px 2px"></div></div>
   </section>
 
   <section class="page" id="tab-profile">
@@ -50,18 +55,19 @@
       <div class="section-title" style="margin-bottom:4px">My Portal QR Code</div>
       <p class="hint" style="margin-bottom:14px">Scan to open your credit portal directly</p>
       <div style="display:flex;justify-content:center;margin-bottom:12px">
-        <canvas id="myQrCanvas" style="border-radius:10px;background:#fff;padding:10px;display:block"></canvas>
+        <img id="myQrImg" src="" alt="QR Code" style="width:180px;height:180px;border-radius:10px;background:#fff;padding:10px;display:block">
       </div>
       <p class="hint" id="myQrUrl" style="word-break:break-all;font-size:.76em;opacity:.55;margin-bottom:14px"></p>
-      <button class="btn btn-soft btn-sm" type="button" id="downloadMyQrBtn">Download QR PNG</button>
+      <button class="btn btn-soft btn-sm" type="button" id="downloadMyQrBtn">Open / Save QR</button>
     </div>
   </section>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<div id="printArea"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js?v=photo-upload-v2"></script>
+<script src="assets/martai-store.js?v=3"></script>
 <script>
 const A=MartAI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));let session=A.getSession();
 function db(){return A.getDB()}function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>el.remove(),240)},2400)}
@@ -78,8 +84,9 @@ function bsParts(date){const iso=String(date||'').slice(0,10);let diff=daysBetwe
 function npDate(date){if(!date)return'-';try{const p=bsParts(date);return `${p.year}-${p.month}-${p.day} BS`}catch(e){return String(date)}}
 function updateCustomerClock(){const d=new Date();const iso=d.toISOString().slice(0,10);const day=d.toLocaleDateString('en-US',{weekday:'long'});const time=d.toLocaleTimeString('en-US',{hour12:true,hour:'2-digit',minute:'2-digit',second:'2-digit'});$('customerClockDay').textContent=day;$('customerClockDate').textContent=npDate(iso);$('customerClockTime').textContent=time}
 function renderProfileDetails(c){$('profileName').textContent=c.name||'-';$('profilePhone').textContent=c.phone||'-';$('profileEmail').textContent=c.email||'-';$('profileAddress').textContent=c.address||'-';const p=$('profilePhoto');if(c.avatarData){p.style.backgroundImage=`url(${c.avatarData})`;p.textContent=''}else{p.style.backgroundImage='';p.textContent=(c.name||'RD').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}}
-function renderMyQrCode(c){const base=window.location.href.replace(/customer\.html.*/,'index.html');const url=base+'?phone='+encodeURIComponent(c.phone||'');const urlEl=$('myQrUrl');if(urlEl)urlEl.textContent=url;const canvas=$('myQrCanvas');if(!canvas)return;if(typeof QRCode==='undefined'){canvas.style.display='none';return}QRCode.toCanvas(canvas,url,{width:180,margin:2,color:{dark:'#1e1b4b',light:'#ffffff'}},()=>{})}
+function renderMyQrCode(c){const base=window.location.href.replace(/customer\.html.*/,'index.html');const url=base+'?phone='+encodeURIComponent(c.phone||'');const urlEl=$('myQrUrl');if(urlEl)urlEl.textContent=url;const img=$('myQrImg');if(!img)return;img.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(url)+'&color=1e1b4b&bgcolor=ffffff&margin=8';img.alt=url}
 function imageToAvatarData(file){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith('image/'))return reject(new Error('Choose an image file'));const img=new Image();const reader=new FileReader();reader.onload=()=>{img.onload=()=>{const size=320;const canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;const ctx=canvas.getContext('2d');const scale=Math.max(size/img.width,size/img.height);const w=img.width*scale;const h=img.height*scale;ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);resolve(canvas.toDataURL('image/jpeg',.82))};img.onerror=()=>reject(new Error('Could not read image'));img.src=reader.result};reader.onerror=()=>reject(new Error('Could not read image'));reader.readAsDataURL(file)})}
+let historyPg=1;const HIST_PER_PAGE=10;
 function render(){
   const d=db();
   const c=currentCustomer();
@@ -99,17 +106,41 @@ function render(){
   ].join('');
   const rows=[...b.rows].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   $('recentList').innerHTML=rows.length?rows.slice(0,5).map(r=>{const bal=A.num(r.amount)-A.num(r.paid);return `<div class="history-card"><div><b>${A.esc(r.items||'Credit entry')}</b><div class="small">${npDate(r.date)}${r.note?' - '+A.esc(r.note):''}</div></div><div style="text-align:right"><b>${A.money(r.amount)}</b><div class="small amount-green">Paid ${A.money(r.paid)}</div><div class="small ${bal>0?'amount-red':'amount-green'}">Balance ${A.money(bal)}</div></div></div>`}).join(''):'<div class="empty">No credit records yet.</div>';
-  $('historyRows').innerHTML=rows.length?rows.map(r=>{const bal=A.num(r.amount)-A.num(r.paid);return `<tr><td>${npDate(r.date)}</td><td>${A.esc(r.items||'-')}</td><td>${A.money(r.amount)}</td><td class="amount-green">${A.money(r.paid)}</td><td><b class="${bal>0?'amount-red':'amount-green'}">${A.money(bal)}</b></td><td>${A.esc(r.note||r.paymentNote||'-')}</td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">No history available.</div></td></tr>';
+  const tpH=Math.ceil(rows.length/HIST_PER_PAGE)||1;if(historyPg>tpH)historyPg=tpH;if(historyPg<1)historyPg=1;
+  const hp=$('historyPagination');
+  if(hp){if(!rows.length)hp.innerHTML='';else{const from=(historyPg-1)*HIST_PER_PAGE+1;const to=Math.min(historyPg*HIST_PER_PAGE,rows.length);let h='<div style="display:flex;align-items:center;gap:8px;padding:10px 0 2px;border-top:1px solid rgba(255,255,255,.08);margin-top:8px"><span class="small" style="opacity:.5;margin-right:auto">'+from+'&ndash;'+to+' of '+rows.length+'</span>';if(tpH>1){h+='<button class="btn btn-soft btn-sm" data-hist-dir="-1"'+(historyPg===1?' disabled':'')+'>&#8249; Prev</button><span class="small" style="min-width:3em;text-align:center">'+historyPg+' / '+tpH+'</span><button class="btn btn-soft btn-sm" data-hist-dir="1"'+(historyPg>=tpH?' disabled':'')+'>Next &#8250;</button>'}hp.innerHTML=h+'</div>'}}
+  $('historyRows').innerHTML=rows.length?rows.slice((historyPg-1)*HIST_PER_PAGE,historyPg*HIST_PER_PAGE).map(r=>{const bal=A.num(r.amount)-A.num(r.paid);const overdue=bal>0&&r.dueDate&&String(r.dueDate).slice(0,10)<A.today();return `<tr><td>${npDate(r.date)}${r.dueDate?`<div class="small" style="opacity:.65">Due ${npDate(r.dueDate)}</div>`:''}${overdue?'<div style="margin-top:2px"><span class="badge badge-red">Overdue</span></div>':''}</td><td>${A.esc(r.items||'-')}</td><td>${A.money(r.amount)}</td><td class="amount-green">${A.money(r.paid)}</td><td><b class="${bal>0?'amount-red':'amount-green'}">${A.money(bal)}</b></td><td>${A.esc(r.note||r.paymentNote||'-')}</td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">No history available.</div></td></tr>';
   const payQrSection=$('payQrSection');
   if(payQrSection){const pqr=d.settings.storePaymentQr||'';const pqrLabel=d.settings.storePaymentQrLabel||'Payment QR';if(pqr){payQrSection.style.display='';payQrSection.innerHTML=`<div class="card" style="text-align:center"><div class="section-title" style="margin-bottom:4px">Pay via ${A.esc(pqrLabel)}</div><p class="hint" style="margin-bottom:16px">Scan this QR code to pay ${A.esc(d.settings.martName||'the mart')}</p><div style="display:flex;justify-content:center"><img src="${pqr}" alt="${A.esc(pqrLabel)}" style="max-width:220px;max-height:220px;object-fit:contain;border-radius:12px;background:#fff;padding:10px;border:2px solid rgba(255,255,255,.15)"></div></div>`}else{payQrSection.style.display='none'}}
+  renderPayReport(d);
   renderProfileDetails(c);
   renderMyQrCode(c);
 }
+function renderPayReport(d){
+  const sec=$('payReportSection');if(!sec)return;
+  if(A.syncInfo().mode!=='tables'){sec.style.display='none';return}
+  sec.style.display='';
+  const reqs=d.paymentRequests||[];
+  const statusBadge=x=>x.status==='approved'?'<span class="badge badge-green">Confirmed</span>':x.status==='rejected'?'<span class="badge badge-red">Rejected</span>':'<span class="badge badge-amber">Waiting for mart</span>';
+  sec.innerHTML=`<div class="card"><div class="section-head"><div><div class="section-title">I paid — report a payment</div><div class="section-sub">Paid by QR, eSewa or cash? Tell ${A.esc(d.settings.martName||'the mart')} and they will confirm it against your balance.</div></div></div>
+  <form id="payReportForm"><div class="form-grid"><div class="field"><label>Amount paid (Rs)</label><input class="input" name="amount" inputmode="decimal" required placeholder="500"></div><div class="field"><label>Paid via</label><select class="select" name="method"><option>eSewa</option><option>Khalti</option><option>FonePay</option><option>Bank</option><option>Cash</option></select></div><div class="field span-2"><label>Transaction ID / note <span style="opacity:.55;font-weight:400">(optional)</span></label><input class="input" name="reference" placeholder="e.g. eSewa txn ID"></div></div><button class="btn btn-green full" type="submit">Send payment report</button></form>
+  ${reqs.length?`<div style="margin-top:14px"><div class="small" style="margin-bottom:8px;font-weight:800">My recent reports</div>${reqs.slice(0,6).map(x=>`<div class="history-card" style="margin-bottom:8px"><div><b>${A.money(x.amount)}</b><div class="small">${npDate(String(x.createdAt).slice(0,10))}${x.method?' - '+A.esc(x.method):''}${x.reference?' - '+A.esc(x.reference):''}</div></div>${statusBadge(x)}</div>`).join('')}</div>`:''}</div>`;
+  $('payReportForm').addEventListener('submit',async e=>{
+    e.preventDefault();const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Sending...';
+    try{const data=formData(e.target);await A.customerRequestPayment({amount:data.amount,method:data.method,reference:data.reference});toast('Payment report sent! The mart will confirm it soon.');render()}
+    catch(err){toast(err.message,'err');btn.disabled=false;btn.textContent='Send payment report'}
+  });
+}
+A.tilt3d(document.querySelector('.customer-hero'),3);
 MartAI.ready.then(()=>{requireCustomer();updateCustomerClock();setInterval(updateCustomerClock,1000);render();polishCustomerUI()}).catch(err=>toast('Could not load database: '+err.message,'err'));
 $$('.customer-tab').forEach(btn=>btn.addEventListener('click',()=>{$$('.customer-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));$('tab-'+btn.dataset.tab).classList.add('active')}));
+document.addEventListener('click',e=>{const b=e.target.closest('[data-hist-dir]');if(!b||b.disabled)return;historyPg=Math.max(1,historyPg+Number(b.dataset.histDir));render()});
 $('logoutBtn').addEventListener('click',()=>{A.clearSession();location.href='index.html'});
 $('avatarInput').addEventListener('change',async e=>{const file=e.target.files[0];try{const avatarData=await imageToAvatarData(file);if(A.syncInfo().mode==='tables'){await A.updateCustomerAvatar(avatarData)}else{const d=db();const c=currentCustomer();c.avatarData=avatarData;A.saveDB(d)}render();toast('Profile photo updated')}catch(err){toast(err.message,'err')}finally{e.target.value=''}});
-$('downloadMyQrBtn')?.addEventListener('click',()=>{const canvas=$('myQrCanvas');if(!canvas)return;const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='my-portal-qr.png';document.body.appendChild(a);a.click();a.remove()});
+$('downloadMyQrBtn')?.addEventListener('click',()=>{const img=$('myQrImg');if(img&&img.src)window.open(img.src,'_blank')});
+function stTd(v,right){return '<td style="border:1px solid #000;padding:6px'+(right?';text-align:right':'')+'">'+v+'</td>'}
+function statementHTML(mart,c,rows){let run=0,tA=0,tP=0;const body=rows.map(r=>{const amt=A.num(r.amount),pd=A.num(r.paid);run+=amt-pd;tA+=amt;tP+=pd;return '<tr>'+stTd(npDate(r.date))+stTd(A.esc(r.items||'-'))+stTd(A.esc(r.note||r.paymentNote||''))+stTd(A.money(amt),1)+stTd(A.money(pd),1)+stTd('<b>'+A.money(run)+'</b>',1)+'</tr>'}).join('');const head=['Date','Items','Note','Amount','Paid','Balance'].map(h=>'<th style="border:1px solid #000;padding:6px;background:#eee;text-align:left">'+h+'</th>').join('');return '<div style="font-family:Arial,Helvetica,sans-serif;padding:24px;color:#000;background:#fff">'+'<div style="text-align:center;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:14px"><div style="font-size:1.5em;font-weight:800">'+A.esc(mart)+'</div><div>Customer Credit Statement</div></div>'+'<table style="width:100%;margin-bottom:12px"><tr><td><b>Customer:</b> '+A.esc(c.name)+'</td><td style="text-align:right"><b>Phone:</b> '+A.esc(c.phone||'-')+'</td></tr><tr><td><b>Date:</b> '+npDate(A.today())+'</td><td style="text-align:right"><b>Entries:</b> '+rows.length+'</td></tr></table>'+'<table style="width:100%;border-collapse:collapse;font-size:.92em"><thead><tr>'+head+'</tr></thead><tbody>'+(body||'<tr>'+stTd('No credit records')+'</tr>')+'</tbody></table>'+'<table style="width:100%;margin-top:12px"><tr><td><b>Total taken:</b> '+A.money(tA)+'</td><td><b>Total paid:</b> '+A.money(tP)+'</td><td style="text-align:right"><b>Balance due: '+A.money(Math.max(0,tA-tP))+'</b></td></tr></table>'+'<div style="margin-top:40px;display:flex;justify-content:space-between"><div style="border-top:1px solid #000;padding-top:4px;width:200px;text-align:center">Customer signature</div><div style="border-top:1px solid #000;padding-top:4px;width:200px;text-align:center">'+A.esc(mart)+'</div></div></div>'}
+$('printStatementBtn')?.addEventListener('click',()=>{const d=db();const c=currentCustomer();if(!c)return;const rows=d.credits.filter(x=>x.customerId===c.id).sort((a,b)=>String(a.date).localeCompare(String(b.date)));$('printArea').innerHTML=statementHTML(d.settings.martName||'RD MART',c,rows);window.print()});
 $('pinForm').addEventListener('submit',async e=>{e.preventDefault();const data=formData(e.target);try{if(data.pin!==data.confirmPin)throw new Error('PIN confirmation does not match');if(A.syncInfo().mode==='tables'){await A.updateCustomerPin(data.pin)}else{const d=db();A.updateCustomer(d,session.customerId,{pin:data.pin})}e.target.reset();toast('PIN updated')}catch(err){toast(err.message,'err')}});
 </script>
 </body>

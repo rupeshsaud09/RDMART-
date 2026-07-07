@@ -1,13 +1,18 @@
--- Fix profile photo upload RPC lookup:
--- Could not find public.customer_update_avatar(avatar_data_input, raw_token)
--- Run this in Supabase SQL Editor.
+-- ============================================================
+-- SUPERSEDED — DO NOT RUN THIS FILE.
+-- Everything here is already included (in corrected form) in
+-- ../setup-complete.sql. Re-running this file can silently
+-- regress the database (older function versions, wrong unique
+-- constraints). Kept for historical reference only.
+-- ============================================================
+
+-- Add customer profile pictures to an existing RD MART Supabase project.
+-- Run this once in Supabase SQL Editor.
 
 alter table public.customers
 add column if not exists avatar_data text default '';
 
-drop function if exists public.customer_update_avatar(text,text);
-
-create function public.customer_update_avatar(avatar_data_input text, raw_token text)
+create or replace function public.customer_update_avatar(avatar_data_input text, raw_token text)
 returns void
 language plpgsql
 security definer
@@ -35,16 +40,3 @@ end;
 $$;
 
 grant execute on function public.customer_update_avatar(text,text) to anon;
-
-select pg_notify('pgrst', 'reload schema');
-
--- This must show one row with argument names:
--- {avatar_data_input,raw_token}
-select
-  p.proname,
-  p.proargnames,
-  pg_get_function_arguments(p.oid) as arguments
-from pg_proc p
-join pg_namespace n on n.oid = p.pronamespace
-where n.nspname = 'public'
-  and p.proname = 'customer_update_avatar';

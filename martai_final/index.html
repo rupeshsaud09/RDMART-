@@ -4,10 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RD MART Login</title>
+<meta name="theme-color" content="#07111f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css">
+<link rel="stylesheet" href="assets/martai.css?v=3">
 </head>
 <body>
 <div class="center-page">
@@ -39,6 +43,7 @@
         <div class="field"><label>Customer phone number</label><input class="input" id="customerPhone" inputmode="numeric" placeholder="98XXXXXXXX"></div>
         <div class="field"><label>Customer 4 digit PIN</label><input class="input" id="customerPin" type="password" maxlength="4" inputmode="numeric" placeholder="1234"></div>
         <button class="btn btn-green full" type="submit">View my balance</button>
+        <button class="btn btn-ghost btn-sm full" type="button" id="forgotPinBtn" style="margin-top:8px">Forgot PIN?</button>
         <p class="hint">If login fails, go to Admin → Customers and create that customer with a 4 digit PIN first.</p>
       </form>
     </section>
@@ -46,9 +51,10 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js"></script>
+<script src="assets/martai-store.js?v=3"></script>
 <script>
 const $=id=>document.getElementById(id);
+MartAI.tilt3d(document.querySelector('.login-card'),6);
 function showError(id,msg){const el=$(id);el.textContent=msg;el.style.display='block'}
 function hideErrors(){['adminError','customerError'].forEach(id=>{$(id).style.display='none';$(id).textContent=''})}
 function switchTab(tab){hideErrors();const admin=tab==='admin';$('adminTab').classList.toggle('active',admin);$('customerTab').classList.toggle('active',!admin);$('adminForm').classList.toggle('hidden',!admin);$('customerForm').classList.toggle('hidden',admin);setTimeout(()=>{(admin?$('adminPass'):$('customerPhone')).focus()},80)}
@@ -60,6 +66,10 @@ $('adminTab').addEventListener('click',()=>switchTab('admin'));
 $('customerTab').addEventListener('click',()=>switchTab('customer'));
 $('adminForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Signing in...';try{const ok=await MartAI.adminLogin($('adminUser').value.trim(),$('adminPass').value);if(ok){location.href='dashboard.html'}else{showError('adminError','Wrong username or password.');btn.disabled=false;btn.textContent='Open dashboard'}}catch(err){showError('adminError',err.message||'Wrong username or password.');btn.disabled=false;btn.textContent='Open dashboard'}});
 $('customerForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Checking...';try{const customer=await MartAI.customerLogin($('customerPhone').value,$('customerPin').value);if(customer){location.href='customer.html'}else{showError('customerError','Phone number or PIN is incorrect. Please check and try again.');btn.disabled=false;btn.textContent='View my balance'}}catch(err){console.error('Customer login failed:',err);showError('customerError',err.message&&err.message!=='Invalid phone or PIN'?err.message:'Phone number or PIN is incorrect. Please check and try again.');btn.disabled=false;btn.textContent='View my balance'}});
+$('forgotPinBtn')?.addEventListener('click',async()=>{hideErrors();const btn=$('forgotPinBtn');btn.disabled=true;btn.textContent='Opening WhatsApp...';try{let info=null;try{info=await MartAI.publicStoreInfo()}catch(err){}
+const local=MartAI.getDB().settings||{};const martName=(info&&info.mart_name)||local.martName||'RD MART';const martPhone=MartAI.phoneClean((info&&info.mart_phone)||local.martPhone||'');const myPhone=MartAI.phoneClean($('customerPhone').value);
+const msg='Namaste '+martName+', I forgot my customer portal PIN. My phone number is '+(myPhone||'(type your number)')+'. Please reset my PIN. Dhanyabad!';
+if(martPhone){window.open('https://wa.me/977'+martPhone+'?text='+encodeURIComponent(msg),'_blank')}else{showError('customerError','Please contact '+martName+' directly to reset your PIN.')}}finally{btn.disabled=false;btn.textContent='Forgot PIN?'}});
 const session=MartAI.getSession();if(session?.role==='admin'||session?.role==='staff'||session?.role==='store_admin')location.href='dashboard.html';if(session?.role==='customer')location.href='customer.html';
 }).catch(e=>showError('customerError','Could not load database: '+e.message));
 </script>

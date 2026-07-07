@@ -25,15 +25,32 @@ create table if not exists public.mart_admins (
   user_id uuid primary key references auth.users(id) on delete cascade,
   created_at timestamptz not null default now()
 );
+-- Admin bootstrap: dashboard login only works for users listed in mart_admins.
+-- If nobody is an admin yet, promote the earliest-created auth user (the
+-- account you created first in Authentication → Users). To use a different
+-- account instead, run:
+--   insert into public.mart_admins (user_id)
+--   select id from auth.users where email = 'you@example.com';
+insert into public.mart_admins (user_id)
+select u.id from auth.users u
+where not exists (select 1 from public.mart_admins)
+order by u.created_at asc
+limit 1
+on conflict (user_id) do nothing;
 
 create table if not exists public.mart_stores (
   id uuid primary key default extensions.gen_random_uuid(),
   name text not null,
   phone text default '',
+  qr_data text default '',
+  qr_label text default '',
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+-- Payment QR columns for databases created before the QR feature existed
+alter table public.mart_stores add column if not exists qr_data text default '';
+alter table public.mart_stores add column if not exists qr_label text default '';
 
 create table if not exists public.mart_staff (
   id uuid primary key default extensions.gen_random_uuid(),
@@ -66,11 +83,14 @@ create table if not exists public.customers (
   email text default '',
   address text default '',
   notes text default '',
+  credit_limit numeric(12,2) not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
--- Phone unique per store (not globally), supports multi-store with same customer phone
-create unique index if not exists customers_phone_store_unique on public.customers(store_id, phone);
+-- For databases created before credit_limit existed (create table if not exists skips them)
+alter table public.customers add column if not exists credit_limit numeric(12,2) not null default 0;
+-- Login looks customers up by phone alone (across stores)
+create index if not exists customers_phone_idx on public.customers(phone);
 
 create table if not exists public.credits (
   id uuid primary key default extensions.gen_random_uuid(),
@@ -78,6 +98,7 @@ create table if not exists public.credits (
   store_id uuid references public.mart_stores(id) on delete restrict,
   customer_id uuid not null references public.customers(id) on delete restrict,
   credit_date date not null default current_date,
+  due_date date,
   items text default '',
   amount numeric(12,2) not null check (amount > 0),
   paid numeric(12,2) not null default 0 check (paid >= 0),
@@ -86,6 +107,8 @@ create table if not exists public.credits (
   paid_at timestamptz,
   created_at timestamptz not null default now()
 );
+-- For databases created before due_date existed
+alter table public.credits add column if not exists due_date date;
 
 create table if not exists public.sales (
   id uuid primary key default extensions.gen_random_uuid(),
@@ -141,6 +164,47 @@ create table if not exists public.cheques (
   updated_at timestamptz
 );
 
+-- Customer "I paid" reports from the portal; admin approves to apply to dues
+create table if not exists public.payment_requests (
+  id uuid primary key default extensions.gen_random_uuid(),
+  store_id uuid references public.mart_stores(id) on delete restrict,
+  customer_id uuid references public.customers(id) on delete cascade,
+  amount numeric(12,2) not null check (amount > 0),
+  method text default '',
+  reference text default '',
+  note text default '',
+  status text not null default 'pending' check (status in ('pending','approved','rejected')),
+  created_at timestamptz not null default now(),
+  resolved_at timestamptz,
+  resolved_by text default ''
+);
+alter table public.payment_requests add column if not exists customer_id uuid;
+alter table public.payment_requests add column if not exists store_id uuid;
+alter table public.payment_requests add column if not exists amount numeric(12,2);
+alter table public.payment_requests add column if not exists method text;
+alter table public.payment_requests add column if not exists reference text;
+alter table public.payment_requests add column if not exists note text;
+alter table public.payment_requests add column if not exists status text;
+alter table public.payment_requests add column if not exists created_at timestamptz;
+alter table public.payment_requests add column if not exists resolved_at timestamptz;
+alter table public.payment_requests add column if not exists resolved_by text;
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'payment_requests' and column_name = 'store_id'
+  ) then
+    execute 'create index if not exists payment_requests_store_idx on public.payment_requests(store_id)';
+  end if;
+
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'payment_requests' and column_name = 'customer_id'
+  ) then
+    execute 'create index if not exists payment_requests_customer_idx on public.payment_requests(customer_id)';
+  end if;
+end $$;
+
 create table if not exists public.activity (
   id uuid primary key default extensions.gen_random_uuid(),
   legacy_id text unique,
@@ -149,6 +213,10 @@ create table if not exists public.activity (
   message text not null,
   created_at timestamptz not null default now()
 );
+alter table public.activity add column if not exists store_id uuid;
+alter table public.activity add column if not exists activity_type text;
+alter table public.activity add column if not exists message text;
+alter table public.activity add column if not exists created_at timestamptz;
 
 create table if not exists public.login_events (
   id uuid primary key default extensions.gen_random_uuid(),
@@ -160,6 +228,123 @@ create table if not exists public.login_events (
   email text default '',
   created_at timestamptz not null default now()
 );
+alter table public.login_events add column if not exists store_id uuid;
+alter table public.login_events add column if not exists login_role text;
+alter table public.login_events add column if not exists customer_id uuid;
+alter table public.login_events add column if not exists display_name text;
+alter table public.login_events add column if not exists phone text;
+alter table public.login_events add column if not exists email text;
+alter table public.login_events add column if not exists created_at timestamptz;
+
+-- For databases created before multi-store support, add the missing columns.
+do $$
+begin
+  if to_regclass('public.login_events') is not null then
+    if not exists (
+      select 1 from information_schema.columns
+      where table_schema = 'public' and table_name = 'login_events' and column_name = 'customer_id'
+    ) then
+      execute 'alter table public.login_events add column customer_id uuid';
+    end if;
+    if not exists (
+      select 1 from information_schema.columns
+      where table_schema = 'public' and table_name = 'login_events' and column_name = 'store_id'
+    ) then
+      execute 'alter table public.login_events add column store_id uuid';
+    end if;
+  end if;
+
+  if to_regclass('public.payment_requests') is not null then
+    if not exists (
+      select 1 from information_schema.columns
+      where table_schema = 'public' and table_name = 'payment_requests' and column_name = 'customer_id'
+    ) then
+      execute 'alter table public.payment_requests add column customer_id uuid';
+    end if;
+    if not exists (
+      select 1 from information_schema.columns
+      where table_schema = 'public' and table_name = 'payment_requests' and column_name = 'store_id'
+    ) then
+      execute 'alter table public.payment_requests add column store_id uuid';
+    end if;
+  end if;
+end $$;
+
+alter table public.customers add column if not exists store_id uuid;
+alter table public.credits add column if not exists store_id uuid;
+alter table public.credits add column if not exists customer_id uuid;
+alter table public.sales add column if not exists store_id uuid;
+alter table public.daily_sales add column if not exists store_id uuid;
+alter table public.party_payments add column if not exists store_id uuid;
+alter table public.cheques add column if not exists store_id uuid;
+alter table public.payment_requests add column if not exists customer_id uuid;
+alter table public.payment_requests add column if not exists store_id uuid;
+alter table public.payment_requests add column if not exists amount numeric(12,2);
+alter table public.payment_requests add column if not exists method text;
+alter table public.payment_requests add column if not exists reference text;
+alter table public.payment_requests add column if not exists note text;
+alter table public.payment_requests add column if not exists status text;
+alter table public.payment_requests add column if not exists created_at timestamptz;
+alter table public.payment_requests add column if not exists resolved_at timestamptz;
+alter table public.payment_requests add column if not exists resolved_by text;
+alter table public.activity add column if not exists store_id uuid;
+alter table public.activity add column if not exists activity_type text;
+alter table public.activity add column if not exists message text;
+alter table public.activity add column if not exists created_at timestamptz;
+alter table public.login_events add column if not exists store_id uuid;
+alter table public.login_events add column if not exists login_role text;
+alter table public.login_events add column if not exists customer_id uuid;
+alter table public.login_events add column if not exists display_name text;
+alter table public.login_events add column if not exists phone text;
+alter table public.login_events add column if not exists email text;
+alter table public.login_events add column if not exists created_at timestamptz;
+do $$
+begin
+  if to_regclass('public.customer_sessions') is not null then
+    alter table public.customer_sessions add column if not exists customer_id uuid;
+    alter table public.customer_sessions add column if not exists expires_at timestamptz;
+    alter table public.customer_sessions add column if not exists created_at timestamptz;
+  end if;
+end $$;
+
+-- === DEFAULT STORE (created from settings if none exists) ===
+-- Must run BEFORE the backfill below, so upgraded databases get their
+-- existing rows attached to this store instead of being left with NULL.
+insert into public.mart_stores (name, phone)
+select
+  coalesce((select mart_name from public.mart_settings where id = true), 'RD MART'),
+  coalesce((select mart_phone from public.mart_settings where id = true), '')
+where not exists (select 1 from public.mart_stores);
+
+-- Backfill the new store_id column for existing rows using the default store.
+do $$
+declare default_store uuid;
+begin
+  select id into default_store from public.mart_stores where is_active = true order by created_at asc limit 1;
+  if default_store is not null then
+    update public.customers set store_id = coalesce(store_id, default_store) where store_id is null;
+    update public.credits set store_id = coalesce(store_id, default_store) where store_id is null;
+    update public.sales set store_id = coalesce(store_id, default_store) where store_id is null;
+    update public.daily_sales set store_id = coalesce(store_id, default_store) where store_id is null;
+    update public.party_payments set store_id = coalesce(store_id, default_store) where store_id is null;
+    update public.cheques set store_id = coalesce(store_id, default_store) where store_id is null;
+    update public.payment_requests set store_id = coalesce(store_id, default_store) where store_id is null;
+    update public.activity set store_id = coalesce(store_id, default_store) where store_id is null;
+    update public.login_events set store_id = coalesce(store_id, default_store) where store_id is null;
+  end if;
+end $$;
+
+-- === APP STATE TABLE ===
+create table if not exists public.martai_app_state (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+-- Initialize the app state row for anon users
+insert into public.martai_app_state (id, data, updated_at)
+values ('main', '{}', now())
+on conflict (id) do update set updated_at = now();
 
 -- === SESSION & BRUTE-FORCE TABLES ===
 create table if not exists public.customer_sessions (
@@ -178,21 +363,32 @@ create table if not exists public.login_attempts (
 create index if not exists login_attempts_phone_time_idx on public.login_attempts(phone, attempted_at);
 
 -- === INDEXES ===
+-- Phone unique per store (not globally), supports multi-store with same customer phone.
+-- Created here (not at table definition) because older databases only get the
+-- store_id column from the ALTER statements above. Wrapped so duplicate phones
+-- in existing data cannot abort the whole setup script.
+do $$
+begin
+  execute 'create unique index if not exists customers_phone_store_unique on public.customers(store_id, phone)';
+exception when others then
+  raise notice 'Skipped unique phone index (fix duplicate customer phones, then re-run): %', sqlerrm;
+end $$;
 create index if not exists customers_store_id_idx on public.customers(store_id);
 create index if not exists credits_store_id_idx on public.credits(store_id);
-create index if not exists credits_customer_id_idx on public.credits(customer_id);
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'credits' and column_name = 'customer_id'
+  ) then
+    execute 'create index if not exists credits_customer_id_idx on public.credits(customer_id)';
+  end if;
+end $$;
 create index if not exists sales_store_id_idx on public.sales(store_id);
 create index if not exists daily_sales_store_id_idx on public.daily_sales(store_id);
 create index if not exists party_payments_store_id_idx on public.party_payments(store_id);
 create index if not exists cheques_store_id_idx on public.cheques(store_id);
 create index if not exists activity_store_id_idx on public.activity(store_id);
-
--- === DEFAULT STORE (created from settings if none exists) ===
-insert into public.mart_stores (name, phone)
-select
-  coalesce((select mart_name from public.mart_settings where id = true), 'RD MART'),
-  coalesce((select mart_phone from public.mart_settings where id = true), '')
-where not exists (select 1 from public.mart_stores);
 
 -- === HELPER FUNCTIONS ===
 
@@ -228,6 +424,11 @@ $$;
 -- Blocks a phone number after 10 failed attempts within 15 minutes.
 -- Clears the attempt counter on successful login.
 -- Also cleans up expired sessions on each successful login.
+-- The same phone can exist in more than one store (unique per store, not
+-- globally), so the PIN is checked against every customer with that phone
+-- and login goes to the account whose PIN matches — never an arbitrary row.
+-- All column references are table-qualified: "phone"/"customer_id" are also
+-- output columns of this function and unqualified use is ambiguous in plpgsql.
 create or replace function public.customer_login(phone_input text, pin_input text)
 returns table(token text, customer_id uuid, name text, phone text)
 language plpgsql security definer set search_path = public as $$
@@ -240,37 +441,40 @@ begin
   clean_phone := regexp_replace(coalesce(phone_input, ''), '\D', '', 'g');
 
   -- Remove stale attempt records older than 15 minutes
-  delete from public.login_attempts
-  where attempted_at < now() - interval '15 minutes';
+  delete from public.login_attempts la
+  where la.attempted_at < now() - interval '15 minutes';
 
   -- Count recent failed attempts for this phone
   select count(*) into attempt_count
-  from public.login_attempts
-  where phone = clean_phone;
+  from public.login_attempts la
+  where la.phone = clean_phone;
 
   if attempt_count >= 10 then
     raise exception 'Too many failed attempts. Please wait 15 minutes and try again.';
   end if;
 
-  -- Look up customer
-  select * into c
+  -- Look up customer: verify the PIN against every store's customer with
+  -- this phone; if two stores share phone AND PIN, prefer the most recent.
+  select cst.* into c
   from public.customers cst
   where cst.phone = clean_phone
+    and pin_input is not null
+    and cst.pin_hash is not null
+    and cst.pin_hash = extensions.crypt(pin_input, cst.pin_hash)
+  order by cst.updated_at desc nulls last, cst.created_at desc
   limit 1;
 
-  -- Verify PIN
-  if c.id is null
-    or pin_input is null
-    or c.pin_hash is null
-    or c.pin_hash <> extensions.crypt(pin_input, c.pin_hash)
-  then
+  if c.id is null then
+    -- Return empty instead of raising: an exception would roll back this
+    -- insert, so failed attempts would never be recorded and the
+    -- brute-force limit above could never trigger.
     insert into public.login_attempts(phone) values(clean_phone);
-    raise exception 'Invalid phone or PIN';
+    return;
   end if;
 
   -- Login OK: clear failed attempts and expired sessions
-  delete from public.login_attempts where phone = clean_phone;
-  delete from public.customer_sessions where expires_at < now();
+  delete from public.login_attempts la where la.phone = clean_phone;
+  delete from public.customer_sessions cs where cs.expires_at < now();
 
   raw_token := encode(extensions.gen_random_bytes(32), 'hex');
 
@@ -281,8 +485,16 @@ begin
     now() + interval '30 days'
   );
 
-  insert into public.login_events(login_role, customer_id, display_name, phone)
-  values ('customer', c.id, c.name, c.phone);
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'login_events' and column_name = 'customer_id'
+  ) then
+    insert into public.login_events(login_role, customer_id, display_name, phone)
+    values ('customer', c.id, c.name, c.phone);
+  else
+    insert into public.login_events(login_role, display_name, phone)
+    values ('customer', c.name, c.phone);
+  end if;
 
   return query select raw_token, c.id, c.name, c.phone;
 end;
@@ -306,6 +518,19 @@ begin
       jsonb_agg(to_jsonb(cr) order by cr.credit_date desc, cr.created_at desc)
         filter (where cr.id is not null),
       '[]'::jsonb
+    ),
+    'payment_requests', coalesce((
+      select jsonb_agg(to_jsonb(pr) order by pr.created_at desc)
+      from public.payment_requests pr
+      where pr.customer_id = c.id
+        and pr.created_at > now() - interval '90 days'
+    ), '[]'::jsonb),
+    -- Store name + payment QR for the portal. Anon cannot read mart_stores
+    -- directly (access is revoked above), so it must come from this function.
+    'store', (
+      select jsonb_build_object('name', s.name, 'qr_data', s.qr_data, 'qr_label', s.qr_label)
+      from public.mart_stores s
+      where s.id = c.store_id
     )
   )
   into result
@@ -366,6 +591,50 @@ begin
 end;
 $$;
 
+-- === CUSTOMER "I PAID" REPORT ===
+-- Customer reports a payment from the portal; capped at 5 open reports
+-- per customer so the mart's inbox cannot be flooded.
+create or replace function public.customer_request_payment(
+  raw_token text,
+  amount_input numeric,
+  method_input text default '',
+  reference_input text default '',
+  note_input text default ''
+)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare
+  cid uuid;
+  sid uuid;
+  new_id uuid;
+  pending_count integer;
+begin
+  cid := public.customer_session_customer_id(raw_token);
+  if cid is null then raise exception 'Invalid or expired session'; end if;
+  if amount_input is null or amount_input <= 0 then raise exception 'Amount must be greater than 0'; end if;
+  if amount_input > 10000000 then raise exception 'Amount is too large'; end if;
+  select count(*) into pending_count
+  from public.payment_requests pr
+  where pr.customer_id = cid and pr.status = 'pending';
+  if pending_count >= 5 then
+    raise exception 'You already have pending payment reports. Please wait for the mart to confirm them.';
+  end if;
+  select c.store_id into sid from public.customers c where c.id = cid;
+  insert into public.payment_requests(store_id, customer_id, amount, method, reference, note)
+  values (sid, cid, amount_input, left(coalesce(method_input,''),40), left(coalesce(reference_input,''),120), left(coalesce(note_input,''),240))
+  returning id into new_id;
+  return new_id;
+end;
+$$;
+
+-- === PUBLIC INFO RPC ===
+-- Lets the login page show the mart's WhatsApp contact for PIN reset help.
+-- Exposes only the mart name and public phone — nothing sensitive.
+create or replace function public.public_store_info()
+returns table(mart_name text, mart_phone text)
+language sql stable security definer set search_path = public as $$
+  select ms.mart_name, ms.mart_phone from public.mart_settings ms where ms.id = true;
+$$;
+
 -- === ADMIN RPCs ===
 create or replace function public.record_admin_login(email_input text)
 returns void language plpgsql security definer set search_path = public as $$
@@ -415,6 +684,7 @@ begin
   if not exists (select 1 from public.mart_stores where id = store_input) then
     raise exception 'Store not found';
   end if;
+  delete from public.payment_requests where store_id = store_input;
   delete from public.credits        where store_id = store_input;
   delete from public.sales           where store_id = store_input;
   delete from public.daily_sales     where store_id = store_input;
@@ -473,8 +743,25 @@ alter table public.party_payments   enable row level security;
 alter table public.cheques          enable row level security;
 alter table public.activity         enable row level security;
 alter table public.login_events     enable row level security;
-alter table public.customer_sessions enable row level security;
+alter table public.martai_app_state enable row level security;
+do $$
+begin
+  if to_regclass('public.customer_sessions') is not null then
+    execute 'alter table public.customer_sessions enable row level security';
+  end if;
+end $$;
 alter table public.login_attempts   enable row level security;
+alter table public.payment_requests enable row level security;
+
+-- payment_requests: written only via the customer RPC; admin/staff/store admins manage
+drop policy if exists "admins manage payment requests"      on public.payment_requests;
+drop policy if exists "staff use payment requests"          on public.payment_requests;
+drop policy if exists "staff update payment requests"       on public.payment_requests;
+drop policy if exists "store admins use payment requests"   on public.payment_requests;
+create policy "admins manage payment requests"    on public.payment_requests for all    to authenticated using (public.is_mart_admin())          with check (public.is_mart_admin());
+create policy "staff use payment requests"        on public.payment_requests for select to authenticated using (public.is_mart_staff());
+create policy "staff update payment requests"     on public.payment_requests for update to authenticated using (public.is_mart_staff())         with check (public.is_mart_staff());
+create policy "store admins use payment requests" on public.payment_requests for all    to authenticated using (public.is_store_admin(store_id)) with check (public.is_store_admin(store_id));
 
 -- mart_settings
 drop policy if exists "admins manage settings"  on public.mart_settings;
@@ -596,6 +883,29 @@ drop policy if exists "admins read login events" on public.login_events;
 create policy "admins read login events" on public.login_events
   for select to authenticated using (public.is_mart_admin());
 
+-- martai_app_state: allows anon app to read/write the shared app state
+drop policy if exists "martai app can read state" on public.martai_app_state;
+create policy "martai app can read state"
+on public.martai_app_state
+for select
+to anon
+using (id = 'main');
+
+drop policy if exists "martai app can insert state" on public.martai_app_state;
+create policy "martai app can insert state"
+on public.martai_app_state
+for insert
+to anon
+with check (id = 'main');
+
+drop policy if exists "martai app can update state" on public.martai_app_state;
+create policy "martai app can update state"
+on public.martai_app_state
+for update
+to anon
+using (id = 'main')
+with check (id = 'main');
+
 -- === REVOKE ANON DIRECT TABLE ACCESS ===
 revoke all on public.customers         from anon;
 revoke all on public.credits           from anon;
@@ -607,14 +917,23 @@ revoke all on public.activity          from anon;
 revoke all on public.login_events      from anon;
 revoke all on public.customer_sessions from anon;
 revoke all on public.login_attempts    from anon;
+revoke all on public.payment_requests  from anon;
+revoke all on public.mart_admins       from anon;
+revoke all on public.mart_settings     from anon;
+revoke all on public.mart_stores       from anon;
+revoke all on public.mart_staff        from anon;
+revoke all on public.mart_store_admins from anon;
 
 -- === GRANT PERMISSIONS ===
--- Anon: customer RPCs only
+-- Anon: customer RPCs and app state access
 grant execute on function public.customer_login(text,text)          to anon;
 grant execute on function public.customer_portal(text)              to anon;
 grant execute on function public.customer_update_pin(text,text)     to anon;
 grant execute on function public.update_customer_photo(text,text)   to anon;
 grant execute on function public.customer_update_avatar(text,text)  to anon;
+grant execute on function public.public_store_info()                 to anon;
+grant execute on function public.customer_request_payment(text,numeric,text,text,text) to anon;
+grant select, insert, update on public.martai_app_state to anon;
 
 -- Authenticated: admin and lookup functions
 grant execute on function public.record_admin_login(text)           to authenticated;
@@ -640,6 +959,24 @@ grant select, insert, update, delete on public.party_payments    to authenticate
 grant select, insert, update, delete on public.cheques           to authenticated;
 grant select, insert, update, delete on public.activity          to authenticated;
 grant select                          on public.login_events      to authenticated;
+grant select, insert, update, delete on public.payment_requests  to authenticated;
+
+-- === REALTIME (live multi-device sync) ===
+-- Adds business tables to the supabase_realtime publication so open
+-- dashboards receive live change events. Safe to re-run.
+do $$
+declare t text;
+begin
+  foreach t in array array['customers','credits','sales','daily_sales','party_payments','cheques','payment_requests','mart_stores']
+  loop
+    begin
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    exception
+      when duplicate_object then null;   -- already in the publication
+      when undefined_object then null;   -- publication missing (non-Supabase Postgres)
+    end;
+  end loop;
+end $$;
 
 -- Force PostgREST to reload new tables, columns and functions immediately
 select pg_notify('pgrst', 'reload schema');

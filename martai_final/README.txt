@@ -8,7 +8,14 @@ STEP 1: SUPABASE DATABASE SETUP
 3. Open setup-complete.sql from this folder.
 4. Paste the entire file content and click Run.
    (This single file creates all tables, functions, indexes, RLS policies,
-    brute-force protection, and session cleanup — safe to re-run.)
+    brute-force protection, and session cleanup — safe to re-run.
+    Whenever the app is updated, re-run setup-complete.sql once to apply
+    any new columns or function fixes to an existing database.)
+
+   IMPORTANT: setup-complete.sql is the ONLY setup file to run.
+   The old incremental files (add-*.sql / fix-*.sql / supabase-*-schema.sql)
+   have been moved to the sql-archive/ folder and must never be run —
+   they contain outdated versions that can break a working database.
 
 5. Go to Authentication → Users → Add user.
    Create your admin account with a strong email and password.

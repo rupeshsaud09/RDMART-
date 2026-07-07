@@ -1,3 +1,11 @@
+-- ============================================================
+-- SUPERSEDED — DO NOT RUN THIS FILE.
+-- Everything here is already included (in corrected form) in
+-- ../setup-complete.sql. Re-running this file can silently
+-- regress the database (older function versions, wrong unique
+-- constraints). Kept for historical reference only.
+-- ============================================================
+
 -- Add admin/customer login history to an existing RD MART Supabase project.
 -- Run this in Supabase SQL Editor, then redeploy the app files.
 
