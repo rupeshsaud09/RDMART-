@@ -5,7 +5,11 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-XSS-Protection = "0"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    # microphone=(self) lets the Saathi assistant take voice input
+    Permissions-Policy = "camera=(), microphone=(self), geolocation=()"
+    # Locks the app down to its own files + Supabase + the few CDNs it uses.
+    # Blocks any injected external script/style/image from loading.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://api.qrserver.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'"
 
 [[headers]]
   for = "/*.html"

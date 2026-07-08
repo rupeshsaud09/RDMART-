@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=3">
+<link rel="stylesheet" href="assets/martai.css?v=8">
 </head>
 <body>
 <div class="center-page">
@@ -51,16 +51,25 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js?v=3"></script>
+<script src="assets/martai-store.js?v=9"></script>
 <script>
 const $=id=>document.getElementById(id);
+/* Follow the theme chosen on the dashboard (same browser); defaults to dark */
+{const th=localStorage.getItem('martai_dashboard_theme')==='light'?'light':'dark';document.body.dataset.theme=th;document.documentElement.style.colorScheme=th;const mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',th==='light'?'#f6f8fc':'#07111f')}
 MartAI.tilt3d(document.querySelector('.login-card'),6);
 function showError(id,msg){const el=$(id);el.textContent=msg;el.style.display='block'}
 function hideErrors(){['adminError','customerError'].forEach(id=>{$(id).style.display='none';$(id).textContent=''})}
 function switchTab(tab){hideErrors();const admin=tab==='admin';$('adminTab').classList.toggle('active',admin);$('customerTab').classList.toggle('active',!admin);$('adminForm').classList.toggle('hidden',!admin);$('customerForm').classList.toggle('hidden',admin);setTimeout(()=>{(admin?$('adminPass'):$('customerPhone')).focus()},80)}
+function logoInitial(name){return String(name||'RD').trim().split(/\s+/).filter(Boolean).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'RD'}
+function safeBgUrl(data){return String(data||'').replace(/"/g,'%22')}
+function applyBrandLogo(logo,name){const el=document.querySelector('.brand-logo');if(!el)return;if(!el.dataset.defaultLogo)el.dataset.defaultLogo=(el.textContent||'').trim()||'RD';if(logo){el.classList.add('logo-uploaded');el.style.backgroundImage=`url("${safeBgUrl(logo)}")`;el.textContent=''}else{el.classList.remove('logo-uploaded');el.style.backgroundImage='';el.textContent=el.dataset.defaultLogo}const title=document.querySelector('.brand-title');if(title&&name)title.textContent=name}
 MartAI.ready.then(()=>{
 const db=MartAI.getDB();
-document.querySelector('#customerForm .hint').textContent='Use the phone number and 4 digit PIN given by RD MART.';
+let martName=db.settings.martName||'RD MART';
+let logo=db.settings.storeLogo||'';
+applyBrandLogo(logo,martName);
+document.querySelector('#customerForm .hint').textContent='Use the phone number and 4 digit PIN given by '+martName+'.';
+MartAI.publicStoreInfo().then(info=>{if(!info)return;martName=info.mart_name||martName;logo=info.logo_data||logo;applyBrandLogo(logo,martName);document.querySelector('#customerForm .hint').textContent='Use the phone number and 4 digit PIN given by '+martName+'.'}).catch(()=>{});
 const urlP=new URLSearchParams(window.location.search);const prePhone=urlP.get('phone');if(prePhone&&prePhone.length>=10){$('customerPhone').value=prePhone;switchTab('customer')}
 $('adminTab').addEventListener('click',()=>switchTab('admin'));
 $('customerTab').addEventListener('click',()=>switchTab('customer'));
@@ -73,5 +82,6 @@ if(martPhone){window.open('https://wa.me/977'+martPhone+'?text='+encodeURICompon
 const session=MartAI.getSession();if(session?.role==='admin'||session?.role==='staff'||session?.role==='store_admin')location.href='dashboard.html';if(session?.role==='customer')location.href='customer.html';
 }).catch(e=>showError('customerError','Could not load database: '+e.message));
 </script>
+<script src="assets/martai-bot.js?v=1"></script>
 </body>
 </html>

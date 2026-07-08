@@ -1,12 +1,14 @@
 // RD MART service worker — offline app shell + cached assets.
 // Bump CACHE version when deploying big changes to force a refresh.
-const CACHE = 'martai-v1';
+const CACHE = 'martai-v11';
 const SHELL = [
   'index.html',
   'customer.html',
   'dashboard.html',
   'assets/martai.css',
   'assets/martai-store.js',
+  'assets/martai-bot.js',
+  'assets/martai-qr.js',
   'assets/martai-supabase-config.js',
   'assets/icon-192.png',
   'assets/icon-512.png',

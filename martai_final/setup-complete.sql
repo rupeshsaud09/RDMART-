@@ -42,6 +42,7 @@ create table if not exists public.mart_stores (
   id uuid primary key default extensions.gen_random_uuid(),
   name text not null,
   phone text default '',
+  logo_data text default '',
   qr_data text default '',
   qr_label text default '',
   is_active boolean not null default true,
@@ -49,6 +50,7 @@ create table if not exists public.mart_stores (
   updated_at timestamptz not null default now()
 );
 -- Payment QR columns for databases created before the QR feature existed
+alter table public.mart_stores add column if not exists logo_data text default '';
 alter table public.mart_stores add column if not exists qr_data text default '';
 alter table public.mart_stores add column if not exists qr_label text default '';
 
@@ -164,6 +166,34 @@ create table if not exists public.cheques (
   updated_at timestamptz
 );
 
+create table if not exists public.estimate_bills (
+  id uuid primary key default extensions.gen_random_uuid(),
+  legacy_id text unique,
+  store_id uuid references public.mart_stores(id) on delete restrict,
+  estimate_date date not null default current_date,
+  customer text not null,
+  phone text default '',
+  items text default '',
+  amount numeric(12,2) not null check (amount > 0),
+  valid_until date,
+  status text not null default 'draft' check (status in ('draft','sent','approved','rejected','expired')),
+  note text default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz
+);
+alter table public.estimate_bills add column if not exists legacy_id text;
+alter table public.estimate_bills add column if not exists store_id uuid;
+alter table public.estimate_bills add column if not exists estimate_date date;
+alter table public.estimate_bills add column if not exists customer text;
+alter table public.estimate_bills add column if not exists phone text;
+alter table public.estimate_bills add column if not exists items text;
+alter table public.estimate_bills add column if not exists amount numeric(12,2);
+alter table public.estimate_bills add column if not exists valid_until date;
+alter table public.estimate_bills add column if not exists status text;
+alter table public.estimate_bills add column if not exists note text;
+alter table public.estimate_bills add column if not exists created_at timestamptz;
+alter table public.estimate_bills add column if not exists updated_at timestamptz;
+
 -- Customer "I paid" reports from the portal; admin approves to apply to dues
 create table if not exists public.payment_requests (
   id uuid primary key default extensions.gen_random_uuid(),
@@ -277,6 +307,18 @@ alter table public.sales add column if not exists store_id uuid;
 alter table public.daily_sales add column if not exists store_id uuid;
 alter table public.party_payments add column if not exists store_id uuid;
 alter table public.cheques add column if not exists store_id uuid;
+alter table public.estimate_bills add column if not exists legacy_id text;
+alter table public.estimate_bills add column if not exists store_id uuid;
+alter table public.estimate_bills add column if not exists estimate_date date;
+alter table public.estimate_bills add column if not exists customer text;
+alter table public.estimate_bills add column if not exists phone text;
+alter table public.estimate_bills add column if not exists items text;
+alter table public.estimate_bills add column if not exists amount numeric(12,2);
+alter table public.estimate_bills add column if not exists valid_until date;
+alter table public.estimate_bills add column if not exists status text;
+alter table public.estimate_bills add column if not exists note text;
+alter table public.estimate_bills add column if not exists created_at timestamptz;
+alter table public.estimate_bills add column if not exists updated_at timestamptz;
 alter table public.payment_requests add column if not exists customer_id uuid;
 alter table public.payment_requests add column if not exists store_id uuid;
 alter table public.payment_requests add column if not exists amount numeric(12,2);
@@ -328,6 +370,7 @@ begin
     update public.daily_sales set store_id = coalesce(store_id, default_store) where store_id is null;
     update public.party_payments set store_id = coalesce(store_id, default_store) where store_id is null;
     update public.cheques set store_id = coalesce(store_id, default_store) where store_id is null;
+    update public.estimate_bills set store_id = coalesce(store_id, default_store) where store_id is null;
     update public.payment_requests set store_id = coalesce(store_id, default_store) where store_id is null;
     update public.activity set store_id = coalesce(store_id, default_store) where store_id is null;
     update public.login_events set store_id = coalesce(store_id, default_store) where store_id is null;
@@ -388,6 +431,8 @@ create index if not exists sales_store_id_idx on public.sales(store_id);
 create index if not exists daily_sales_store_id_idx on public.daily_sales(store_id);
 create index if not exists party_payments_store_id_idx on public.party_payments(store_id);
 create index if not exists cheques_store_id_idx on public.cheques(store_id);
+create index if not exists estimate_bills_store_id_idx on public.estimate_bills(store_id);
+create unique index if not exists estimate_bills_legacy_id_uidx on public.estimate_bills(legacy_id) where legacy_id is not null;
 create index if not exists activity_store_id_idx on public.activity(store_id);
 
 -- === HELPER FUNCTIONS ===
@@ -525,10 +570,10 @@ begin
       where pr.customer_id = c.id
         and pr.created_at > now() - interval '90 days'
     ), '[]'::jsonb),
-    -- Store name + payment QR for the portal. Anon cannot read mart_stores
+    -- Store name, logo + payment QR for the portal. Anon cannot read mart_stores
     -- directly (access is revoked above), so it must come from this function.
     'store', (
-      select jsonb_build_object('name', s.name, 'qr_data', s.qr_data, 'qr_label', s.qr_label)
+      select jsonb_build_object('name', s.name, 'logo_data', s.logo_data, 'qr_data', s.qr_data, 'qr_label', s.qr_label)
       from public.mart_stores s
       where s.id = c.store_id
     )
@@ -627,12 +672,25 @@ end;
 $$;
 
 -- === PUBLIC INFO RPC ===
--- Lets the login page show the mart's WhatsApp contact for PIN reset help.
--- Exposes only the mart name and public phone — nothing sensitive.
+-- Lets the login page show public brand info for PIN reset help.
+-- Exposes only the mart name, public phone and uploaded logo.
+drop function if exists public.public_store_info();
 create or replace function public.public_store_info()
-returns table(mart_name text, mart_phone text)
+returns table(mart_name text, mart_phone text, logo_data text)
 language sql stable security definer set search_path = public as $$
-  select ms.mart_name, ms.mart_phone from public.mart_settings ms where ms.id = true;
+  select
+    coalesce(nullif(s.name, ''), ms.mart_name),
+    coalesce(nullif(s.phone, ''), ms.mart_phone),
+    coalesce(s.logo_data, '')
+  from public.mart_settings ms
+  left join lateral (
+    select name, phone, logo_data
+    from public.mart_stores
+    where is_active = true
+    order by created_at asc
+    limit 1
+  ) s on true
+  where ms.id = true;
 $$;
 
 -- === ADMIN RPCs ===
@@ -690,6 +748,7 @@ begin
   delete from public.daily_sales     where store_id = store_input;
   delete from public.party_payments  where store_id = store_input;
   delete from public.cheques         where store_id = store_input;
+  delete from public.estimate_bills  where store_id = store_input;
   delete from public.activity        where store_id = store_input;
   delete from public.login_events    where store_id = store_input;
   delete from public.customers       where store_id = store_input;
@@ -741,6 +800,7 @@ alter table public.sales            enable row level security;
 alter table public.daily_sales      enable row level security;
 alter table public.party_payments   enable row level security;
 alter table public.cheques          enable row level security;
+alter table public.estimate_bills   enable row level security;
 alter table public.activity         enable row level security;
 alter table public.login_events     enable row level security;
 alter table public.martai_app_state enable row level security;
@@ -870,6 +930,18 @@ create policy "staff insert cheques"     on public.cheques for insert to authent
 create policy "staff update cheques"     on public.cheques for update to authenticated using (public.is_mart_staff())         with check (public.is_mart_staff());
 create policy "store admins use cheques" on public.cheques for all    to authenticated using (public.is_store_admin(store_id)) with check (public.is_store_admin(store_id));
 
+-- estimate_bills
+drop policy if exists "admins manage estimate bills"    on public.estimate_bills;
+drop policy if exists "staff use estimate bills"        on public.estimate_bills;
+drop policy if exists "staff insert estimate bills"     on public.estimate_bills;
+drop policy if exists "staff update estimate bills"     on public.estimate_bills;
+drop policy if exists "store admins use estimate bills" on public.estimate_bills;
+create policy "admins manage estimate bills"    on public.estimate_bills for all    to authenticated using (public.is_mart_admin())          with check (public.is_mart_admin());
+create policy "staff use estimate bills"        on public.estimate_bills for select to authenticated using (public.is_mart_staff());
+create policy "staff insert estimate bills"     on public.estimate_bills for insert to authenticated                                         with check (public.is_mart_staff());
+create policy "staff update estimate bills"     on public.estimate_bills for update to authenticated using (public.is_mart_staff())         with check (public.is_mart_staff());
+create policy "store admins use estimate bills" on public.estimate_bills for all    to authenticated using (public.is_store_admin(store_id)) with check (public.is_store_admin(store_id));
+
 -- activity
 drop policy if exists "admins read activity"    on public.activity;
 drop policy if exists "staff read activity"     on public.activity;
@@ -913,6 +985,7 @@ revoke all on public.sales             from anon;
 revoke all on public.daily_sales       from anon;
 revoke all on public.party_payments    from anon;
 revoke all on public.cheques           from anon;
+revoke all on public.estimate_bills    from anon;
 revoke all on public.activity          from anon;
 revoke all on public.login_events      from anon;
 revoke all on public.customer_sessions from anon;
@@ -957,6 +1030,7 @@ grant select, insert, update, delete on public.sales             to authenticate
 grant select, insert, update, delete on public.daily_sales       to authenticated;
 grant select, insert, update, delete on public.party_payments    to authenticated;
 grant select, insert, update, delete on public.cheques           to authenticated;
+grant select, insert, update, delete on public.estimate_bills    to authenticated;
 grant select, insert, update, delete on public.activity          to authenticated;
 grant select                          on public.login_events      to authenticated;
 grant select, insert, update, delete on public.payment_requests  to authenticated;
@@ -967,7 +1041,7 @@ grant select, insert, update, delete on public.payment_requests  to authenticate
 do $$
 declare t text;
 begin
-  foreach t in array array['customers','credits','sales','daily_sales','party_payments','cheques','payment_requests','mart_stores']
+  foreach t in array array['customers','credits','sales','daily_sales','party_payments','cheques','estimate_bills','payment_requests','mart_stores']
   loop
     begin
       execute format('alter publication supabase_realtime add table public.%I', t);
