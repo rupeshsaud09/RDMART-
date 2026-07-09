@@ -410,6 +410,11 @@ create index if not exists login_attempts_phone_time_idx on public.login_attempt
 -- Created here (not at table definition) because older databases only get the
 -- store_id column from the ALTER statements above. Wrapped so duplicate phones
 -- in existing data cannot abort the whole setup script.
+-- Old databases carry a GLOBAL unique constraint on phone from the original
+-- schema ("customers_phone_key") — it must go, or syncing a customer whose
+-- phone exists in another store fails forever with a duplicate-key error.
+alter table public.customers drop constraint if exists customers_phone_key;
+drop index if exists public.customers_phone_key;
 do $$
 begin
   execute 'create unique index if not exists customers_phone_store_unique on public.customers(store_id, phone)';

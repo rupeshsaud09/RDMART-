@@ -155,7 +155,21 @@
       }else r={data:null,error:null};
       if(!r.data){
         r=await client.from('customers').upsert(row,{onConflict:'legacy_id'}).select('id').maybeSingle();
-        if(r.error)throw r.error;
+        if(r.error&&String(r.error.code)==='23505'&&/phone/i.test(String(r.error.message||''))){
+          // Duplicate phone online. If that customer already exists in THIS store
+          // (added on another device / re-added after a reset), merge into that row
+          // instead of blocking the whole sync queue forever.
+          const ex=await client.from('customers').select('id').eq('store_id',storeId).eq('phone',base.phone).maybeSingle();
+          if(ex.data){
+            const patch={...base};delete patch.legacy_id;if(c.pin)patch.pin_hash=row.pin_hash;
+            r=await client.from('customers').update(patch).eq('id',ex.data.id).select('id').maybeSingle();
+            if(r.error)throw r.error;
+          }else{
+            // Phone exists only in ANOTHER store — the database still has the old
+            // global unique constraint. Point the admin at the one-time fix.
+            throw new Error('Phone '+base.phone+' ('+(c.name||'customer')+') already exists in another store. Run fix-duplicate-phone-sync.sql once in Supabase SQL Editor, then press Sync.');
+          }
+        }else if(r.error)throw r.error;
       }
       if(!r.data)throw new Error('Could not save customer '+(c.name||c.phone||''));c._tableId=r.data.id;c.pin='';dirty.customers.delete(c.id);
     }

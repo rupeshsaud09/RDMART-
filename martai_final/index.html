@@ -51,7 +51,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js?v=9"></script>
+<script src="assets/martai-store.js?v=10"></script>
 <script>
 const $=id=>document.getElementById(id);
 /* Follow the theme chosen on the dashboard (same browser); defaults to dark */
@@ -82,6 +82,6 @@ if(martPhone){window.open('https://wa.me/977'+martPhone+'?text='+encodeURICompon
 const session=MartAI.getSession();if(session?.role==='admin'||session?.role==='staff'||session?.role==='store_admin')location.href='dashboard.html';if(session?.role==='customer')location.href='customer.html';
 }).catch(e=>showError('customerError','Could not load database: '+e.message));
 </script>
-<script src="assets/martai-bot.js?v=1"></script>
+<script src="assets/martai-bot.js?v=2"></script>
 </body>
 </html>

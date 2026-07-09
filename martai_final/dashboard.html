@@ -348,7 +348,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js?v=9"></script>
+<script src="assets/martai-store.js?v=10"></script>
 <script src="assets/martai-qr.js?v=1"></script>
 <script>
 let pendingCreditDeleteId='';let pendingCreditDeleteTimer=null;const A=MartAI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));
@@ -616,6 +616,6 @@ MartAI.ready.then(()=>{setTodayInputs();updateClock();setInterval(updateClock,10
 // Security nudge: local (non-Supabase) mode still on the default admin password
 MartAI.ready.then(()=>{if(A.syncInfo().mode!=='tables'&&isMainAdmin()&&db().settings.adminPass==='mart2024')setTimeout(()=>toast('Security tip: change the default admin password in Settings','err'),1500)}).catch(()=>{});
 </script>
-<script src="assets/martai-bot.js?v=1"></script>
+<script src="assets/martai-bot.js?v=2"></script>
 </body>
 </html>
