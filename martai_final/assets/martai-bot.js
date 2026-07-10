@@ -101,7 +101,9 @@ const T={
   helpCust:L('I can help you with 👇<br>• <b>"My balance"</b> — how much you owe<br>• <b>"My dues"</b> — credit list<br>• <b>"Payment QR"</b> — scan &amp; pay<br>• <b>"Change PIN"</b><br>• <b>"Logout"</b><br>🗣 English, नेपाली or हिंदी!','म यसमा मद्दत गर्छु 👇<br>• <b>"मेरो बाँकी"</b> — कति तिर्न बाँकी<br>• <b>"मेरो उधारो"</b> — सूची<br>• <b>"भुक्तानी QR"</b> — स्क्यान गरी तिर्ने<br>• <b>"PIN फेर्ने"</b><br>• <b>"लगआउट"</b><br>🗣 नेपाली, हिंदी वा English!','मैं इनमें मदद करता हूँ 👇<br>• <b>"मेरा बकाया"</b> — कितना देना है<br>• <b>"मेरा उधार"</b> — सूची<br>• <b>"भुगतान QR"</b> — स्कैन करके चुकाएँ<br>• <b>"PIN बदलें"</b><br>• <b>"लॉगआउट"</b><br>🗣 हिंदी, नेपाली या English!'),
   helpLogin:L('I can explain 👇<br>• <b>"How to login"</b> — admin &amp; customer<br>• <b>"What is RD MART"</b><br>• <b>"Forgot PIN"</b><br>🗣 English, नेपाली or हिंदी!','म यी बुझाउन सक्छु 👇<br>• <b>"लगइन कसरी गर्ने"</b> — एडमिन र ग्राहक<br>• <b>"RD MART के हो"</b><br>• <b>"PIN बिर्सें"</b><br>🗣 नेपाली, हिंदी वा English!','मैं ये समझा सकता हूँ 👇<br>• <b>"लॉगिन कैसे करें"</b> — एडमिन और ग्राहक<br>• <b>"RD MART क्या है"</b><br>• <b>"PIN भूल गया"</b><br>🗣 हिंदी, नेपाली या English!'),
   loginHelp:L('🔐 <b>Admin/Staff:</b> use the Admin tab with your email &amp; password.<br>👤 <b>Customer:</b> use the Customer tab with your 10-digit phone + 4-digit PIN (the store gives you the PIN).','🔐 <b>एडमिन/स्टाफ:</b> Admin ट्याबमा इमेल र पासवर्डले लगइन गर्नुहोस्।<br>👤 <b>ग्राहक:</b> Customer ट्याबमा १० अङ्कको फोन + ४ अङ्कको PIN (PIN पसलले दिन्छ)।','🔐 <b>एडमिन/स्टाफ:</b> Admin टैब में ईमेल और पासवर्ड से लॉगिन करें।<br>👤 <b>ग्राहक:</b> Customer टैब में 10 अंकों का फोन + 4 अंकों का PIN (PIN दुकान से मिलता है)।'),
-  aboutApp:L('🏪 <b>RD MART</b> is a smart store manager — customer khata (credit book), daily sales, cheques, estimates, reports and a customer portal, all synced online.','🏪 <b>RD MART</b> एउटा स्मार्ट पसल व्यवस्थापक हो — ग्राहक खाता (उधारो), दैनिक बिक्री, चेक, इस्टिमेट, रिपोर्ट र ग्राहक पोर्टल, सबै अनलाइन सिंक हुने।','🏪 <b>RD MART</b> एक स्मार्ट दुकान मैनेजर है — ग्राहक खाता (उधार), दैनिक बिक्री, चेक, एस्टीमेट, रिपोर्ट और ग्राहक पोर्टल, सब ऑनलाइन सिंक।'),
+  aboutApp:L('🏪 <b>RD MART</b> is a mart located in <b>Koteshwor, Kathmandu</b>. The store sells the best products at cheaper rates and provides the best customer experience. 🕖 It opens from <b>7 AM to 10 PM</b> every day.','🏪 <b>RD MART</b> काठमाडौँको <b>कोटेश्वर</b>मा रहेको मार्ट हो। यो पसलले सबैभन्दा राम्रा सामान सस्तो मूल्यमा बेच्छ र उत्कृष्ट ग्राहक अनुभव दिन्छ। 🕖 हरेक दिन <b>बिहान ७ बजेदेखि राति १० बजेसम्म</b> खुल्छ।','🏪 <b>RD MART</b> काठमांडू के <b>कोटेश्वर</b> में स्थित मार्ट है। यह दुकान सबसे अच्छे प्रोडक्ट सस्ते दाम में बेचती है और बेहतरीन ग्राहक अनुभव देती है। 🕖 रोज़ <b>सुबह 7 बजे से रात 10 बजे तक</b> खुली रहती है।'),
+  storeHours:L('🕖 <b>RD MART</b> opens every day from <b>7 AM to 10 PM</b>. You are always welcome!','🕖 <b>RD MART</b> हरेक दिन <b>बिहान ७ बजेदेखि राति १० बजेसम्म</b> खुल्छ। सधैं स्वागत छ!','🕖 <b>RD MART</b> रोज़ <b>सुबह 7 बजे से रात 10 बजे तक</b> खुला रहता है। आपका हमेशा स्वागत है!'),
+  storeLoc:L('📍 <b>RD MART</b> is located in <b>Koteshwor, Kathmandu</b>. Best products at cheaper rates, open 7 AM – 10 PM.','📍 <b>RD MART</b> काठमाडौँको <b>कोटेश्वर</b>मा छ। राम्रा सामान सस्तो मूल्यमा, बिहान ७ – राति १० बजेसम्म खुला।','📍 <b>RD MART</b> काठमांडू के <b>कोटेश्वर</b> में है। अच्छे प्रोडक्ट सस्ते दाम में, सुबह 7 – रात 10 बजे तक खुला।'),
   forgotPin:L('🔑 Please contact the store — the admin can set a new PIN for you.','🔑 पसलमा सम्पर्क गर्नुहोस् — एडमिनले नयाँ PIN राखिदिन सक्नुहुन्छ।','🔑 दुकान से संपर्क करें — एडमिन नया PIN सेट कर सकते हैं।'),
   custMyBal:L('🙏 {name} ji, your current balance is <b>{amt}</b>.','🙏 {name} ज्यू, तपाईंको हालको बाँकी <b>{amt}</b> छ।','🙏 {name} जी, आपका मौजूदा बकाया <b>{amt}</b> है।'),
   custClear:L('🎉 {name} ji, you have no dues. All clear!','🎉 {name} ज्यू, तपाईंको केही बाँकी छैन। सबै चुक्ता!','🎉 {name} जी, आपका कोई बकाया नहीं। सब चुकता!'),
@@ -179,12 +181,14 @@ const T={
 const PAGE_LABEL={dashboard:L('Dashboard','ड्यासबोर्ड','डैशबोर्ड'),customers:L('Customers','ग्राहक','ग्राहक'),credits:L('Credit Book','उधारो खाता','उधार खाता'),daily:L('Daily Sales','दैनिक बिक्री','दैनिक बिक्री'),payments:L('Party Payments','पार्टी भुक्तानी','पार्टी भुगतान'),cheques:L('Cheques','चेक','चेक'),estimates:L('Estimates','इस्टिमेट','एस्टीमेट'),reports:L('Reports','रिपोर्ट','रिपोर्ट'),followup:L('Follow-Up','फलो-अप','फॉलो-अप'),settings:L('Settings','सेटिङ','सेटिंग')};
 const CHIPS={
   dash:[
+    {t:L('📋 Briefing','📋 ब्रिफिङ','📋 ब्रीफिंग')},
     {t:L("📊 Today's sales",'📊 आजको बिक्री','📊 आज की बिक्री')},
     {t:L('💰 Total dues','💰 जम्मा उधारो','💰 कुल उधार')},
     {t:L('🏆 Top dues','🏆 धेरै उधारो','🏆 सबसे ज़्यादा उधार')},
     {t:L('🧾 Add credit','🧾 उधारो थप्ने','🧾 उधार जोड़ें')},
     {t:L('✅ Record payment','✅ भुक्तानी लेख्ने','✅ भुगतान दर्ज करें')},
     {t:L('👤 Add customer','👤 नयाँ ग्राहक','👤 नया ग्राहक')},
+    {t:L('🗂 Menu','🗂 मेनु','🗂 मेन्यू')},
     {t:L('❓ Help','❓ मद्दत','❓ मदद')}
   ],
   cust:[
@@ -366,29 +370,66 @@ function hideTyping(){if(typingEl){typingEl.remove();typingEl=null}}
 let voices=[];
 function loadVoices(){try{voices=speechSynthesis.getVoices()||[]}catch(e){voices=[]}}
 if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+/* Prefer a clear, natural FEMALE voice for each language.
+   Named voices: Windows (Neerja, Heera, Swara, Kalpana, Zira, Aria, Jenny),
+   Google (female by default), macOS/iOS (Samantha, Veena, Lekha, Isha). */
+const FEMALE_NAMES=['female','woman','girl','neerja','heera','swara','kalpana','zira','aria','jenny','michelle','sonia','libby','maisie','natasha','samantha','veena','lekha','isha','ananya','aarohi','kavya','salli','raveena','aditi','kajal','susan','hazel','sara','emma','ava'];
+const MALE_NAMES=['male','man ','david','mark','ravi','hemant','prabhat','madhur','george','james','guy','ryan','thomas','rishi','sagar'];
+function scoreVoice(v,prefLangs){
+  const name=String(v.name||'').toLowerCase(),vlang=String(v.lang||'').toLowerCase().replace('_','-');
+  const li=prefLangs.findIndex(p=>vlang.startsWith(p));
+  if(li<0)return -1;
+  let s=(prefLangs.length-li)*100;
+  if(FEMALE_NAMES.some(h=>name.includes(h)))s+=60;
+  if(MALE_NAMES.some(h=>name.includes(h)))s-=50;
+  if(/natural|neural|online/.test(name))s+=30;
+  if(name.includes('google'))s+=20;
+  return s;
+}
 function pickVoice(){
-  const pref={en:['en-in','en-us','en-gb','en'],ne:['ne-np','ne','hi-in','hi'],hi:['hi-in','hi','en-in']}[lang];
-  for(const p of pref){const v=voices.find(v=>String(v.lang).toLowerCase().startsWith(p));if(v)return v}
-  return null;
+  /* Nepali TTS voices barely exist in browsers, so for नेपाली we fall back to a
+     female Hindi voice — it reads Devanagari clearly instead of a robotic default. */
+  const pref={en:['en-in','en-gb','en-us','en'],ne:['ne-np','ne','hi-in','hi','en-in'],hi:['hi-in','hi','en-in']}[lang];
+  let best=null,bestScore=-1;
+  voices.forEach(v=>{const s=scoreVoice(v,pref);if(s>bestScore){best=v;bestScore=s}});
+  return best;
 }
 function talkFace(on){[fab,panel.querySelector('.mbot-hava')].forEach(el=>{if(el)el.classList.toggle('mbot-talk',on)})}
+let resumeTimer=null;
 function speak(html){
   if(!voiceOn||!('speechSynthesis' in window)||html===null||html==='')return;
   try{
     const tmp=document.createElement('div');tmp.innerHTML=String(html).replace(/<br\s*\/?>/gi,'. ');
     let s=(tmp.textContent||'').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2190}-\u{21FF}]/gu,'').replace(/\s+/g,' ').trim();
     s=s.replace(/Rs\s?/g,lang==='en'?'rupees ':lang==='ne'?'रुपैयाँ ':'रुपये ');
-    if(s.length>320)s=s.slice(0,320);
+    s=s.replace(/\s*[·|]\s*/g,', ');
+    if(s.length>600)s=s.slice(0,600);
     if(!s)return;
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(s);
-    u.lang={en:'en-IN',ne:'ne-NP',hi:'hi-IN'}[lang];
-    const v=pickVoice();if(v)u.voice=v;
-    u.rate=1;u.pitch=1.05;
-    u.onstart=()=>talkFace(true);
-    u.onend=()=>talkFace(false);
-    u.onerror=()=>talkFace(false);
-    speechSynthesis.speak(u);
+    speechSynthesis.cancel();clearInterval(resumeTimer);
+    /* Speak sentence-by-sentence: long single utterances get cut off or slurred,
+       short chunks stay crisp and add natural pauses. */
+    const sentences=s.match(/[^.!?।]+[.!?।]?/g)||[s];
+    const parts=[];let buf='';
+    sentences.forEach(c=>{if(buf&&(buf+c).length>170){parts.push(buf);buf=c}else buf+=c});
+    if(buf.trim())parts.push(buf);
+    const v=pickVoice();
+    talkFace(true);
+    parts.forEach((p,i)=>{
+      const u=new SpeechSynthesisUtterance(p.trim());
+      if(v){u.voice=v;u.lang=v.lang}
+      else u.lang={en:'en-IN',ne:'hi-IN',hi:'hi-IN'}[lang];
+      u.rate=0.95;u.pitch=1.15;u.volume=1;
+      if(i===parts.length-1){
+        u.onend=()=>{talkFace(false);clearInterval(resumeTimer)};
+        u.onerror=()=>{talkFace(false);clearInterval(resumeTimer)};
+      }
+      speechSynthesis.speak(u);
+    });
+    /* Chrome silently pauses speech after ~15s — keep nudging it awake */
+    resumeTimer=setInterval(()=>{
+      if(!speechSynthesis.speaking){clearInterval(resumeTimer);talkFace(false)}
+      else speechSynthesis.resume();
+    },4000);
   }catch(e){}
 }
 
@@ -624,6 +665,80 @@ function listPayRequests(){
   const acts=reqs.map(x=>act('✅ '+esc((x.customer||'').split(' ')[0])+' '+money(x.amount),'apr:'+x.id)+act('❌','rej:'+x.id)).join('');
   botSay(html,{acts,speak:t('reqListHead')+' '+reqs.length});
 }
+function overdueCard(){
+  const rows=overdueList(7).slice(0,6);
+  if(!rows.length){botSay(t('overdueNone'));return}
+  let html=t('overdueHead');
+  rows.forEach(x=>{html+=lrow(esc(x.c.name)+' · '+fmt(t('daysWord'),{n:x.days}),money(x.bal))});
+  const acts=rows.slice(0,3).map(x=>act('💬 '+esc((x.c.name||'').split(' ')[0]),'wa:'+x.c.id)).join('')+act(PAGE_LABEL.followup[lang],'nav:followup');
+  botSay(html,{acts,speak:t('overdueHead')+' '+rows.map(x=>x.c.name+' '+money(x.bal)).join(', ')});
+}
+function chequesSoonCard(){
+  const rows=chequesDueSoon().slice(0,6);
+  if(!rows.length){botSay(t('chequeNone'),{acts:act(PAGE_LABEL.cheques[lang],'nav:cheques')});return}
+  let html=t('chequeSoon');
+  rows.forEach(x=>{html+=lrow(esc(x.party)+' · '+esc(x.chequeNo)+' · '+esc(String(x.chequeDate).slice(0,10)),money(x.amount))});
+  botSay(html,{acts:act(PAGE_LABEL.cheques[lang],'nav:cheques')});
+}
+/* "cheque 12345 cleared" / "चेक बाउन्स भयो" — update status by number, or offer a pick list */
+function markCheque(txt){
+  const st=has(txt,['bounce','बाउन्स','बाउंस','return','फिर्ता','वापस'])?'bounce':'clear';
+  const no=(txt.match(/\d{3,}/)||[])[0];
+  const holds=data().cheques.filter(x=>x.status==='hold');
+  if(no){
+    const chosen=holds.find(x=>String(x.chequeNo).includes(no));
+    if(!chosen){botSay(fmt(t('chequeNotFound'),{no:esc(no)}));return}
+    doMarkCheque(chosen.id,st);return;
+  }
+  if(!holds.length){botSay(t('chequeNone'));return}
+  botSay(t('chequePickMark'),{acts:holds.slice(0,4).map(x=>act(esc(x.chequeNo)+' · '+esc((x.party||'').split(' ')[0])+' · '+money(x.amount),'chq:'+x.id+'|'+st)).join('')});
+}
+function doMarkCheque(cid,st){
+  try{
+    const d=data();const ch=d.cheques.find(x=>x.id===cid);if(!ch)return;
+    M().updateChequeStatus(d,cid,st);rerender();
+    botSay(fmt(t('chequeMarkDone'),{no:esc(ch.chequeNo),party:esc(ch.party),amt:money(ch.amount),st:st==='clear'?'✅ clear':'⚠️ bounce'}));
+  }catch(e){botSay(t('error')+esc(e.message))}
+}
+function storeSwitchCard(){
+  const stores=M().getStores();
+  if(stores.length<=1){botSay(t('oneStore'));return}
+  const cur=M().getActiveStoreId();
+  botSay(t('pickStore'),{acts:stores.slice(0,4).map(s=>act((s.id===cur?'✔ ':'🏪 ')+esc(s.name),'store:'+s.id)).join('')});
+}
+function lastBackupCard(){
+  const ts=localStorage.getItem('martai_last_backup_ts');
+  let d='';
+  if(ts){try{d=new Date(ts).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'})}catch(e){d=ts}}
+  botSay(ts?fmt(t('lastBackupAt'),{d:esc(d)}):t('lastBackupNever'),{acts:act('💾 Backup','send:backup')});
+}
+function menuCard(){
+  const items=[
+    L('📋 Briefing','📋 ब्रिफिङ','📋 ब्रीफिंग'),
+    L("📊 Today's sales",'📊 आजको बिक्री','📊 आज की बिक्री'),
+    L('📈 Weekly report','📈 हप्ताको रिपोर्ट','📈 हफ्ते की रिपोर्ट'),
+    L('📅 This month','📅 यो महिना','📅 इस महीने'),
+    L('💰 Total dues','💰 जम्मा उधारो','💰 कुल उधार'),
+    L('🏆 Top dues','🏆 धेरै उधारो','🏆 सबसे ज़्यादा उधार'),
+    L('⏰ Overdue','⏰ ढिला उधारो','⏰ लेट उधार'),
+    L('📊 Stats','📊 आँकडा','📊 आंकड़े'),
+    L('👤 Add customer','👤 नयाँ ग्राहक','👤 नया ग्राहक'),
+    L('🧾 Add credit','🧾 उधारो थप्ने','🧾 उधार जोड़ें'),
+    L('✅ Record payment','✅ भुक्तानी लेख्ने','✅ भुगतान दर्ज करें'),
+    L('🛒 Add sale','🛒 बिक्री थप्ने','🛒 बिक्री जोड़ें'),
+    L('💵 Daily entry','💵 दैनिक बिक्री लेख्ने','💵 दैनिक बिक्री दर्ज'),
+    L('🏦 Add cheque','🏦 चेक थप्ने','🏦 चेक जोड़ें'),
+    L('🏦 Cheques due','🏦 आउने चेक','🏦 आने वाले चेक'),
+    L('📄 New estimate','📄 नयाँ इस्टिमेट','📄 नया एस्टीमेट'),
+    L('🔔 Payment requests','🔔 पेन्डिङ रिपोर्ट','🔔 पेंडिंग रिपोर्ट'),
+    L('💬 Send reminder','💬 रिमाइन्डर पठाऊ','💬 रिमाइंडर भेजो'),
+    L('💾 Backup','💾 ब्याकअप','💾 बैकअप'),
+    L('📄 Export CSV','📄 CSV','📄 CSV'),
+    L('🔄 Sync','🔄 सिंक','🔄 सिंक'),
+    L('🧮 Calculator: 250*4+100','🧮 हिसाब: 250*4+100','🧮 हिसाब: 250*4+100')
+  ];
+  botSay(t('menuHead'),{acts:items.map(x=>act(esc(x[lang]),'send:'+x[lang])).join(''),speak:t('greetBack')});
+}
 /* Safe arithmetic — digits and + - * / % ( ) only, no eval */
 function calcExpr(raw){
   const s=raw.replace(/,/g,'').replace(/\s+/g,'');
@@ -655,9 +770,14 @@ const FLOWS={
   addCustomer:{fields:['name','phone','pin']},
   credit:{fields:['customer','amount','items']},
   payment:{fields:['customer','amount']},
-  sale:{fields:['amount','party']}
+  sale:{fields:['amount','party']},
+  cheque:{fields:['party2','chequeNo','amount','bank']},
+  estimate:{fields:['party','amount','items']},
+  daily:{fields:['combo']},
+  limit:{fields:['customer','amount']},
+  custpay:{fields:['amount','method','reference']}
 };
-const PROMPTS={name:'askName',phone:'askPhone',pin:'askPin',customer:'askCustomer',amount:'askAmount',items:'askItems',party:'askParty'};
+const PROMPTS={name:'askName',phone:'askPhone',pin:'askPin',customer:'askCustomer',amount:'askAmount',items:'askItems',party:'askParty',party2:'askParty2',chequeNo:'askChequeNo',bank:'askBank',combo:'askDaily',method:'askMethod',reference:'askReference'};
 const CANCEL_WORDS=['cancel','stop','band','chhod','chod','quit','exit','रद्द','बन्द','बंद','रोक','छोड'];
 const YES_WORDS=['yes','y','ok','okay','sure','ho','hunxa','huncha','garnus','gara','haan','han','ha','हो','हुन्छ','गर','गर्नुस्','हाँ','ठीक','थिक','ok cha'];
 const NO_WORDS=['no','n','nah','hoina','nagara','nahi','nahin','होइन','नगर','नहीं','ना','रद्द'];
@@ -673,6 +793,15 @@ function flowNext(){
   if(flow.type==='credit')msg=fmt(t('cfCredit'),{name:esc(d.customerName),amt:money(d.amount),items:d.items?' ('+esc(d.items)+')':''});
   if(flow.type==='payment')msg=fmt(t('cfPayment'),{name:esc(d.customerName),amt:money(d.amount)});
   if(flow.type==='sale')msg=fmt(t('cfSale'),{amt:money(d.amount),party:esc(d.party||'Walk-in')});
+  if(flow.type==='cheque')msg=fmt(t('cfCheque'),{no:esc(d.chequeNo),party:esc(d.party2),amt:money(d.amount),bank:d.bank?' · '+esc(d.bank):''});
+  if(flow.type==='estimate')msg=fmt(t('cfEstimate'),{amt:money(d.amount),party:esc(d.party||'Walk-in'),items:d.items?' ('+esc(d.items)+')':''});
+  if(flow.type==='daily'){
+    const total=Object.values(d.combo).reduce((s,v)=>s+num(v),0);
+    const rows=Object.keys(d.combo).map(k=>lrow(esc(k),money(d.combo[k]))).join('');
+    msg=fmt(t('cfDaily'),{amt:money(total),rows});
+  }
+  if(flow.type==='limit')msg=fmt(t('cfLimit'),{amt:money(d.amount),name:esc(d.customerName)});
+  if(flow.type==='custpay')msg=fmt(t('cfCustPay'),{amt:money(d.amount),method:esc(d.method||'Cash'),ref:d.reference?' · '+esc(d.reference):''});
   botSay(msg,{acts:act(UI.yes[lang],'cf:yes')+act(UI.no[lang],'cf:no')});
 }
 function flowCancel(){flow=null;botSay(t('cancelled'))}
@@ -695,6 +824,24 @@ function flowExec(){
     }else if(f.type==='sale'){
       M().addSale(d,{amount:f.data.amount,party:f.data.party||'Walk-in Customer'});
       rerender();botSay(fmt(t('doneSale'),{amt:money(f.data.amount),party:esc(f.data.party||'Walk-in')}));
+    }else if(f.type==='cheque'){
+      const ch=M().addCheque(d,{party:f.data.party2,chequeNo:f.data.chequeNo,amount:f.data.amount,bank:f.data.bank||''});
+      rerender();botSay(fmt(t('doneCheque'),{no:esc(ch.chequeNo),amt:money(ch.amount)}));
+    }else if(f.type==='estimate'){
+      M().addEstimateBill(d,{customer:f.data.party||'Walk-in Customer',amount:f.data.amount,items:f.data.items||''});
+      rerender();botSay(fmt(t('doneEstimate'),{amt:money(f.data.amount),party:esc(f.data.party||'Walk-in')}));
+    }else if(f.type==='daily'){
+      const row=M().addDaily(d,f.data.combo);
+      rerender();
+      const bs=typeof window.npDate==='function'?window.npDate(row.date):row.date;
+      botSay(fmt(t('doneDaily'),{amt:money(dailyTotal(row)),d:esc(bs)}));
+    }else if(f.type==='limit'){
+      M().updateCustomer(d,f.data.customerId,{creditLimit:f.data.amount});
+      rerender();botSay(fmt(t('doneLimit'),{name:esc(f.data.customerName),amt:money(f.data.amount)}));
+    }else if(f.type==='custpay'){
+      M().customerRequestPayment({amount:f.data.amount,method:f.data.method||'Cash',reference:f.data.reference||''})
+        .then(()=>{rerender();botSay(fmt(t('custPayDone'),{amt:money(f.data.amount)}))})
+        .catch(e=>botSay(t('custPayNeedOnline')+'<br><small>'+esc(e.message||'')+'</small>'));
     }
   }catch(e){botSay(t('error')+esc(e.message))}
 }
@@ -704,6 +851,8 @@ function flowInput(raw){
   if(flow.step==='confirm'){
     if(YES_WORDS.includes(txt)||has(txt,['हुन्छ','हाँ','yes','ho '])){flowExec();return}
     if(NO_WORDS.includes(txt)||has(txt,['होइन','नहीं','no '])){flowCancel();return}
+    /* user changed topic mid-confirm — drop the pending task and handle the new request */
+    if(txt.split(' ').length>=2){flow=null;botSay(t('cancelled'),{speak:null});handleText(raw);return}
     botSay(t('unknown'),{acts:act(UI.yes[lang],'cf:yes')+act(UI.no[lang],'cf:no')});return;
   }
   const step=flow.step;
@@ -723,10 +872,22 @@ function flowInput(raw){
     const a=parseAmount(txt);
     if(a<=0){botSay(t('badAmount'));return}
     flow.data.amount=a;
-  }else if(step==='items'||step==='party'){
+  }else if(step==='items'||step==='party'||step==='bank'||step==='reference'||step==='method'){
     const skip=['skip','no','none','nai','xaina','chaina','छैन','नहीं','कुनै','koi nahi','-'];
     const v=skip.includes(txt)?'':String(raw).trim();
-    flow.data[step]=step==='party'&&!v?'Walk-in Customer':v;
+    flow.data[step]=step==='party'&&!v?'Walk-in Customer':step==='method'&&!v?'Cash':v;
+  }else if(step==='party2'){
+    const v=String(raw).trim();
+    if(v.length<2){botSay(t('badName'));return}
+    flow.data.party2=v;
+  }else if(step==='chequeNo'){
+    const v=String(raw).trim();
+    if(!v){botSay(t('askChequeNo'));return}
+    flow.data.chequeNo=v;
+  }else if(step==='combo'){
+    const combo=parseDailyCombo(txt);
+    if(!combo){botSay(t('badDaily'));return}
+    flow.data.combo=combo;
   }else if(step==='customer'){
     const found=searchCust(raw);
     if(!found.length){botSay(fmt(t('custNotFound'),{q:esc(raw)}),{acts:act(UI.no[lang],'cf:no')});return}
@@ -824,8 +985,39 @@ function handleText(raw){
   if(has(txt,KW.who)){botSay(t('whoAmI'));return}
   if(has(txt,KW.thanks)){botSay(t('thanks'));return}
   if(has(txt,KW.bye)&&words.length<=3){botSay(t('bye'));return}
-  if(has(txt,KW.greet)&&words.length<=4){botSay(t('greetBack'));return}
-  if(has(txt,KW.help)&&words.length<=5){botSay(t(MODE==='dash'?'helpDash':MODE==='cust'?'helpCust':'helpLogin'),{speak:t('greetBack')});return}
+  if((words.some(w=>KW.greet.includes(w))&&words.length<=4)||txt==='साथी'||txt==='saathi'||txt==='oi'||txt==='ओइ'){
+    const h=new Date().getHours();
+    const g=h<12?t('goodMorning'):h<17?t('goodAfternoon'):t('goodEvening');
+    botSay(g+'! '+t('greetBack'));return;
+  }
+  if(has(txt,['menu','मेनु','मेन्यू'])&&words.length<=3){
+    if(MODE==='dash')menuCard();else botSay(t(MODE==='cust'?'helpCust':'helpLogin'));
+    return;
+  }
+  if(has(txt,KW.help)&&words.length<=5){
+    botSay(t(MODE==='dash'?'helpDash':MODE==='cust'?'helpCust':'helpLogin'),
+      {speak:t('greetBack'),acts:MODE==='dash'?act(lang==='en'?'🗂 Full menu':lang==='ne'?'🗂 पूरा मेनु':'🗂 पूरा मेन्यू','send:menu'):''});
+    return;
+  }
+  /* store info — works on every page */
+  if(has(txt,['rd mart','rdmart','आर डी मार्ट','आरडी मार्ट'])&&(has(txt,KW.about)||words.length<=5)){botSay(t('aboutApp'));return}
+  if(has(txt,['खुल','khul','open','बन्द','बंद','band ','close'])&&has(txt,['mart','store','पसल','दुकान','shop','samaya','बजे','कहिले','कब','कति','hour','time'])){botSay(t('storeHours'));return}
+  if(has(txt,['where','कहाँ','कहां','kaha','location','ठेगाना','पता','address'])&&has(txt,['mart','store','पसल','दुकान','shop'])){botSay(t('storeLoc'));return}
+  /* calculator — "250*4+100" or "calculate 1500/3" (never a phone number) */
+  if(!findPhoneIn(txt)){
+    const mathTxt=txt.replace(/,/g,'');
+    if(/^[\d+\-*/%(). ]+$/.test(mathTxt)&&/[+\-*/%]/.test(mathTxt)&&/\d/.test(mathTxt)){
+      const ans=calcExpr(mathTxt);
+      if(ans!==null){botSay(fmt(t('calcAns'),{expr:esc(raw.trim()),ans:esc(ans.toLocaleString('en-IN'))}));return}
+    }
+    if(has(txt,['calculate','calc ','हिसाब गर','kitna hota','कति हुन्छ','कितना होता'])){
+      const m=mathTxt.match(/[-\d(][\d+\-*/%(). ]*\d\)?/);
+      if(m&&/[+\-*/%]/.test(m[0])){
+        const ans=calcExpr(m[0].trim());
+        if(ans!==null){botSay(fmt(t('calcAns'),{expr:esc(m[0].trim()),ans:esc(ans.toLocaleString('en-IN'))}));return}
+      }
+    }
+  }
   if(has(txt,KW.time)&&words.length<=5){
     const dt=new Date();
     const time=dt.toLocaleTimeString(lang==='en'?'en-US':'ne-NP',{hour:'2-digit',minute:'2-digit'});
@@ -850,6 +1042,8 @@ function dashIntents(txt,raw,words){
   const amt=parseAmount(txt);
   /* logout */
   if(has(txt,KW.logout)){botSay(t('loggedOut'));setTimeout(()=>{M().clearSession();location.href='index.html'},900);return true}
+  /* last backup time — check before the backup action itself */
+  if(has(txt,KW.backup)&&has(txt,['last','when','kahile','कहिले','कब','आखिरी','अन्तिम'])){lastBackupCard();return true}
   /* backup */
   if(has(txt,KW.backup)){
     if(!isMainAdminNow()){botSay(t('adminOnly'));return true}
@@ -870,18 +1064,62 @@ function dashIntents(txt,raw,words){
   /* theme */
   if(has(txt,KW.dark)&&(has(txt,KW.theme)||words.length<=3)){if(typeof window.applyTheme==='function')window.applyTheme('dark');botSay(t('themeSet'));return true}
   if(has(txt,KW.light)&&(has(txt,KW.theme)||words.length<=3)){if(typeof window.applyTheme==='function')window.applyTheme('light');botSay(t('themeSet'));return true}
-  /* payment requests */
-  if(has(txt,KW.reqs)){
-    const n=(data().paymentRequests||[]).filter(x=>x.status==='pending').length;
-    botSay(n?fmt(t('reqPending'),{n}):t('reqNone'),{acts:n?act(PAGE_LABEL.dashboard[lang],'nav:dashboard'):''});
-    return true;
-  }
+  /* payment requests — list with one-tap approve / reject */
+  if(has(txt,KW.reqs)){listPayRequests();return true}
   /* whatsapp reminder */
   if(has(txt,KW.reminder)){
     const q=leftoverQuery(txt.split(' ').filter(x=>!KW.reminder.some(k=>k.trim()===x)).join(' '));
     if(q){const found=searchCust(q);if(found.length===1){waReminder(found[0].id);return true}}
     if(typeof window.openWaReminder==='function'){window.openWaReminder();botSay(t('waSent'),{speak:null})}else topDues();
     return true;
+  }
+  /* ---- pro intents ---- */
+  /* switch store */
+  if(has(txt,['switch store','change store','store badal','store fer','पसल फेर','पसल बदल','दुकान बदल','अर्को पसल','दूसरी दुकान'])){
+    if(!isMainAdminNow()){botSay(t('adminOnly'));return true}
+    storeSwitchCard();return true;
+  }
+  /* daily briefing */
+  if(has(txt,['briefing','brief','ब्रिफिङ','ब्रीफिंग','आजको अवस्था','आज का हाल','din kasto','सुबह की रिपोर्ट'])){briefing();return true}
+  /* weekly report */
+  if(has(txt,['week','weekly','हप्ता','हफ्ता','हफ्ते','सात दिन','७ दिन','7 din','7 days'])&&!has(txt,['cheque','चेक'])){weekSummary();return true}
+  /* store stats */
+  if(has(txt,['stats','statistic','snapshot','झलक','आँकडा','आंकड़े','tathyanka','how many customer','kati grahak','कति ग्राहक','कितने ग्राहक'])){statsCard();return true}
+  /* overdue customers */
+  if(has(txt,['overdue','ढिला','dhila','late payer','purano udharo','पुरानो उधारो','पुराना उधार'])){overdueCard();return true}
+  /* credit limit */
+  if(has(txt,['limit','सीमा','seema'])){
+    let pre={};if(amt>0)pre.amount=amt;
+    const q=leftoverQuery(txt.split(' ').filter(x=>!['limit','सीमा','seema','set','राख','रख','रखो'].includes(x)).join(' '));
+    pre=resolveCustomerPre(pre,q);
+    startFlow('limit',pre);return true;
+  }
+  /* cheques: add / mark clear-bounce / due soon */
+  if(has(txt,['cheque','चेक'])){
+    if(has(txt,['add','new','received','आयो','थप','जोड','naya','नयाँ','नया'])){startFlow('cheque',amt>0?{amount:amt}:{});return true}
+    if(has(txt,['clear','pass','bounce','बाउन्स','बाउंस','return','फिर्ता','वापस','क्लियर','पास'])){markCheque(txt);return true}
+    if(has(txt,['due','soon','आउने','आने','week','हप्ता','हफ्ते'])){chequesSoonCard();return true}
+  }
+  /* daily sales entry — "daily entry cash 5000 pos 2000 fonepay 300" */
+  {
+    const wantsEntry=has(txt,['daily','दैनिक','dainik'])&&has(txt,['entry','save','add','लेख','हाल','थप','दर्ज','सेभ','सेव','likh','lekh','thap']);
+    const combo=has(txt,['daily','दैनिक','dainik'])?parseDailyCombo(txt):null;
+    if(combo&&Object.keys(combo).length&&(wantsEntry||amt>0)){flow={type:'daily',step:'',data:{combo}};flowNext();return true}
+    if(wantsEntry){startFlow('daily');return true}
+  }
+  /* estimate bill */
+  if(has(txt,['estimate','quotation','इस्टिमेट','एस्टीमेट'])&&has(txt,['add','new','make','create','बना','थप','जोड','नयाँ','नया','naya','banau','banao'])){
+    startFlow('estimate',amt>0?{amount:amt}:{});return true;
+  }
+  /* customer profile */
+  if(has(txt,['profile','प्रोफाइल','jankari','जानकारी','info of','details of','ke bare','बारेमा','के बारे'])){
+    const q=leftoverQuery(txt.split(' ').filter(x=>!['profile','प्रोफाइल','jankari','जानकारी','info','details','बारेमा','बारे','bare','ke'].includes(x)).join(' '));
+    if(q){
+      const found=searchCust(q);
+      if(found.length===1){showProfile(found[0]);return true}
+      if(found.length>1){botSay(t('pickCustomer'),{acts:found.slice(0,4).map(c=>act(esc(c.name)+' · '+esc(c.phone),'prof:'+c.id)).join('')});return true}
+      botSay(fmt(t('custNotFound'),{q:esc(q)}));return true;
+    }
   }
   /* add customer */
   if(has(txt,KW.addC)){
@@ -955,6 +1193,11 @@ function custIntents(txt,words){
   if(has(txt,KW.logout)){botSay(t('loggedOut'));setTimeout(()=>{M().clearSession();location.href='index.html'},900);return true}
   if(has(txt,KW.qr)){custTab('overview');botSay(t('custQr'));return true}
   if(has(txt,KW.pin)){custTab('profile');botSay(t('custPin'));return true}
+  /* report a payment — "I paid 500 via esewa" */
+  if(has(txt,['paid','i pay','maile tire','तिरें','तिरे','tire','bhuktani','भुक्तानी','भुगतान','chukaya','चुकाया','report payment','report a payment','payment report','payment'])&&!has(txt,KW.list)){
+    const amt=parseAmount(txt);
+    startFlow('custpay',amt>0?{amount:amt}:{});return true;
+  }
   if(has(txt,KW.dues)&&has(txt,KW.list)||has(txt,['मेरो उधारो','मेरा उधार','my dues','मेरी सूची'])){
     const d=M().getDB();const rows=d.credits.filter(x=>num(x.amount)>num(x.paid)).slice(0,8);
     const c=self();if(!c)return true;
@@ -1012,6 +1255,21 @@ panel.addEventListener('click',e=>{
     else if(k==='cf'){if(!flow)return;if(v==='yes')flowExec();else flowCancel()}
     else if(k==='csv'&&typeof window[v]==='function')window[v]();
     else if(k==='tab')custTab(v);
+    else if(k==='apr'||k==='rej'){
+      const req=(data().paymentRequests||[]).find(x=>x.id===v);
+      if(req)M().resolvePaymentRequest(data(),v,k==='apr')
+        .then(()=>{rerender();botSay(fmt(t(k==='apr'?'reqApproved':'reqRejected'),{amt:money(req.amount),name:esc(req.customer||'Customer')}))})
+        .catch(e2=>botSay(t('error')+esc(e2.message)));
+    }
+    else if(k==='chq'){const p=v.split('|');doMarkCheque(p[0],p[1]==='bounce'?'bounce':'clear')}
+    else if(k==='prof'){const c=M().customerById(data(),v);if(c)showProfile(c)}
+    else if(k==='srch'){if(typeof window.openCommand==='function')window.openCommand(v);else doNav('customers')}
+    else if(k==='store'){
+      M().setActiveStoreId(v);
+      M().syncNow()
+        .then(()=>{rerender();const st=M().getStores().find(s=>s.id===v);botSay(fmt(t('storeSet'),{name:esc(st?st.name:v)}))})
+        .catch(e2=>botSay(t('syncFail')+esc(e2.message)));
+    }
   }catch(err){botSay(t('error')+esc(err.message||err))}
 });
 $m('mbotSend').addEventListener('click',sendMsg);
