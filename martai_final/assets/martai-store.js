@@ -11,7 +11,7 @@
   let pendingSave=null;
   // Dirty tracking: only records touched since the last successful sync are pushed to Supabase.
   // Records without a _tableId (never synced) are always pushed.
-  const dirty={customers:new Set(),credits:new Set(),sales:new Set(),dailySales:new Set(),partyPayments:new Set(),cheques:new Set(),estimateBills:new Set(),paymentRequests:new Set()};
+  const dirty={customers:new Set(),credits:new Set(),sales:new Set(),dailySales:new Set(),partyPayments:new Set(),cheques:new Set(),chequeQueue:new Set(),estimateBills:new Set(),paymentRequests:new Set()};
   let settingsDirty=false;
   // Offline queue: dirty ids and pending deletions survive reloads via localStorage,
   // and are flushed to Supabase before any remote load can overwrite local data.
@@ -33,8 +33,8 @@
   function defaultStore(){return{id:'default',name:'RD MART',phone:'',logoData:'',createdAt:now(),isActive:true}}
   function getActiveStoreId(){return localStorage.getItem(ACTIVE_STORE)||'default'}
   function setActiveStoreId(storeId){localStorage.setItem(ACTIVE_STORE,storeId||'default');currentDB=null}
-  function makeDB(){return{version:1,createdAt:now(),settings:{martName:'MartAI',adminUser:'admin',adminPass:'mart2024',martPhone:'9800000000',storeLogo:''},stores:[defaultStore()],customers:[],credits:[],sales:[],dailySales:[],partyPayments:[],cheques:[],estimateBills:[],activity:[],staffAccounts:[]}}
-  function normalizeDB(db){if(!db||typeof db!=='object')db=makeDB();['settings','stores','customers','credits','sales','dailySales','partyPayments','cheques','estimateBills','activity','loginEvents','staffAccounts','paymentRequests'].forEach(k=>{if(k==='settings'){db[k]=db[k]||makeDB().settings}else if(!Array.isArray(db[k]))db[k]=[]});if(!db.stores.length)db.stores=[defaultStore()];if(!('storeLogo' in db.settings))db.settings.storeLogo='';if(!db.settings.adminUser)db.settings.adminUser='admin';if(!db.settings.adminPass)db.settings.adminPass='mart2024';return db}
+  function makeDB(){return{version:1,createdAt:now(),settings:{martName:'MartAI',adminUser:'admin',adminPass:'mart2024',martPhone:'9800000000',storeLogo:''},stores:[defaultStore()],customers:[],credits:[],sales:[],dailySales:[],partyPayments:[],cheques:[],chequeQueue:[],estimateBills:[],activity:[],staffAccounts:[]}}
+  function normalizeDB(db){if(!db||typeof db!=='object')db=makeDB();['settings','stores','customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','estimateBills','activity','loginEvents','staffAccounts','paymentRequests'].forEach(k=>{if(k==='settings'){db[k]=db[k]||makeDB().settings}else if(!Array.isArray(db[k]))db[k]=[]});if(!db.stores.length)db.stores=[defaultStore()];if(!('storeLogo' in db.settings))db.settings.storeLogo='';if(!db.settings.adminUser)db.settings.adminUser='admin';if(!db.settings.adminPass)db.settings.adminPass='mart2024';return db}
   function readLocal(){let db;try{db=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){db=null}return normalizeDB(db)}
   function writeLocal(db){localStorage.setItem(KEY,JSON.stringify(db))}
   function getDB(){if(!currentDB)currentDB=readLocal();return currentDB}
@@ -48,6 +48,7 @@
   function fromSaleRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),date:r.sale_date,party:r.party||'Walk-in Customer',amount:num(r.amount),note:r.note||'',createdAt:r.created_at}}
   function fromDailyRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),date:r.sale_date,pos:num(r.pos),fonepay:num(r.fonepay),cash:num(r.cash),finance:num(r.finance),partyPayment:num(r.party_payment),other:num(r.other),note:r.note||'',createdAt:r.created_at}}
   function fromPartyPaymentRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),date:r.payment_date,party:r.party||'',amount:num(r.amount),method:r.method||'Cash',reference:r.reference||'',note:r.note||'',createdAt:r.created_at}}
+  function fromChequeQueueRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),party:r.party||'',amount:num(r.amount),note:r.note||'',createdAt:r.created_at}}
   function fromChequeRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),party:r.party||'',chequeNo:r.cheque_no||'',amount:num(r.amount),bank:r.bank||'',chequeDate:r.cheque_date,status:r.status||'hold',note:r.note||'',createdAt:r.created_at,updatedAt:r.updated_at}}
   function fromEstimateRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),date:r.estimate_date,customer:r.customer||'',phone:r.phone||'',items:r.items||'',amount:num(r.amount),validUntil:r.valid_until||'',status:r.status||'draft',note:r.note||'',createdAt:r.created_at,updatedAt:r.updated_at}}
   function fromActivityRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),type:r.activity_type||'info',message:r.message||'',time:r.created_at}}
@@ -73,7 +74,7 @@
       const stores=storeResult.error?[defaultStore()]:(storeResult.data||[]).map(fromStoreRow);
       let storeId=getActiveStoreId();if(!stores.some(s=>s.id===storeId)){storeId=stores[0]?.id||'default';setActiveStoreId(storeId)}
       const byStore=q=>storeResult.error?q:q.eq('store_id',storeId);
-      const [settings,customers,credits,sales,daily,party,cheques,estimates,activity,payReqs]=await Promise.all([
+      const [settings,customers,credits,sales,daily,party,cheques,estimates,activity,payReqs,chequeQueueRes]=await Promise.all([
         client.from('mart_settings').select('*').eq('id',true).maybeSingle(),
         byStore(client.from('customers').select('*')).order('created_at',{ascending:false}),
         byStore(client.from('credits').select('*')).order('credit_date',{ascending:false}),
@@ -83,7 +84,8 @@
         byStore(client.from('cheques').select('*')).order('cheque_date',{ascending:false}),
         byStore(client.from('estimate_bills').select('*')).order('estimate_date',{ascending:false}).limit(200),
         byStore(client.from('activity').select('*')).order('created_at',{ascending:false}).limit(60),
-        byStore(client.from('payment_requests').select('*')).order('created_at',{ascending:false}).limit(120)
+        byStore(client.from('payment_requests').select('*')).order('created_at',{ascending:false}).limit(120),
+        byStore(client.from('cheque_queue').select('*')).order('created_at',{ascending:true})
       ]);
       [settings,customers,credits,sales,daily,party,cheques,activity].forEach(r=>{if(r.error)throw r.error});
       const customerRows=(customers.data||[]).map(fromCustomerRow);
@@ -99,6 +101,8 @@
         dailySales:(daily.data||[]).map(fromDailyRow),
         partyPayments:(party.data||[]).map(fromPartyPaymentRow),
         cheques:(cheques.data||[]).map(fromChequeRow),
+        // cheque_queue table may not exist until add-cheque-queue.sql is run — keep local copy then
+        chequeQueue:chequeQueueRes.error?(getDB().chequeQueue||[]):(chequeQueueRes.data||[]).map(fromChequeQueueRow),
         estimateBills:estimates.error?[]:(estimates.data||[]).map(fromEstimateRow),
         activity:(activity.data||[]).map(fromActivityRow),
         paymentRequests:payReqs.error?[]:(payReqs.data||[]).map(r=>fromPaymentRequestRow(r,customerRows)),
@@ -179,6 +183,15 @@
     for(const x of db.dailySales){if(x._tableId&&!dirty.dailySales.has(x.id))continue;const row={legacy_id:x.id,store_id:storeId,sale_date:isoDate(x.date),pos:num(x.pos),fonepay:num(x.fonepay),cash:num(x.cash),finance:num(x.finance),party_payment:num(x.partyPayment),other:num(x.other),note:x.note||'',created_at:x.createdAt||now()};x._tableId=await saveLegacyRow(client,'daily_sales',row,x._tableId);dirty.dailySales.delete(x.id)}
     for(const x of db.partyPayments){if(x._tableId&&!dirty.partyPayments.has(x.id))continue;const row={legacy_id:x.id,store_id:storeId,payment_date:isoDate(x.date),party:x.party||'',amount:num(x.amount),method:x.method||'Cash',reference:x.reference||'',note:x.note||'',created_at:x.createdAt||now()};x._tableId=await saveLegacyRow(client,'party_payments',row,x._tableId);dirty.partyPayments.delete(x.id)}
     for(const x of db.cheques){if(x._tableId&&!dirty.cheques.has(x.id))continue;const row={legacy_id:x.id,store_id:storeId,party:x.party||'',cheque_no:x.chequeNo||'',amount:num(x.amount),bank:x.bank||'',cheque_date:isoDate(x.chequeDate),status:x.status||'hold',note:x.note||'',created_at:x.createdAt||now(),updated_at:x.updatedAt||null};x._tableId=await saveLegacyRow(client,'cheques',row,x._tableId);dirty.cheques.delete(x.id)}
+    for(const x of db.chequeQueue||[]){
+      if(x._tableId&&!dirty.chequeQueue.has(x.id))continue;
+      const row={legacy_id:x.id,store_id:storeId,party:x.party||'',amount:num(x.amount),note:x.note||'',created_at:x.createdAt||now()};
+      // Table may not exist until add-cheque-queue.sql is run — keep queue local-only
+      // then (rows without _tableId retry automatically on every later save).
+      try{x._tableId=await saveLegacyRow(client,'cheque_queue',row,x._tableId)}
+      catch(e){if(String(e.message||'').includes('cheque_queue')){dirty.chequeQueue.clear();console.warn('cheque_queue table missing — run add-cheque-queue.sql in Supabase to sync the cheque queue');break}throw e}
+      dirty.chequeQueue.delete(x.id)
+    }
     for(const x of db.estimateBills||[]){if(x._tableId&&!dirty.estimateBills.has(x.id))continue;const row={legacy_id:x.id,store_id:storeId,estimate_date:isoDate(x.date),customer:x.customer||'',phone:phoneClean(x.phone)||'',items:x.items||'',amount:num(x.amount),valid_until:x.validUntil?isoDate(x.validUntil):null,status:x.status||'draft',note:x.note||'',created_at:x.createdAt||now(),updated_at:x.updatedAt||now()};x._tableId=await saveLegacyRow(client,'estimate_bills',row,x._tableId);dirty.estimateBills.delete(x.id)}
     for(const x of db.paymentRequests||[]){const oldId=x.id;if(!dirty.paymentRequests.has(oldId))continue;const c=byId[x.customerId]||{};const customerId=c._tableId||x.customerTableId||x.customerId;if(!customerId)continue;const row={store_id:storeId,customer_id:customerId,amount:num(x.amount),method:x.method||'',reference:x.reference||'',note:x.note||'',status:x.status||'pending',created_at:x.createdAt||now(),resolved_at:x.resolvedAt||null,resolved_by:x.resolvedBy||null};const canKeepId=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(x.id||''));r=canKeepId?await client.from('payment_requests').upsert({id:x.id,...row},{onConflict:'id'}).select('id').single():await client.from('payment_requests').insert(row).select('id').single();if(r.error)throw r.error;x.id=r.data.id;dirty.paymentRequests.delete(oldId)}
     writeLocal(db);remoteEnabled=true;remoteError='';
@@ -195,23 +208,23 @@
     const restored=normalizeDB(JSON.parse(JSON.stringify(raw)));
     restored.version=Math.max(num(restored.version)||1,2);
     restored.restoredAt=now();
-    ['customers','credits','sales','dailySales','partyPayments','cheques','estimateBills','activity','loginEvents','staffAccounts','paymentRequests'].forEach(k=>{restored[k]=Array.isArray(restored[k])?restored[k]:[]});
-    ['customers','credits','sales','dailySales','partyPayments','cheques','estimateBills','paymentRequests'].forEach(k=>restored[k].forEach(x=>{if(!x.id)x.id=id();if(!x.createdAt)x.createdAt=now()}));
+    ['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','estimateBills','activity','loginEvents','staffAccounts','paymentRequests'].forEach(k=>{restored[k]=Array.isArray(restored[k])?restored[k]:[]});
+    ['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','estimateBills','paymentRequests'].forEach(k=>restored[k].forEach(x=>{if(!x.id)x.id=id();if(!x.createdAt)x.createdAt=now()}));
     if(!Array.isArray(restored.activity))restored.activity=[];
     restored.activity.unshift({id:id(),type:'settings',message:'Backup restored',time:now()});
     restored.activity=restored.activity.slice(0,60);
     Object.values(dirty).forEach(s=>s.clear());
     deleteQueue=[];
     if(tableMode()){
-      const tableMap={credits:'credits',sales:'sales',dailySales:'daily_sales',partyPayments:'party_payments',cheques:'cheques',estimateBills:'estimate_bills',paymentRequests:'payment_requests',customers:'customers'};
+      const tableMap={credits:'credits',sales:'sales',dailySales:'daily_sales',partyPayments:'party_payments',cheques:'cheques',chequeQueue:'cheque_queue',estimateBills:'estimate_bills',paymentRequests:'payment_requests',customers:'customers'};
       const uuidRe=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      ['credits','sales','dailySales','partyPayments','cheques','estimateBills','paymentRequests','customers'].forEach(k=>{
+      ['credits','sales','dailySales','partyPayments','cheques','chequeQueue','estimateBills','paymentRequests','customers'].forEach(k=>{
         const tableId=x=>x._tableId||(k==='paymentRequests'&&uuidRe.test(String(x.id||''))?x.id:'');
         const keep=new Set((restored[k]||[]).map(tableId).filter(Boolean));
         (oldDB[k]||[]).forEach(x=>{const tid=tableId(x);if(tid&&!keep.has(tid))deleteQueue.push({table:tableMap[k],tableId:tid})});
       });
     }
-    ['customers','credits','sales','dailySales','partyPayments','cheques','estimateBills','paymentRequests'].forEach(k=>(restored[k]||[]).forEach(x=>dirty[k].add(x.id)));
+    ['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','estimateBills','paymentRequests'].forEach(k=>(restored[k]||[]).forEach(x=>dirty[k].add(x.id)));
     settingsDirty=true;
     currentDB=restored;
     writeLocal(currentDB);
@@ -361,6 +374,10 @@
   function addPartyPayment(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const p={id:id(),storeId:getActiveStoreId(),date:input.date||today(),party:String(input.party||'').trim(),amount,method:String(input.method||'Cash'),reference:String(input.reference||'').trim(),note:String(input.note||'').trim(),createdAt:now()};if(!p.party)throw new Error('Party name is required');db.partyPayments.unshift(p);markDirty('partyPayments',p.id);addActivity(db,`Party payment ${money(amount)} to ${p.party}`,'party');saveDB(db);return p}
   function deletePartyPayment(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.partyPayments.find(x=>x.id===idv);deleteTableRow('party_payments',r);db.partyPayments=db.partyPayments.filter(x=>x.id!==idv);addActivity(db,'Party payment deleted','party');saveDB(db)}
   function addCheque(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const ch={id:id(),storeId:getActiveStoreId(),party:String(input.party||'').trim(),chequeNo:String(input.chequeNo||'').trim(),amount,bank:String(input.bank||'').trim(),chequeDate:input.chequeDate||today(),status:String(input.status||'hold'),note:String(input.note||'').trim(),createdAt:now()};if(!ch.party||!ch.chequeNo)throw new Error('Party and cheque number are required');db.cheques.unshift(ch);markDirty('cheques',ch.id);addActivity(db,`Cheque added: ${ch.chequeNo} - ${ch.party}`,'cheque');saveDB(db);return ch}
+  // Cheque queue: quick reminders of parties whose cheque still has to be written
+  // (e.g. a ledger arrived on WhatsApp). Cleared once the cheque is written.
+  function addChequeQueue(db,input){const party=String(input.party||'').trim();if(!party)throw new Error('Party name is required');const q={id:id(),storeId:getActiveStoreId(),party,amount:num(input.amount)||0,note:String(input.note||'').trim(),createdAt:now()};db.chequeQueue=db.chequeQueue||[];db.chequeQueue.unshift(q);markDirty('chequeQueue',q.id);addActivity(db,`Cheque to write: ${party}`,'cheque');saveDB(db);return q}
+  function deleteChequeQueue(db,idv){const r=(db.chequeQueue||[]).find(x=>x.id===idv);if(!r)throw new Error('Queue entry not found');deleteTableRow('cheque_queue',r);db.chequeQueue=(db.chequeQueue||[]).filter(x=>x.id!==idv);dirty.chequeQueue.delete(idv);persistPending();addActivity(db,`Cheque queue cleared: ${r.party}`,'cheque');saveDB(db);return r}
   function updateChequeStatus(db,idv,status){const ch=db.cheques.find(x=>x.id===idv);if(!ch)throw new Error('Cheque not found');ch.status=status;ch.updatedAt=now();markDirty('cheques',ch.id);addActivity(db,`Cheque ${ch.chequeNo} marked ${status}`,'cheque');saveDB(db)}
   function deleteCheque(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.cheques.find(x=>x.id===idv);deleteTableRow('cheques',r);db.cheques=db.cheques.filter(x=>x.id!==idv);addActivity(db,'Cheque deleted','cheque');saveDB(db)}
   function estimateStatus(v){return ['draft','sent','approved','rejected','expired'].includes(String(v||''))?String(v):'draft'}
@@ -386,7 +403,7 @@
     if(!tableMode()||realtimeChannel)return false;
     const client=getSupabase();if(!client||typeof client.channel!=='function')return false;
     const s=getSession();if(!(s?.role==='admin'||s?.role==='staff'||s?.role==='store_admin'))return false;
-    const tables=['customers','credits','sales','daily_sales','party_payments','cheques','estimate_bills','payment_requests','mart_stores'];
+    const tables=['customers','credits','sales','daily_sales','party_payments','cheques','cheque_queue','estimate_bills','payment_requests','mart_stores'];
     realtimeChannel=client.channel('martai-live');
     tables.forEach(t=>realtimeChannel.on('postgres_changes',{event:'*',schema:'public',table:t},()=>{
       if(Date.now()-lastLocalWriteAt<3000)return; // our own write echoing back
@@ -432,5 +449,5 @@
   // PWA: register the service worker (all pages load this file)
   if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
   const ready=initialize();
-  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,phoneClean,getDB,saveDB,markDirty,resetDB,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateChequeStatus,deleteCheque,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,csvEscape,download,wa,byDate,tilt3d};
+  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,phoneClean,getDB,saveDB,markDirty,resetDB,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateChequeStatus,deleteCheque,addChequeQueue,deleteChequeQueue,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,csvEscape,download,wa,byDate,tilt3d};
 })();
