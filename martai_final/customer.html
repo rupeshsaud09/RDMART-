@@ -154,6 +154,6 @@ function statementHTML(mart,c,rows){let run=0,tA=0,tP=0;const body=rows.map(r=>{
 $('printStatementBtn')?.addEventListener('click',()=>{const d=db();const c=currentCustomer();if(!c)return;const rows=d.credits.filter(x=>x.customerId===c.id).sort((a,b)=>String(a.date).localeCompare(String(b.date)));$('printArea').innerHTML=statementHTML(d.settings.martName||'RD MART',c,rows);window.print()});
 $('pinForm').addEventListener('submit',async e=>{e.preventDefault();const data=formData(e.target);try{if(data.pin!==data.confirmPin)throw new Error('PIN confirmation does not match');if(A.syncInfo().mode==='tables'){await A.updateCustomerPin(data.pin)}else{const d=db();A.updateCustomer(d,session.customerId,{pin:data.pin})}e.target.reset();toast('PIN updated')}catch(err){toast(err.message,'err')}});
 </script>
-<script src="assets/martai-bot.js?v=2"></script>
+<script src="assets/martai-bot.js?v=3"></script>
 </body>
 </html>

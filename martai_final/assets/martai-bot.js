@@ -374,16 +374,22 @@ if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loa
    Named voices: Windows (Neerja, Heera, Swara, Kalpana, Zira, Aria, Jenny),
    Google (female by default), macOS/iOS (Samantha, Veena, Lekha, Isha). */
 const FEMALE_NAMES=['female','woman','girl','neerja','heera','swara','kalpana','zira','aria','jenny','michelle','sonia','libby','maisie','natasha','samantha','veena','lekha','isha','ananya','aarohi','kavya','salli','raveena','aditi','kajal','susan','hazel','sara','emma','ava'];
-const MALE_NAMES=['male','man ','david','mark','ravi','hemant','prabhat','madhur','george','james','guy','ryan','thomas','rishi','sagar'];
+const MALE_NAMES=[' male','man ','david','mark','ravi','hemant','prabhat','madhur','george','james','guy','ryan','thomas','rishi','sagar'];
+/* Sweetest-sounding female voices, ranked above the rest */
+const SWEET_NAMES=['swara','ananya','aarohi','jenny','aria','sonia','libby','natasha','emma','ava','samantha','neerja'];
 function scoreVoice(v,prefLangs){
   const name=String(v.name||'').toLowerCase(),vlang=String(v.lang||'').toLowerCase().replace('_','-');
   const li=prefLangs.findIndex(p=>vlang.startsWith(p));
   if(li<0)return -1;
   let s=(prefLangs.length-li)*100;
-  if(FEMALE_NAMES.some(h=>name.includes(h)))s+=60;
-  if(MALE_NAMES.some(h=>name.includes(h)))s-=50;
-  if(/natural|neural|online/.test(name))s+=30;
-  if(name.includes('google'))s+=20;
+  /* Google voices are female by default even when the name doesn't say so */
+  if(FEMALE_NAMES.some(h=>name.includes(h))||(name.includes('google')&&!name.includes(' male')))s+=60;
+  if(MALE_NAMES.some(h=>name.includes(h)))s-=80;
+  /* Neural "Natural/Online" voices (Edge: Swara, Neerja, Aria, Jenny…) sound far
+     softer and sweeter than the robotic desktop ones — weight them heavily */
+  if(/natural|neural|online/.test(name))s+=90;
+  if(name.includes('google'))s+=40;
+  if(SWEET_NAMES.some(h=>name.includes(h)))s+=25;
   return s;
 }
 function pickVoice(){
@@ -418,7 +424,10 @@ function speak(html){
       const u=new SpeechSynthesisUtterance(p.trim());
       if(v){u.voice=v;u.lang=v.lang}
       else u.lang={en:'en-IN',ne:'hi-IN',hi:'hi-IN'}[lang];
-      u.rate=0.95;u.pitch=1.15;u.volume=1;
+      /* Sweet tone: neural voices already sound warm — keep them near natural.
+         Robotic desktop voices get a higher pitch + slower pace to soften them. */
+      const natural=v&&/natural|neural|online|google/i.test(v.name||'');
+      u.rate=natural?0.97:0.92;u.pitch=natural?1.1:1.28;u.volume=1;
       if(i===parts.length-1){
         u.onend=()=>{talkFace(false);clearInterval(resumeTimer)};
         u.onerror=()=>{talkFace(false);clearInterval(resumeTimer)};
