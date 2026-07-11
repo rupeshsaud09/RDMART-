@@ -166,6 +166,17 @@ create table if not exists public.cheques (
   updated_at timestamptz
 );
 
+-- Saved supplier/party master used by estimates, cheques and party payments.
+create table if not exists public.parties (
+  id uuid primary key default extensions.gen_random_uuid(),
+  legacy_id text unique,
+  store_id uuid references public.mart_stores(id) on delete restrict,
+  name text not null,
+  phone text default '',
+  notes text default '',
+  created_at timestamptz not null default now()
+);
+
 -- Quick reminders of parties whose cheque still has to be written.
 -- Deleted once the cheque is written (that is the workflow, not a soft state).
 create table if not exists public.cheque_queue (
@@ -449,6 +460,7 @@ create index if not exists daily_sales_store_id_idx on public.daily_sales(store_
 create index if not exists party_payments_store_id_idx on public.party_payments(store_id);
 create index if not exists cheques_store_id_idx on public.cheques(store_id);
 create index if not exists cheque_queue_store_id_idx on public.cheque_queue(store_id);
+create index if not exists parties_store_id_idx on public.parties(store_id);
 create index if not exists estimate_bills_store_id_idx on public.estimate_bills(store_id);
 create unique index if not exists estimate_bills_legacy_id_uidx on public.estimate_bills(legacy_id) where legacy_id is not null;
 create index if not exists activity_store_id_idx on public.activity(store_id);
@@ -767,6 +779,7 @@ begin
   delete from public.party_payments  where store_id = store_input;
   delete from public.cheques         where store_id = store_input;
   delete from public.cheque_queue    where store_id = store_input;
+  delete from public.parties         where store_id = store_input;
   delete from public.estimate_bills  where store_id = store_input;
   delete from public.activity        where store_id = store_input;
   delete from public.login_events    where store_id = store_input;
@@ -820,6 +833,7 @@ alter table public.daily_sales      enable row level security;
 alter table public.party_payments   enable row level security;
 alter table public.cheques          enable row level security;
 alter table public.cheque_queue     enable row level security;
+alter table public.parties          enable row level security;
 alter table public.estimate_bills   enable row level security;
 alter table public.activity         enable row level security;
 alter table public.login_events     enable row level security;
@@ -964,6 +978,18 @@ create policy "staff update cheque queue"     on public.cheque_queue for update 
 create policy "staff delete cheque queue"     on public.cheque_queue for delete to authenticated using (public.is_mart_staff());
 create policy "store admins use cheque queue" on public.cheque_queue for all    to authenticated using (public.is_store_admin(store_id)) with check (public.is_store_admin(store_id));
 
+-- parties (saved supplier master)
+drop policy if exists "admins manage parties"    on public.parties;
+drop policy if exists "staff use parties"        on public.parties;
+drop policy if exists "staff insert parties"     on public.parties;
+drop policy if exists "staff update parties"     on public.parties;
+drop policy if exists "store admins use parties" on public.parties;
+create policy "admins manage parties"    on public.parties for all    to authenticated using (public.is_mart_admin())          with check (public.is_mart_admin());
+create policy "staff use parties"        on public.parties for select to authenticated using (public.is_mart_staff());
+create policy "staff insert parties"     on public.parties for insert to authenticated                                         with check (public.is_mart_staff());
+create policy "staff update parties"     on public.parties for update to authenticated using (public.is_mart_staff())         with check (public.is_mart_staff());
+create policy "store admins use parties" on public.parties for all    to authenticated using (public.is_store_admin(store_id)) with check (public.is_store_admin(store_id));
+
 -- estimate_bills
 drop policy if exists "admins manage estimate bills"    on public.estimate_bills;
 drop policy if exists "staff use estimate bills"        on public.estimate_bills;
@@ -1020,6 +1046,7 @@ revoke all on public.daily_sales       from anon;
 revoke all on public.party_payments    from anon;
 revoke all on public.cheques           from anon;
 revoke all on public.cheque_queue      from anon;
+revoke all on public.parties           from anon;
 revoke all on public.estimate_bills    from anon;
 revoke all on public.activity          from anon;
 revoke all on public.login_events      from anon;
@@ -1066,6 +1093,7 @@ grant select, insert, update, delete on public.daily_sales       to authenticate
 grant select, insert, update, delete on public.party_payments    to authenticated;
 grant select, insert, update, delete on public.cheques           to authenticated;
 grant select, insert, update, delete on public.cheque_queue      to authenticated;
+grant select, insert, update, delete on public.parties           to authenticated;
 grant select, insert, update, delete on public.estimate_bills    to authenticated;
 grant select, insert, update, delete on public.activity          to authenticated;
 grant select                          on public.login_events      to authenticated;
@@ -1077,7 +1105,7 @@ grant select, insert, update, delete on public.payment_requests  to authenticate
 do $$
 declare t text;
 begin
-  foreach t in array array['customers','credits','sales','daily_sales','party_payments','cheques','cheque_queue','estimate_bills','payment_requests','mart_stores']
+  foreach t in array array['customers','credits','sales','daily_sales','party_payments','cheques','cheque_queue','parties','estimate_bills','payment_requests','mart_stores']
   loop
     begin
       execute format('alter publication supabase_realtime add table public.%I', t);
