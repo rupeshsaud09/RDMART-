@@ -204,7 +204,14 @@
       catch(e){if(String(e.message||'').includes('parties')){dirty.parties.clear();console.warn('parties table missing — run add-parties.sql in Supabase to sync party accounts');break}throw e}
       dirty.parties.delete(x.id)
     }
-    for(const x of db.estimateBills||[]){if(x._tableId&&!dirty.estimateBills.has(x.id))continue;const row={legacy_id:x.id,store_id:storeId,estimate_date:isoDate(x.date),customer:x.customer||'',phone:phoneClean(x.phone)||'',items:x.items||'',amount:num(x.amount),valid_until:x.validUntil?isoDate(x.validUntil):null,status:x.status||'draft',note:x.note||'',created_at:x.createdAt||now(),updated_at:x.updatedAt||now()};x._tableId=await saveLegacyRow(client,'estimate_bills',row,x._tableId);dirty.estimateBills.delete(x.id)}
+    for(const x of db.estimateBills||[]){
+      if(x._tableId&&!dirty.estimateBills.has(x.id))continue;
+      const row={legacy_id:x.id,store_id:storeId,estimate_date:isoDate(x.date),customer:x.customer||'',phone:phoneClean(x.phone)||'',items:x.items||'',amount:num(x.amount),valid_until:x.validUntil?isoDate(x.validUntil):null,status:x.status||'draft',note:x.note||'',created_at:x.createdAt||now(),updated_at:x.updatedAt||now()};
+      // Missing table must not block the rest of the sync queue — run fix-missing-tables.sql
+      try{x._tableId=await saveLegacyRow(client,'estimate_bills',row,x._tableId)}
+      catch(e){if(String(e.message||'').includes('estimate_bills')){dirty.estimateBills.clear();console.warn('estimate_bills table missing — run fix-missing-tables.sql in Supabase to sync estimates');break}throw e}
+      dirty.estimateBills.delete(x.id)
+    }
     for(const x of db.paymentRequests||[]){const oldId=x.id;if(!dirty.paymentRequests.has(oldId))continue;const c=byId[x.customerId]||{};const customerId=c._tableId||x.customerTableId||x.customerId;if(!customerId)continue;const row={store_id:storeId,customer_id:customerId,amount:num(x.amount),method:x.method||'',reference:x.reference||'',note:x.note||'',status:x.status||'pending',created_at:x.createdAt||now(),resolved_at:x.resolvedAt||null,resolved_by:x.resolvedBy||null};const canKeepId=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(x.id||''));r=canKeepId?await client.from('payment_requests').upsert({id:x.id,...row},{onConflict:'id'}).select('id').single():await client.from('payment_requests').insert(row).select('id').single();if(r.error)throw r.error;x.id=r.data.id;dirty.paymentRequests.delete(oldId)}
     writeLocal(db);remoteEnabled=true;remoteError='';
   }
