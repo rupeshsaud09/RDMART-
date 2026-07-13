@@ -253,12 +253,12 @@
   }
   async function syncNow(){if(tableMode())await loadTableDB();else await loadRemoteDB();return getDB()}
   function syncInfo(){return{remoteEnabled,remoteError,configured:!!getSupabase(),mode:dbMode(),pendingSave,pendingCount:pendingCount(),hasPending:hasPending()}}
-  async function adminLogin(username,password){
+  async function adminLogin(username,password,remember){
     if(!tableMode()){
       const db=getDB();
-      if(username===db.settings.adminUser&&password===db.settings.adminPass){setSession('admin',{});return true}
+      if(username===db.settings.adminUser&&password===db.settings.adminPass){setSession('admin',{},remember);return true}
       const staff=(db.staffAccounts||[]).find(x=>String(x.email).toLowerCase()===String(username).toLowerCase()&&String(x.password||'')===String(password)&&x.active!==false);
-      if(staff){setSession('staff',{email:staff.email,name:staff.name});return true}
+      if(staff){setSession('staff',{email:staff.email,name:staff.name},remember);return true}
       return false;
     }
     const client=getSupabase();if(!client)throw new Error('Supabase is not configured');
@@ -275,7 +275,7 @@
     }
     if(!isAdmin&&!isStaff&&!storeAdminStore){await client.auth.signOut();return false}
     if(storeAdminStore)setActiveStoreId(storeAdminStore);
-    setSession(isAdmin?'admin':isStaff?'staff':'store_admin',{email:username,storeId:storeAdminStore||getActiveStoreId()});
+    setSession(isAdmin?'admin':isStaff?'staff':'store_admin',{email:username,storeId:storeAdminStore||getActiveStoreId()},remember);
     try{
       const loginEvent=await client.rpc('record_admin_login',{email_input:username});
       if(loginEvent.error)console.warn('Admin login event not recorded:',loginEvent.error);
@@ -285,10 +285,10 @@
     await loadTableDB();
     return true;
   }
-  async function customerLogin(phone,pin){
+  async function customerLogin(phone,pin,remember){
     if(!tableMode()){
       const customer=findCustomer(getDB(),phone,pin);
-      if(customer)setSession('customer',{customerId:customer.id});
+      if(customer)setSession('customer',{customerId:customer.id},remember);
       return customer;
     }
     const client=getSupabase();if(!client)throw new Error('Supabase is not configured');
@@ -298,7 +298,7 @@
     if(!row)throw new Error('Login failed');
     const portalDB=await loadCustomerPortal(row.token);
     const customer=portalDB.customers[0]||{id:row.customer_id,name:row.name,phone:row.phone};
-    setSession('customer',{customerId:customer.id,customerTableId:row.customer_id,customerToken:row.token});
+    setSession('customer',{customerId:customer.id,customerTableId:row.customer_id,customerToken:row.token},remember);
     return customer;
   }
   async function loadCustomerPortal(token){
@@ -365,11 +365,15 @@
     const r=await client.auth.signInWithPassword({email:s.email,password});
     return !r.error;
   }
-  function setSession(role,data){sessionStorage.setItem(SESSION,JSON.stringify({role,...data,loginAt:now()}))}
-  function getSession(){try{return JSON.parse(sessionStorage.getItem(SESSION)||'null')}catch(e){return null}}
+  // "Keep me signed in": the tab session lives in sessionStorage as before;
+  // when remember=true a copy with a 30-day expiry is kept in localStorage
+  // and silently restored after the browser is closed and reopened.
+  const REMEMBER='martai_remember_v1';
+  function setSession(role,data,remember){const s={role,...data,loginAt:now()};sessionStorage.setItem(SESSION,JSON.stringify(s));if(remember)try{localStorage.setItem(REMEMBER,JSON.stringify({...s,expiresAt:Date.now()+30*86400000}))}catch(e){}}
+  function getSession(){try{const s=JSON.parse(sessionStorage.getItem(SESSION)||'null');if(s)return s;const r=JSON.parse(localStorage.getItem(REMEMBER)||'null');if(r&&r.expiresAt>Date.now()){sessionStorage.setItem(SESSION,JSON.stringify(r));return r}if(r)localStorage.removeItem(REMEMBER);return null}catch(e){return null}}
   function isStaffSession(){return getSession()?.role==='staff'}
   function isMainAdminSession(){return getSession()?.role==='admin'}
-  function clearSession(){sessionStorage.removeItem(SESSION)}
+  function clearSession(){sessionStorage.removeItem(SESSION);try{localStorage.removeItem(REMEMBER)}catch(e){}}
   function getStores(){return (getDB().stores||[defaultStore()]).filter(s=>s.isActive!==false)}
   async function addStore(db,input){if(!isMainAdminSession())throw new Error('Only main admin can create stores');const name=String(input.name||'').trim();const phone=phoneClean(input.phone||'');const adminEmail=String(input.adminEmail||'').trim().toLowerCase();if(!name)throw new Error('Store name is required');if(!adminEmail.includes('@'))throw new Error('Store admin email is required');if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_create_store',{name_input:name,phone_input:phone,email_input:adminEmail});if(r.error)throw r.error;setActiveStoreId(r.data);await loadTableDB();return r.data}db.stores.unshift({id:id(),name,phone,adminEmail,createdAt:now(),isActive:true});setActiveStoreId(db.stores[0].id);saveDB(db);return db.stores[0]}
   async function deleteStore(db,storeId){if(!isMainAdminSession())throw new Error('Only main admin can delete stores');const stores=getStores();if(stores.length<=1)throw new Error('You must keep at least one store');if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_delete_store',{store_input:storeId});if(r.error)throw r.error;if(getActiveStoreId()===storeId)setActiveStoreId('default');await loadTableDB();return}db.stores=(db.stores||[]).filter(s=>s.id!==storeId);if(getActiveStoreId()===storeId)setActiveStoreId(db.stores[0]?.id||'default');saveDB(db)}

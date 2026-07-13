@@ -5,7 +5,9 @@ STEP 1: SUPABASE DATABASE SETUP
 --------------------------------
 1. Open your Supabase project dashboard.
 2. Go to SQL Editor → New Query.
-3. Open setup-complete.sql from this folder.
+3. Open setup-complete.sql from the sql/ folder (next to this app folder).
+   All database .sql files live in sql/ so they are never uploaded to the
+   public website.
 4. Paste the entire file content and click Run.
    (This single file creates all tables, functions, indexes, RLS policies,
     brute-force protection, and session cleanup — safe to re-run.

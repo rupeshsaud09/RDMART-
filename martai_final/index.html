@@ -33,6 +33,7 @@
         <div class="error" id="adminError"></div>
         <div class="field"><label>Username</label><input class="input" id="adminUser" autocomplete="username" placeholder="Enter username"></div>
         <div class="field"><label>Password</label><input class="input" id="adminPass" type="password" autocomplete="current-password" placeholder="Enter password"></div>
+        <label style="display:flex;align-items:center;gap:8px;margin:2px 0 10px;font-size:.86em;opacity:.85;cursor:pointer"><input type="checkbox" id="adminRemember" style="width:16px;height:16px;accent-color:#7c3aed"> Keep me signed in on this device (30 days)</label>
         <button class="btn btn-primary full" type="submit">Open dashboard</button>
       </form>
 
@@ -42,6 +43,7 @@
         <div class="error" id="customerError"></div>
         <div class="field"><label>Customer phone number</label><input class="input" id="customerPhone" inputmode="numeric" placeholder="98XXXXXXXX"></div>
         <div class="field"><label>Customer 4 digit PIN</label><input class="input" id="customerPin" type="password" maxlength="4" inputmode="numeric" placeholder="1234"></div>
+        <label style="display:flex;align-items:center;gap:8px;margin:2px 0 10px;font-size:.86em;opacity:.85;cursor:pointer"><input type="checkbox" id="customerRemember" style="width:16px;height:16px;accent-color:#16a34a"> Keep me signed in on this phone (30 days)</label>
         <button class="btn btn-green full" type="submit">View my balance</button>
         <button class="btn btn-ghost btn-sm full" type="button" id="forgotPinBtn" style="margin-top:8px">Forgot PIN?</button>
         <p class="hint">If login fails, go to Admin → Customers and create that customer with a 4 digit PIN first.</p>
@@ -51,7 +53,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js?v=13"></script>
+<script src="assets/martai-store.js?v=14"></script>
 <script>
 const $=id=>document.getElementById(id);
 /* Follow the theme chosen on the dashboard (same browser); defaults to dark */
@@ -73,8 +75,8 @@ MartAI.publicStoreInfo().then(info=>{if(!info)return;martName=info.mart_name||ma
 const urlP=new URLSearchParams(window.location.search);const prePhone=urlP.get('phone');if(prePhone&&prePhone.length>=10){$('customerPhone').value=prePhone;switchTab('customer')}
 $('adminTab').addEventListener('click',()=>switchTab('admin'));
 $('customerTab').addEventListener('click',()=>switchTab('customer'));
-$('adminForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Signing in...';try{const ok=await MartAI.adminLogin($('adminUser').value.trim(),$('adminPass').value);if(ok){location.href='dashboard.html'}else{showError('adminError','Wrong username or password.');btn.disabled=false;btn.textContent='Open dashboard'}}catch(err){showError('adminError',err.message||'Wrong username or password.');btn.disabled=false;btn.textContent='Open dashboard'}});
-$('customerForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Checking...';try{const customer=await MartAI.customerLogin($('customerPhone').value,$('customerPin').value);if(customer){location.href='customer.html'}else{showError('customerError','Phone number or PIN is incorrect. Please check and try again.');btn.disabled=false;btn.textContent='View my balance'}}catch(err){console.error('Customer login failed:',err);showError('customerError',err.message&&err.message!=='Invalid phone or PIN'?err.message:'Phone number or PIN is incorrect. Please check and try again.');btn.disabled=false;btn.textContent='View my balance'}});
+$('adminForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Signing in...';try{const ok=await MartAI.adminLogin($('adminUser').value.trim(),$('adminPass').value,$('adminRemember')?.checked);if(ok){location.href='dashboard.html'}else{showError('adminError','Wrong username or password.');btn.disabled=false;btn.textContent='Open dashboard'}}catch(err){showError('adminError',err.message||'Wrong username or password.');btn.disabled=false;btn.textContent='Open dashboard'}});
+$('customerForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Checking...';try{const customer=await MartAI.customerLogin($('customerPhone').value,$('customerPin').value,$('customerRemember')?.checked);if(customer){location.href='customer.html'}else{showError('customerError','Phone number or PIN is incorrect. Please check and try again.');btn.disabled=false;btn.textContent='View my balance'}}catch(err){console.error('Customer login failed:',err);showError('customerError',err.message&&err.message!=='Invalid phone or PIN'?err.message:'Phone number or PIN is incorrect. Please check and try again.');btn.disabled=false;btn.textContent='View my balance'}});
 $('forgotPinBtn')?.addEventListener('click',async()=>{hideErrors();const btn=$('forgotPinBtn');btn.disabled=true;btn.textContent='Opening WhatsApp...';try{let info=null;try{info=await MartAI.publicStoreInfo()}catch(err){}
 const local=MartAI.getDB().settings||{};const martName=(info&&info.mart_name)||local.martName||'RD MART';const martPhone=MartAI.phoneClean((info&&info.mart_phone)||local.martPhone||'');const myPhone=MartAI.phoneClean($('customerPhone').value);
 const msg='Namaste '+martName+', I forgot my customer portal PIN. My phone number is '+(myPhone||'(type your number)')+'. Please reset my PIN. Dhanyabad!';
