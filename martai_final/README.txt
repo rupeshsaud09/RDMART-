@@ -3,6 +3,11 @@ RD MART - Setup Guide
 
 STEP 1: SUPABASE DATABASE SETUP
 --------------------------------
+SECURITY UPDATE FOR AN EXISTING PROJECT:
+   Run ../sql/security-hardening.sql in the Supabase SQL Editor immediately,
+   then continue with setup-complete.sql below. The hardening script closes
+   anonymous access to the legacy martai_app_state row without deleting it.
+
 1. Open your Supabase project dashboard.
 2. Go to SQL Editor → New Query.
 3. Open setup-complete.sql from the sql/ folder (next to this app folder).
@@ -96,8 +101,20 @@ SECURITY NOTES
 
 DATA BACKUP
 ------------
-Admin dashboard → Settings → Download JSON backup
-(Download a full backup before major changes.)
+The admin dashboard creates the first verified backup automatically, then
+replaces it every 7 days while the dashboard is in use. The previous backup
+is deleted only after the new backup passes verification. Live business data
+is never deleted by backup rotation.
+
+Backup files exclude local-mode admin passwords, customer PINs and staff
+passwords. Supabase authentication and customer PIN hashes remain server-side.
+
+By default, the rotating copy is kept in protected browser storage. For
+device-loss protection, use Admin dashboard → Settings → Choose backup
+folder once and select a private cloud-synced or external folder.
+
+Admin dashboard → Settings → Download backup manually remains available
+before major changes.
 
 
 CUSTOMER EXPORT (without PINs)

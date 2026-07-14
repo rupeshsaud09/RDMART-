@@ -1,1 +1,11 @@
 sql/import-cheques.sql
+sql/private-imports/
+.claude/
+.env
+.env.*
+*.pem
+*.key
+martai_final/*.sql
+martai_final/assets/*import*.js
+!martai_final/assets/daily-sales-baisakh-2083.js
+KHATA-PANA__*.json

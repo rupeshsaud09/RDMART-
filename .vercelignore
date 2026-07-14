@@ -1,0 +1,7 @@
+martai_final/RDMART
+martai_final/*.sql
+sql/private-imports
+.claude
+.env*
+*.pem
+*.key

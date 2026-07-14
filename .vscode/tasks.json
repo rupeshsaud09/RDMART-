@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start KHATA PANA server",
+            "type": "process",
+            "command": "node",
+            "args": ["server.js"],
+            "options": {
+                "cwd": "${workspaceFolder}/martai_final"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "rd-mart",
+                "pattern": {
+                    "regexp": "^(.*)$",
+                    "message": 1
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": "KHATA PANA running at http://localhost:3000"
+                }
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "dedicated",
+                "clear": true
+            }
+        }
+    ]
+}

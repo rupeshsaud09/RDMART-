@@ -3,87 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RD MART Login</title>
-<meta name="theme-color" content="#07111f">
+<title>KHATA PANA — Secure Login</title>
+<meta name="theme-color" content="#f4f6fa">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=8">
+<link rel="stylesheet" href="assets/martai.css?v=12">
+<link rel="stylesheet" href="assets/login-experience.css?v=3">
 </head>
-<body>
-<div class="center-page">
-  <div class="login-shell">
-    <section class="login-card glass float-card" style="animation-delay:.08s">
-      <div class="login-brand">
-        <div class="brand-logo brand-logo-rd">RD</div>
-        <div>
-          <div class="brand-title">RD MART</div>
+<body class="login-page">
+<div class="login-stage">
+  <div class="login-grid-pattern" aria-hidden="true"></div>
+  <div class="login-glow login-glow-one" aria-hidden="true"></div>
+  <div class="login-glow login-glow-two" aria-hidden="true"></div>
+  <header class="login-nav">
+    <div class="login-nav-brand">
+      <div class="brand-logo brand-logo-rd">KP</div>
+      <div class="login-brand-copy"><div class="brand-title">KHATA PANA</div><small>Smart business ledger</small></div>
+      <div class="login-note">Welcome back — sign in to continue</div>
+    </div>
+    <div class="secure-chip"><span id="activeStoreName">Secure business portal</span></div>
+  </header>
+  <main class="login-main">
+    <section class="login-showcase" aria-label="KHATA PANA business platform">
+      <div class="login-eyebrow">Built for better business</div>
+      <h1>Your store.<br><span>One smart view.</span></h1>
+      <p class="login-lead">Track customers, balances, sales and daily operations from one secure workspace designed to keep your business moving.</p>
+      <div class="login-benefits">
+        <div class="login-benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m5 12 4 4L19 6"/></svg>Fast &amp; simple</div>
+        <div class="login-benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 5 6v5c0 4.6 2.9 8.1 7 10 4.1-1.9 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>Private &amp; secure</div>
+        <div class="login-benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2"/></svg>Real-time clarity</div>
+      </div>
+      <div class="commerce-scene" id="commerceScene" aria-hidden="true">
+        <div class="scene-shadow"></div><div class="commerce-orbit"></div>
+        <div class="commerce-card" id="commerceCard">
+          <div class="commerce-top"><div class="commerce-dots"><i></i><i></i><i></i></div><div class="commerce-live">● Live overview</div></div>
+          <div class="commerce-body">
+            <div><div class="mini-label">Today’s business</div><div class="mini-value">Rs. 48,250 <small>+12.4%</small></div><div class="mini-chart"><i style="height:44%"></i><i style="height:68%"></i><i style="height:52%"></i><i style="height:86%"></i><i style="height:100%"></i></div></div>
+            <div class="mini-panel"><div class="mini-label">Recent activity</div><div class="mini-row"></div><div class="mini-row"></div><div class="mini-row"></div><div class="mini-row"></div></div>
+          </div>
         </div>
+        <div class="float-tile tile-bag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 13H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></div>
+        <div class="float-tile tile-wallet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h15a2 2 0 0 1 2 2v11H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h13"/><path d="M16 12h5v4h-5a2 2 0 1 1 0-4Z"/></svg></div>
+        <div class="data-cube"><i class="cube-front"></i><i class="cube-back"></i><i class="cube-right"></i><i class="cube-left"></i><i class="cube-top"></i><i class="cube-bottom"></i></div>
+        <div class="scene-pill"><span></span> Everything in sync</div>
       </div>
-      <div class="tabs">
-        <button class="tab active" id="customerTab" type="button">Customer</button>
-        <button class="tab" id="adminTab" type="button">Admin</button>
-      </div>
-
-      <form id="adminForm" class="hidden">
-        <h2 class="form-title">Admin login</h2>
-        <div class="error" id="adminError"></div>
-        <div class="field"><label>Username</label><input class="input" id="adminUser" autocomplete="username" placeholder="Enter username"></div>
-        <div class="field"><label>Password</label><input class="input" id="adminPass" type="password" autocomplete="current-password" placeholder="Enter password"></div>
-        <label style="display:flex;align-items:center;gap:8px;margin:2px 0 10px;font-size:.86em;opacity:.85;cursor:pointer"><input type="checkbox" id="adminRemember" style="width:16px;height:16px;accent-color:#7c3aed"> Keep me signed in on this device (30 days)</label>
-        <button class="btn btn-primary full" type="submit">Open dashboard</button>
-      </form>
-
-      <form id="customerForm">
-        <h2 class="form-title">Customer portal</h2>
-        <div class="form-sub">Login with phone number and 4 digit PIN created by admin.</div>
-        <div class="error" id="customerError"></div>
-        <div class="field"><label>Customer phone number</label><input class="input" id="customerPhone" inputmode="numeric" placeholder="98XXXXXXXX"></div>
-        <div class="field"><label>Customer 4 digit PIN</label><input class="input" id="customerPin" type="password" maxlength="4" inputmode="numeric" placeholder="1234"></div>
-        <label style="display:flex;align-items:center;gap:8px;margin:2px 0 10px;font-size:.86em;opacity:.85;cursor:pointer"><input type="checkbox" id="customerRemember" style="width:16px;height:16px;accent-color:#16a34a"> Keep me signed in on this phone (30 days)</label>
-        <button class="btn btn-green full" type="submit">View my balance</button>
-        <button class="btn btn-ghost btn-sm full" type="button" id="forgotPinBtn" style="margin-top:8px">Forgot PIN?</button>
-        <p class="hint">If login fails, go to Admin → Customers and create that customer with a 4 digit PIN first.</p>
-      </form>
     </section>
-  </div>
+    <div class="login-panel-wrap">
+    <section class="login-card">
+      <div class="login-panel-head"><div><h2>Welcome back</h2><p>Choose your portal and enter your details.</p></div><div class="auth-status" id="authStatus" aria-live="polite"><span></span><b>Secure sign-in ready</b></div></div>
+      <div class="tabs" role="tablist" aria-label="Select login portal">
+        <button class="tab active" id="customerTab" type="button" role="tab" aria-selected="true" aria-controls="customerForm">Customer</button>
+        <button class="tab" id="adminTab" type="button" role="tab" aria-selected="false" aria-controls="adminForm">Admin &amp; Staff</button>
+      </div>
+
+      <form id="adminForm" class="hidden" novalidate>
+        <h2 class="form-title">Admin login</h2>
+        <div class="form-sub">Use the admin or staff email registered for this store.</div>
+        <div class="error" id="adminError" role="alert"></div>
+        <div class="field"><label for="adminUser">Email address</label><input class="input" id="adminUser" type="email" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="name@example.com"></div>
+        <div class="field"><label for="adminPass">Password</label>
+          <div class="pw-wrap">
+            <input class="input" id="adminPass" type="password" autocomplete="current-password" required placeholder="Enter password">
+            <button class="pw-toggle" type="button" data-pw-toggle="adminPass" aria-label="Show password"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <label class="remember-row"><input type="checkbox" id="adminRemember"> Keep me signed in on this device (30 days)</label>
+        <button class="btn btn-primary full auth-submit" type="submit">Open dashboard</button>
+      </form>
+
+      <form id="customerForm" novalidate>
+        <h2 class="form-title">Customer portal</h2>
+        <div class="form-sub">Login with your phone number and the 4 digit PIN given by the mart.</div>
+        <div class="error" id="customerError" role="alert"></div>
+        <div class="field"><label for="customerPhone">Phone number</label><input class="input" id="customerPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" required placeholder="98XXXXXXXX"></div>
+        <div class="field"><label for="customerPin">4 digit PIN</label>
+          <div class="pw-wrap">
+            <input class="input" id="customerPin" type="password" maxlength="4" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4}" required placeholder="••••">
+            <button class="pw-toggle" type="button" data-pw-toggle="customerPin" aria-label="Show PIN"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <label class="remember-row"><input type="checkbox" id="customerRemember"> Keep me signed in on this phone (30 days)</label>
+        <button class="btn btn-green full auth-submit" type="submit">View my balance</button>
+        <button class="btn btn-ghost btn-sm full" type="button" id="forgotPinBtn" style="margin-top:8px">Forgot PIN?</button>
+        <p class="hint">If login fails, ask the mart to create your account with a 4 digit PIN first.</p>
+      </form>
+      <div class="login-meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Protected access</span><span>KHATA PANA</span></div>
+    </section>
+    </div>
+  </main>
+  <footer class="login-footer"><span>KHATA PANA · Smart business ledger</span><span>Authorized users only</span></footer>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js?v=15"></script>
+<script src="assets/martai-store.js?v=24"></script>
 <script>
 const $=id=>document.getElementById(id);
-/* Follow the theme chosen on the dashboard (same browser); defaults to dark */
-{const th=localStorage.getItem('martai_dashboard_theme')==='light'?'light':'dark';document.body.dataset.theme=th;document.documentElement.style.colorScheme=th;const mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',th==='light'?'#f6f8fc':'#07111f')}
-MartAI.tilt3d(document.querySelector('.login-card'),6);
+const AUTH_TIMEOUT=15000;
+document.documentElement.style.colorScheme='dark';document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#07101f');
 function showError(id,msg){const el=$(id);el.textContent=msg;el.style.display='block'}
 function hideErrors(){['adminError','customerError'].forEach(id=>{$(id).style.display='none';$(id).textContent=''})}
-function switchTab(tab){hideErrors();const admin=tab==='admin';$('adminTab').classList.toggle('active',admin);$('customerTab').classList.toggle('active',!admin);$('adminForm').classList.toggle('hidden',!admin);$('customerForm').classList.toggle('hidden',admin);setTimeout(()=>{(admin?$('adminPass'):$('customerPhone')).focus()},80)}
-function logoInitial(name){return String(name||'RD').trim().split(/\s+/).filter(Boolean).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'RD'}
+function setStatus(text,state='ready'){const el=$('authStatus');if(!el)return;el.dataset.state=state;const label=el.querySelector('b');if(label)label.textContent=text}
+function switchTab(tab,focus=true){hideErrors();const admin=tab==='admin';$('adminTab').classList.toggle('active',admin);$('customerTab').classList.toggle('active',!admin);$('adminTab').setAttribute('aria-selected',String(admin));$('customerTab').setAttribute('aria-selected',String(!admin));$('adminForm').classList.toggle('hidden',!admin);$('customerForm').classList.toggle('hidden',admin);if(focus)setTimeout(()=>{(admin?$('adminUser'):$('customerPhone')).focus()},80)}
+function logoInitial(name){return String(name||'KP').trim().split(/\s+/).filter(Boolean).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'KP'}
 function safeBgUrl(data){return String(data||'').replace(/"/g,'%22')}
-function applyBrandLogo(logo,name){const el=document.querySelector('.brand-logo');if(!el)return;if(!el.dataset.defaultLogo)el.dataset.defaultLogo=(el.textContent||'').trim()||'RD';if(logo){el.classList.add('logo-uploaded');el.style.backgroundImage=`url("${safeBgUrl(logo)}")`;el.textContent=''}else{el.classList.remove('logo-uploaded');el.style.backgroundImage='';el.textContent=el.dataset.defaultLogo}const title=document.querySelector('.brand-title');if(title&&name)title.textContent=name}
-MartAI.ready.then(()=>{
-const db=MartAI.getDB();
-let martName=db.settings.martName||'RD MART';
-let logo=db.settings.storeLogo||'';
-applyBrandLogo(logo,martName);
-document.querySelector('#customerForm .hint').textContent='Use the phone number and 4 digit PIN given by '+martName+'.';
-MartAI.publicStoreInfo().then(info=>{if(!info)return;martName=info.mart_name||martName;logo=info.logo_data||logo;applyBrandLogo(logo,martName);document.querySelector('#customerForm .hint').textContent='Use the phone number and 4 digit PIN given by '+martName+'.'}).catch(()=>{});
-const urlP=new URLSearchParams(window.location.search);const prePhone=urlP.get('phone');if(prePhone&&prePhone.length>=10){$('customerPhone').value=prePhone;switchTab('customer')}
+function normalizeStoreName(name){const value=String(name||'').trim();return !value||value==='KHATA PANA'||value==='MartAI'?'RD MART':value}
+function applyBrandLogo(logo){const el=document.querySelector('.brand-logo');if(!el)return;logo=MartAI.safeImageDataUrl(logo);if(!el.dataset.defaultLogo)el.dataset.defaultLogo=(el.textContent||'').trim()||'KP';if(logo){el.classList.add('logo-uploaded');el.style.backgroundImage=`url("${safeBgUrl(logo)}")`;el.textContent=''}else{el.classList.remove('logo-uploaded');el.style.backgroundImage='';el.textContent=el.dataset.defaultLogo}}
+function applyStoreContext(name){const el=$('activeStoreName');if(el)el.textContent=(name&&name!=='KHATA PANA'?name+' · ':'')+'Secure business portal'}
+function withTimeout(promise,message='The login server took too long to respond. Please try again.'){let timer;return Promise.race([Promise.resolve(promise),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(message)),AUTH_TIMEOUT)})]).finally(()=>clearTimeout(timer))}
+function setLoading(button,loading,label){if(!button.dataset.label)button.dataset.label=button.textContent.trim();button.disabled=loading;button.classList.toggle('is-loading',loading);button.setAttribute('aria-busy',String(loading));button.textContent=loading?label:button.dataset.label}
+function authMessage(err,type){const raw=String(err?.message||err||'');if(/fetch|network|offline|load failed/i.test(raw))return 'Unable to reach the secure login server. Check your internet connection and try again.';if(/too long|timeout/i.test(raw))return 'The login server took too long to respond. Please try again.';if(type==='admin'&&/invalid login|credentials|email not confirmed/i.test(raw))return 'Email or password is incorrect.';if(type==='customer'&&/login failed|invalid phone|invalid pin/i.test(raw))return 'Phone number or PIN is incorrect.';return raw||'Sign-in failed. Please try again.'}
+
+/* Bind all interface controls immediately, even if the database is temporarily unavailable. */
 $('adminTab').addEventListener('click',()=>switchTab('admin'));
 $('customerTab').addEventListener('click',()=>switchTab('customer'));
-$('adminForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Signing in...';try{const ok=await MartAI.adminLogin($('adminUser').value.trim(),$('adminPass').value,$('adminRemember')?.checked);if(ok){location.href='dashboard.html'}else{showError('adminError','Wrong username or password.');btn.disabled=false;btn.textContent='Open dashboard'}}catch(err){showError('adminError',err.message||'Wrong username or password.');btn.disabled=false;btn.textContent='Open dashboard'}});
-$('customerForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Checking...';try{const customer=await MartAI.customerLogin($('customerPhone').value,$('customerPin').value,$('customerRemember')?.checked);if(customer){location.href='customer.html'}else{showError('customerError','Phone number or PIN is incorrect. Please check and try again.');btn.disabled=false;btn.textContent='View my balance'}}catch(err){console.error('Customer login failed:',err);showError('customerError',err.message&&err.message!=='Invalid phone or PIN'?err.message:'Phone number or PIN is incorrect. Please check and try again.');btn.disabled=false;btn.textContent='View my balance'}});
-$('forgotPinBtn')?.addEventListener('click',async()=>{hideErrors();const btn=$('forgotPinBtn');btn.disabled=true;btn.textContent='Opening WhatsApp...';try{let info=null;try{info=await MartAI.publicStoreInfo()}catch(err){}
-const local=MartAI.getDB().settings||{};const martName=(info&&info.mart_name)||local.martName||'RD MART';const martPhone=MartAI.phoneClean((info&&info.mart_phone)||local.martPhone||'');const myPhone=MartAI.phoneClean($('customerPhone').value);
-const msg='Namaste '+martName+', I forgot my customer portal PIN. My phone number is '+(myPhone||'(type your number)')+'. Please reset my PIN. Dhanyabad!';
-if(martPhone){window.open('https://wa.me/977'+martPhone+'?text='+encodeURIComponent(msg),'_blank')}else{showError('customerError','Please contact '+martName+' directly to reset your PIN.')}}finally{btn.disabled=false;btn.textContent='Forgot PIN?'}});
-const session=MartAI.getSession();if(session?.role==='admin'||session?.role==='staff'||session?.role==='store_admin')location.href='dashboard.html';if(session?.role==='customer')location.href='customer.html';
-}).catch(e=>showError('customerError','Could not load database: '+e.message));
+document.querySelectorAll('[data-pw-toggle]').forEach(btn=>btn.addEventListener('click',()=>{const inp=$(btn.dataset.pwToggle);if(!inp)return;const show=inp.type==='password';inp.type=show?'text':'password';btn.setAttribute('aria-label',show?'Hide password':'Show password');btn.classList.toggle('showing',show);inp.focus()}));
+$('customerPhone').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,10)});
+$('customerPin').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)});
+
+$('adminForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const user=$('adminUser').value.trim(),pass=$('adminPass').value,btn=e.currentTarget.querySelector('[type="submit"]');if(!user){showError('adminError','Enter your admin or staff email address.');$('adminUser').focus();return}if(MartAI.syncInfo().mode==='tables'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user)){showError('adminError','Online admin login requires the registered email address.');$('adminUser').focus();return}if(!pass){showError('adminError','Enter your password.');$('adminPass').focus();return}setLoading(btn,true,'Signing in…');setStatus('Verifying account…','busy');try{await withTimeout(MartAI.ready,'Could not initialize secure login. Please refresh and try again.');const ok=await withTimeout(MartAI.adminLogin(user,pass,$('adminRemember').checked));if(!ok)throw new Error('Invalid login credentials');setStatus('Signed in. Opening dashboard…','success');location.assign('dashboard.html')}catch(err){showError('adminError',authMessage(err,'admin'));setStatus('Sign-in needs attention','error');setLoading(btn,false)}finally{if(!btn.disabled)setLoading(btn,false)}});
+
+$('customerForm').addEventListener('submit',async e=>{e.preventDefault();hideErrors();const phone=MartAI.phoneClean($('customerPhone').value),pin=$('customerPin').value,btn=e.currentTarget.querySelector('[type="submit"]');if(phone.length!==10){showError('customerError','Enter a valid 10 digit phone number.');$('customerPhone').focus();return}if(!/^\d{4}$/.test(pin)){showError('customerError','Enter your complete 4 digit PIN.');$('customerPin').focus();return}$('customerPhone').value=phone;setLoading(btn,true,'Checking account…');setStatus('Checking customer account…','busy');try{await withTimeout(MartAI.ready,'Could not initialize secure login. Please refresh and try again.');const customer=await withTimeout(MartAI.customerLogin(phone,pin,$('customerRemember').checked));if(!customer)throw new Error('Login failed');setStatus('Account found. Opening portal…','success');location.assign('customer.html')}catch(err){console.error('Customer login failed:',err);showError('customerError',authMessage(err,'customer'));setStatus('Sign-in needs attention','error');setLoading(btn,false)}finally{if(!btn.disabled)setLoading(btn,false)}});
+
+$('forgotPinBtn').addEventListener('click',async()=>{hideErrors();const btn=$('forgotPinBtn'),popup=window.open('about:blank','_blank');if(popup)popup.opener=null;btn.disabled=true;btn.textContent='Preparing WhatsApp…';try{await withTimeout(MartAI.ready);const local=MartAI.getDB().settings||{};let info=null;try{info=await withTimeout(MartAI.publicStoreInfo())}catch(err){}const martName=normalizeStoreName(info?.mart_name||local.martName),martPhone=MartAI.phoneClean(info?.mart_phone||local.martPhone||''),myPhone=MartAI.phoneClean($('customerPhone').value);if(!martPhone){if(popup)popup.close();showError('customerError','Please contact '+martName+' directly to reset your PIN.');return}const msg='Namaste '+martName+', I forgot my customer portal PIN. My phone number is '+(myPhone||'(type your number)')+'. Please reset my PIN. Dhanyabad!',url='https://wa.me/977'+martPhone+'?text='+encodeURIComponent(msg);if(popup)popup.location.replace(url);else location.href=url}catch(err){if(popup)popup.close();showError('customerError',authMessage(err,'customer'))}finally{btn.disabled=false;btn.textContent='Forgot PIN?'}});
+
+/* Subtle depth effects never control or block the forms. */
+{const scene=$('commerceScene'),card=$('commerceCard');if(scene&&card&&matchMedia('(pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches){scene.addEventListener('pointermove',e=>{const r=scene.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;card.style.transform=`rotateX(${8-y*7}deg) rotateY(${-13+x*10}deg) rotateZ(1deg) translateZ(4px)`});scene.addEventListener('pointerleave',()=>card.style.transform='')}}
+
+async function bootLogin(){try{setStatus(navigator.onLine?'Connecting securely…':'Offline — reconnect to sign in',navigator.onLine?'busy':'error');await withTimeout(MartAI.ready,'Could not initialize secure login. Please refresh and try again.');const db=MartAI.getDB(),localName=normalizeStoreName(db.settings.martName);let martName=localName,logo=db.settings.storeLogo||'';applyBrandLogo(logo);applyStoreContext(martName);document.querySelector('#customerForm .hint').textContent='Use the phone number and 4 digit PIN given by '+martName+'.';setStatus('Secure sign-in ready','ready');withTimeout(MartAI.publicStoreInfo()).then(info=>{if(!info)return;martName=normalizeStoreName(info.mart_name||martName);logo=info.logo_data||logo;applyBrandLogo(logo);applyStoreContext(martName);document.querySelector('#customerForm .hint').textContent='Use the phone number and 4 digit PIN given by '+martName+'.'}).catch(()=>{});const session=MartAI.getSession();if(session?.role==='admin'||session?.role==='staff'||session?.role==='store_admin')location.replace('dashboard.html');else if(session?.role==='customer')location.replace('customer.html');else await MartAI.clearSession()}catch(err){setStatus('Login service unavailable','error');showError('customerError',authMessage(err,'customer'))}}
+const prePhone=new URLSearchParams(location.search).get('phone');if(prePhone){$('customerPhone').value=prePhone.replace(/\D/g,'').slice(-10);switchTab('customer',false)}
+window.addEventListener('online',()=>setStatus('Secure sign-in ready','ready'));window.addEventListener('offline',()=>setStatus('Offline — reconnect to sign in','error'));
+bootLogin();
 </script>
-<script src="assets/martai-bot.js?v=3"></script>
 </body>
 </html>

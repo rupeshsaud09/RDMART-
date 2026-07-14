@@ -1050,7 +1050,7 @@ function handleText(raw){
 function dashIntents(txt,raw,words){
   const amt=parseAmount(txt);
   /* logout */
-  if(has(txt,KW.logout)){botSay(t('loggedOut'));setTimeout(()=>{M().clearSession();location.href='index.html'},900);return true}
+  if(has(txt,KW.logout)){botSay(t('loggedOut'));setTimeout(async()=>{await M().clearSession();location.replace('index.html')},900);return true}
   /* last backup time — check before the backup action itself */
   if(has(txt,KW.backup)&&has(txt,['last','when','kahile','कहिले','कब','आखिरी','अन्तिम'])){lastBackupCard();return true}
   /* backup */
@@ -1199,7 +1199,7 @@ function dashIntents(txt,raw,words){
 
 function custIntents(txt,words){
   const self=()=>{const d=M().getDB();return d.customers[0]};
-  if(has(txt,KW.logout)){botSay(t('loggedOut'));setTimeout(()=>{M().clearSession();location.href='index.html'},900);return true}
+  if(has(txt,KW.logout)){botSay(t('loggedOut'));setTimeout(async()=>{await M().clearSession();location.replace('index.html')},900);return true}
   if(has(txt,KW.qr)){custTab('overview');botSay(t('custQr'));return true}
   if(has(txt,KW.pin)){custTab('profile');botSay(t('custPin'));return true}
   /* report a payment — "I paid 500 via esewa" */

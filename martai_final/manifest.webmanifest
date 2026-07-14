@@ -1,7 +1,7 @@
 {
-  "name": "RD MART",
-  "short_name": "RD MART",
-  "description": "Mart credit khata, daily sales, cheques and customer portal",
+  "name": "KHATA PANA",
+  "short_name": "KHATA PANA",
+  "description": "Smart business ledger for credit, sales, cheques and customer access",
   "start_url": "index.html",
   "scope": ".",
   "display": "standalone",

@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MartAI Customer Portal</title>
-<meta name="theme-color" content="#07111f">
+<title>KHATA PANA Customer Portal</title>
+<meta name="theme-color" content="#f4f6fa">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=8">
+<link rel="stylesheet" href="assets/martai.css?v=12">
 </head>
 <body>
 <div class="toast-box" id="toasts"></div>
 <div class="customer-shell">
   <header class="customer-top">
-    <div class="brand"><div class="brand-logo">M</div><div><div class="brand-title" id="martName">MartAI</div><div class="brand-sub">Customer credit portal</div></div></div>
+    <div class="brand"><div class="brand-logo">RD</div><div><div class="brand-title" id="martName">RD MART</div><div class="brand-sub">Customer credit portal</div></div></div>
     <button class="btn btn-ghost btn-sm" id="logoutBtn">Sign out</button>
   </header>
 
@@ -66,22 +66,23 @@
 
 <div id="printArea"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js?v=15"></script>
+<script src="assets/martai-store.js?v=24"></script>
 <script src="assets/martai-qr.js?v=1"></script>
 <script>
 const A=MartAI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));let session=A.getSession();
-/* Follow the theme chosen on the dashboard (same browser); defaults to dark */
-{const th=localStorage.getItem('martai_dashboard_theme')==='light'?'light':'dark';document.body.dataset.theme=th;document.documentElement.style.colorScheme=th;const mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',th==='light'?'#f6f8fc':'#07111f')}
+/* Follow the theme chosen on the dashboard (same browser); defaults to light */
+{const th=localStorage.getItem('martai_dashboard_theme')==='dark'?'dark':'light';document.body.dataset.theme=th;document.documentElement.style.colorScheme=th;const mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',th==='light'?'#f4f6fa':'#0b1220')}
 function db(){return A.getDB()}function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>el.remove(),240)},2400)}
 function currentCustomer(){const d=db();return A.customerById(d,session?.customerId)||d.customers.find(c=>c._tableId===session?.customerTableId)}
-function requireCustomer(){if(!session||session.role!=='customer')location.href='index.html';const c=currentCustomer();if(!c){A.clearSession();location.href='index.html'}}
+async function secureLogout(){await A.clearSession();location.replace('index.html')}
+function requireCustomer(){if(!session||session.role!=='customer'){secureLogout();return false}const c=currentCustomer();if(!c){secureLogout();return false}return true}
 function formData(form){return Object.fromEntries(new FormData(form).entries())}
 function metric(label,value,sub,color){return `<div class="card metric" style="--m:${color}"><div class="metric-label">${label}</div><div class="metric-value">${value}</div><div class="metric-sub">${sub||''}</div></div>`}
 function logoInitial(name){return String(name||'M').trim().split(/\s+/).filter(Boolean).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'M'}
 function safeBgUrl(data){return String(data||'').replace(/"/g,'%22')}
-function applyBrandLogo(logo,name){$$('.brand-logo').forEach(el=>{if(!el.dataset.defaultLogo)el.dataset.defaultLogo=(el.textContent||'').trim()||'M';if(logo){el.classList.add('logo-uploaded');el.style.backgroundImage=`url("${safeBgUrl(logo)}")`;el.textContent=''}else{el.classList.remove('logo-uploaded');el.style.backgroundImage='';el.textContent=el.dataset.defaultLogo}})}
+function applyBrandLogo(logo,name){logo=A.safeImageDataUrl(logo);$$('.brand-logo').forEach(el=>{if(!el.dataset.defaultLogo)el.dataset.defaultLogo=(el.textContent||'').trim()||'M';if(logo){el.classList.add('logo-uploaded');el.style.backgroundImage=`url("${safeBgUrl(logo)}")`;el.textContent=''}else{el.classList.remove('logo-uploaded');el.style.backgroundImage='';el.textContent=el.dataset.defaultLogo}})}
 function polishCustomerUI(){const note=$('customerNote');if(note)note.textContent='Your credit balance and payment progress are shown below.';const copy={'No credit records yet.':'No credit records yet. New credit entries from the mart will appear here.','No history available.':'No credit history is available for this account yet.'};$$('.empty').forEach(el=>{if(copy[el.textContent])el.textContent=copy[el.textContent]})}
 const BS_MONTHS={2070:[31,31,31,32,31,31,29,30,30,29,30,30],2071:[31,31,32,31,31,31,30,29,30,29,30,30],2072:[31,32,31,32,31,30,30,29,30,29,30,30],2073:[31,32,31,32,31,30,30,30,29,29,30,31],2074:[31,31,31,32,31,31,30,29,30,29,30,30],2075:[31,31,32,31,31,31,30,29,30,29,30,30],2076:[31,32,31,32,31,30,30,30,29,29,30,30],2077:[31,32,31,32,31,30,30,30,29,30,29,31],2078:[31,31,31,32,31,31,30,29,30,29,30,30],2079:[31,31,32,31,31,31,30,29,30,29,30,30],2080:[31,32,31,32,31,30,30,30,29,29,30,30],2081:[31,32,31,32,31,30,30,30,29,30,29,31],2082:[31,31,32,31,31,31,30,29,30,29,30,30],2083:[31,31,32,31,31,31,30,29,30,29,30,30],2084:[31,32,31,32,31,30,30,30,29,29,30,31],2085:[30,32,31,32,31,30,30,30,29,30,29,31],2086:[31,31,32,31,31,31,30,29,30,29,30,30],2087:[31,31,32,31,31,31,30,30,29,30,30,30],2088:[30,31,32,32,30,31,30,30,29,30,30,30],2089:[30,32,31,32,31,30,30,30,29,30,30,30],2090:[30,32,31,32,31,30,30,30,29,30,30,30]};
 const BS_ANCHOR={bsYear:2070,ad:'2013-04-14'};
@@ -93,7 +94,7 @@ function daysBetween(a,b){return Math.round((isoUtcMs(b)-isoUtcMs(a))/86400000)}
 function bsParts(date){const iso=String(date||'').slice(0,10);let diff=daysBetween(BS_ANCHOR.ad,iso);let year=BS_ANCHOR.bsYear;if(diff<0)return{year:String(BS_ANCHOR.bsYear),month:'01',day:'01'};while(BS_MONTHS[year]){const yearDays=BS_MONTHS[year].reduce((s,x)=>s+x,0);if(diff<yearDays)break;diff-=yearDays;year++}if(!BS_MONTHS[year])year=Number(Object.keys(BS_MONTHS).at(-1));const months=BS_MONTHS[year];let month=1;for(const len of months){if(diff<len)break;diff-=len;month++}return{year:String(year),month:pad2(month),day:pad2(Math.max(1,diff+1))}}
 function npDate(date){if(!date)return'-';try{const p=bsParts(date);return `${p.year}-${p.month}-${p.day} BS`}catch(e){return String(date)}}
 function updateCustomerClock(){const d=new Date();const iso=localIsoDate(d);const day=d.toLocaleDateString('en-US',{weekday:'long'});const time=d.toLocaleTimeString('en-US',{hour12:true,hour:'2-digit',minute:'2-digit',second:'2-digit'});$('customerClockDay').textContent=day;$('customerClockDate').textContent=npDate(iso);$('customerClockTime').textContent=time}
-function renderProfileDetails(c){$('profileName').textContent=c.name||'-';$('profilePhone').textContent=c.phone||'-';$('profileEmail').textContent=c.email||'-';$('profileAddress').textContent=c.address||'-';const p=$('profilePhoto');if(c.avatarData){p.style.backgroundImage=`url(${c.avatarData})`;p.textContent=''}else{p.style.backgroundImage='';p.textContent=(c.name||'RD').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}}
+function renderProfileDetails(c){$('profileName').textContent=c.name||'-';$('profilePhone').textContent=c.phone||'-';$('profileEmail').textContent=c.email||'-';$('profileAddress').textContent=c.address||'-';const p=$('profilePhoto'),avatar=A.safeImageDataUrl(c.avatarData,700000);if(avatar){p.style.backgroundImage=`url("${safeBgUrl(avatar)}")`;p.textContent=''}else{p.style.backgroundImage='';p.textContent=(c.name||'RD').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}}
 function renderMyQrCode(c){const base=window.location.href.replace(/customer\.html.*/,'index.html');const url=base+'?phone='+encodeURIComponent(c.phone||'');const urlEl=$('myQrUrl');if(urlEl)urlEl.textContent=url;const owner=$('myQrOwner');if(owner)owner.textContent=(c.name||'My')+' · '+(c.phone||'');const img=$('myQrImg');if(!img)return;if(window.MartQR){try{img.src=MartQR.dataUrl(url,190);img.alt='Portal QR for '+(c.name||'customer');return}catch(e){console.warn('Local QR failed:',e)}}img.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(url)+'&color=1e1b4b&bgcolor=ffffff&margin=8';img.alt=url}
 function imageToAvatarData(file){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith('image/'))return reject(new Error('Choose an image file'));const img=new Image();const reader=new FileReader();reader.onload=()=>{img.onload=()=>{const size=320;const canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;const ctx=canvas.getContext('2d');const scale=Math.max(size/img.width,size/img.height);const w=img.width*scale;const h=img.height*scale;ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);resolve(canvas.toDataURL('image/jpeg',.82))};img.onerror=()=>reject(new Error('Could not read image'));img.src=reader.result};reader.onerror=()=>reject(new Error('Could not read image'));reader.readAsDataURL(file)})}
 let historyPg=1;const HIST_PER_PAGE=10;
@@ -122,7 +123,7 @@ function render(){
   if(hp){if(!rows.length)hp.innerHTML='';else{const from=(historyPg-1)*HIST_PER_PAGE+1;const to=Math.min(historyPg*HIST_PER_PAGE,rows.length);let h='<div style="display:flex;align-items:center;gap:8px;padding:10px 0 2px;border-top:1px solid rgba(255,255,255,.08);margin-top:8px"><span class="small" style="opacity:.5;margin-right:auto">'+from+'&ndash;'+to+' of '+rows.length+'</span>';if(tpH>1){h+='<button class="btn btn-soft btn-sm" data-hist-dir="-1"'+(historyPg===1?' disabled':'')+'>&#8249; Prev</button><span class="small" style="min-width:3em;text-align:center">'+historyPg+' / '+tpH+'</span><button class="btn btn-soft btn-sm" data-hist-dir="1"'+(historyPg>=tpH?' disabled':'')+'>Next &#8250;</button>'}hp.innerHTML=h+'</div>'}}
   $('historyRows').innerHTML=rows.length?rows.slice((historyPg-1)*HIST_PER_PAGE,historyPg*HIST_PER_PAGE).map(r=>{const bal=A.num(r.amount)-A.num(r.paid);const overdue=bal>0&&r.dueDate&&String(r.dueDate).slice(0,10)<A.today();return `<tr><td>${npDate(r.date)}${r.dueDate?`<div class="small" style="opacity:.65">Due ${npDate(r.dueDate)}</div>`:''}${overdue?'<div style="margin-top:2px"><span class="badge badge-red">Overdue</span></div>':''}</td><td>${A.esc(r.items||'-')}</td><td>${A.money(r.amount)}</td><td class="amount-green">${A.money(r.paid)}</td><td><b class="${bal>0?'amount-red':'amount-green'}">${A.money(bal)}</b></td><td>${A.esc(r.note||r.paymentNote||'-')}</td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">No history available.</div></td></tr>';
   const payQrSection=$('payQrSection');
-  if(payQrSection){const pqr=d.settings.storePaymentQr||'';const pqrLabel=d.settings.storePaymentQrLabel||'Payment QR';if(pqr){payQrSection.style.display='';payQrSection.innerHTML=`<div class="card" style="text-align:center"><div class="section-title" style="margin-bottom:4px">Pay via ${A.esc(pqrLabel)}</div><p class="hint" style="margin-bottom:16px">Scan this QR code to pay ${A.esc(d.settings.martName||'the mart')}</p><div style="display:flex;justify-content:center"><img src="${pqr}" alt="${A.esc(pqrLabel)}" style="max-width:220px;max-height:220px;object-fit:contain;border-radius:12px;background:#fff;padding:10px;border:2px solid rgba(255,255,255,.15)"></div></div>`}else{payQrSection.style.display='none'}}
+  if(payQrSection){const pqr=A.safeImageDataUrl(d.settings.storePaymentQr),pqrLabel=String(d.settings.storePaymentQrLabel||'Payment QR');if(pqr){payQrSection.style.display='';payQrSection.innerHTML='<div class="card" style="text-align:center"><div class="section-title" id="payQrTitle" style="margin-bottom:4px"></div><p class="hint" id="payQrHint" style="margin-bottom:16px"></p><div style="display:flex;justify-content:center"><img id="payQrImage" style="max-width:220px;max-height:220px;object-fit:contain;border-radius:12px;background:#fff;padding:10px;border:2px solid rgba(255,255,255,.15)"></div></div>';$('payQrTitle').textContent='Pay via '+pqrLabel;$('payQrHint').textContent='Scan this QR code to pay '+String(d.settings.martName||'the mart');$('payQrImage').src=pqr;$('payQrImage').alt=pqrLabel}else{payQrSection.style.display='none';payQrSection.innerHTML=''}}
   renderPayReport(d);
   renderProfileDetails(c);
   renderMyQrCode(c);
@@ -146,7 +147,7 @@ A.tilt3d(document.querySelector('.customer-hero'),3);
 MartAI.ready.then(()=>{requireCustomer();updateCustomerClock();setInterval(updateCustomerClock,1000);render();polishCustomerUI()}).catch(err=>toast('Could not load database: '+err.message,'err'));
 $$('.customer-tab').forEach(btn=>btn.addEventListener('click',()=>{$$('.customer-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));$('tab-'+btn.dataset.tab).classList.add('active')}));
 document.addEventListener('click',e=>{const b=e.target.closest('[data-hist-dir]');if(!b||b.disabled)return;historyPg=Math.max(1,historyPg+Number(b.dataset.histDir));render()});
-$('logoutBtn').addEventListener('click',()=>{A.clearSession();location.href='index.html'});
+$('logoutBtn').addEventListener('click',secureLogout);
 $('avatarInput').addEventListener('change',async e=>{const file=e.target.files[0];try{const avatarData=await imageToAvatarData(file);if(A.syncInfo().mode==='tables'){await A.updateCustomerAvatar(avatarData)}else{const d=db();const c=currentCustomer();c.avatarData=avatarData;A.saveDB(d)}render();toast('Profile photo updated')}catch(err){toast(err.message,'err')}finally{e.target.value=''}});
 $('downloadMyQrBtn')?.addEventListener('click',()=>{const img=$('myQrImg');if(!img||!img.src)return;const c=currentCustomer();const a=document.createElement('a');a.href=img.src;a.download='portal-qr-'+String(c?.phone||'me')+'.gif';document.body.appendChild(a);a.click();a.remove()});
 function stTd(v,right){return '<td style="border:1px solid #000;padding:6px'+(right?';text-align:right':'')+'">'+v+'</td>'}
@@ -154,6 +155,6 @@ function statementHTML(mart,c,rows){let run=0,tA=0,tP=0;const body=rows.map(r=>{
 $('printStatementBtn')?.addEventListener('click',()=>{const d=db();const c=currentCustomer();if(!c)return;const rows=d.credits.filter(x=>x.customerId===c.id).sort((a,b)=>String(a.date).localeCompare(String(b.date)));$('printArea').innerHTML=statementHTML(d.settings.martName||'RD MART',c,rows);window.print()});
 $('pinForm').addEventListener('submit',async e=>{e.preventDefault();const data=formData(e.target);try{if(data.pin!==data.confirmPin)throw new Error('PIN confirmation does not match');if(A.syncInfo().mode==='tables'){await A.updateCustomerPin(data.pin)}else{const d=db();A.updateCustomer(d,session.customerId,{pin:data.pin})}e.target.reset();toast('PIN updated')}catch(err){toast(err.message,'err')}});
 </script>
-<script src="assets/martai-bot.js?v=3"></script>
+<script src="assets/martai-bot.js?v=4"></script>
 </body>
 </html>

@@ -1,10 +1,11 @@
 {
-  "name": "martai-final",
+  "name": "khata-pana",
   "version": "2.0.0",
-  "description": "Offline localStorage mart manager with admin and customer portal",
+  "description": "KHATA PANA smart business ledger with admin and customer portals",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test ../tests/khata-backup.test.js ../tests/security-hardening.test.js"
   },
   "dependencies": {}
 }

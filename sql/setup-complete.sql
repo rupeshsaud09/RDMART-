@@ -54,6 +54,32 @@ alter table public.mart_stores add column if not exists logo_data text default '
 alter table public.mart_stores add column if not exists qr_data text default '';
 alter table public.mart_stores add column if not exists qr_label text default '';
 
+-- Images are rendered in the admin and customer portals. Enforce real image
+-- data URLs in the database so a direct REST write cannot store HTML/script.
+update public.mart_stores
+set logo_data = ''
+where coalesce(logo_data, '') <> ''
+  and (length(logo_data) > 2000000
+    or logo_data !~ '^data:image/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$');
+update public.mart_stores
+set qr_data = ''
+where coalesce(qr_data, '') <> ''
+  and (length(qr_data) > 2000000
+    or qr_data !~ '^data:image/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$');
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'mart_stores_logo_data_safe') then
+    alter table public.mart_stores add constraint mart_stores_logo_data_safe
+      check (coalesce(logo_data, '') = '' or
+        (length(logo_data) <= 2000000 and logo_data ~ '^data:image/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$'));
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'mart_stores_qr_data_safe') then
+    alter table public.mart_stores add constraint mart_stores_qr_data_safe
+      check (coalesce(qr_data, '') = '' or
+        (length(qr_data) <= 2000000 and qr_data ~ '^data:image/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$'));
+  end if;
+end $$;
+
 create table if not exists public.mart_staff (
   id uuid primary key default extensions.gen_random_uuid(),
   user_id uuid not null unique references auth.users(id) on delete cascade,
@@ -1015,28 +1041,16 @@ drop policy if exists "admins read login events" on public.login_events;
 create policy "admins read login events" on public.login_events
   for select to authenticated using (public.is_mart_admin());
 
--- martai_app_state: allows anon app to read/write the shared app state
+-- martai_app_state is a legacy migration table. It can contain plaintext
+-- local-mode credentials, so it must never be exposed through the anon role.
 drop policy if exists "martai app can read state" on public.martai_app_state;
-create policy "martai app can read state"
-on public.martai_app_state
-for select
-to anon
-using (id = 'main');
-
 drop policy if exists "martai app can insert state" on public.martai_app_state;
-create policy "martai app can insert state"
-on public.martai_app_state
-for insert
-to anon
-with check (id = 'main');
-
 drop policy if exists "martai app can update state" on public.martai_app_state;
-create policy "martai app can update state"
-on public.martai_app_state
-for update
-to anon
-using (id = 'main')
-with check (id = 'main');
+drop policy if exists "admins manage legacy app state" on public.martai_app_state;
+create policy "admins manage legacy app state" on public.martai_app_state
+  for all to authenticated
+  using (public.is_mart_admin())
+  with check (public.is_mart_admin());
 
 -- === REVOKE ANON DIRECT TABLE ACCESS ===
 revoke all on public.customers         from anon;
@@ -1058,9 +1072,17 @@ revoke all on public.mart_settings     from anon;
 revoke all on public.mart_stores       from anon;
 revoke all on public.mart_staff        from anon;
 revoke all on public.mart_store_admins from anon;
+revoke all on public.martai_app_state  from anon;
+revoke all on public.martai_app_state  from public;
 
 -- === GRANT PERMISSIONS ===
--- Anon: customer RPCs and app state access
+-- PostgreSQL grants function execution to PUBLIC by default. Reset all
+-- function grants first, then allow only the RPCs each API role needs.
+revoke execute on all functions in schema public from public;
+revoke execute on all functions in schema public from anon;
+revoke execute on all functions in schema public from authenticated;
+
+-- Anon: customer RPCs only
 grant execute on function public.customer_login(text,text)          to anon;
 grant execute on function public.customer_portal(text)              to anon;
 grant execute on function public.customer_update_pin(text,text)     to anon;
@@ -1068,7 +1090,6 @@ grant execute on function public.update_customer_photo(text,text)   to anon;
 grant execute on function public.customer_update_avatar(text,text)  to anon;
 grant execute on function public.public_store_info()                 to anon;
 grant execute on function public.customer_request_payment(text,numeric,text,text,text) to anon;
-grant select, insert, update on public.martai_app_state to anon;
 
 -- Authenticated: admin and lookup functions
 grant execute on function public.record_admin_login(text)           to authenticated;
@@ -1085,6 +1106,7 @@ grant execute on function public.admin_delete_store(uuid)           to authentic
 grant select, insert, update, delete on public.mart_settings     to authenticated;
 grant select, insert, update, delete on public.mart_stores       to authenticated;
 grant select, insert, update, delete on public.mart_store_admins to authenticated;
+grant select, insert, update, delete on public.martai_app_state  to authenticated;
 grant select, insert, update          on public.mart_staff        to authenticated;
 grant select, insert, update, delete on public.customers         to authenticated;
 grant select, insert, update, delete on public.credits           to authenticated;

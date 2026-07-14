@@ -2,8 +2,6 @@
   const KEY='martai_final_db_v1';
   const SESSION='martai_final_session';
   const ACTIVE_STORE='martai_active_store_v1';
-  const TABLE='martai_app_state';
-  const STATE_ID='main';
   let currentDB=null;
   let supabaseClient=null;
   let remoteEnabled=false;
@@ -29,21 +27,33 @@
   function num(v){const n=Number(String(v??'').replace(/,/g,''));return Number.isFinite(n)?n:0}
   function money(v){return 'Rs '+num(v).toLocaleString('en-IN')}
   function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[m]))}
+  function safeImageDataUrl(value,maxLength=2000000){const text=String(value||'');return text.length<=maxLength&&/^data:image\/(?:jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$/i.test(text)?text:''}
   function phoneClean(v){return String(v||'').replace(/\D/g,'').slice(-10)}
   function defaultStore(){return{id:'default',name:'RD MART',phone:'',logoData:'',createdAt:now(),isActive:true}}
   function getActiveStoreId(){return localStorage.getItem(ACTIVE_STORE)||'default'}
   function setActiveStoreId(storeId){localStorage.setItem(ACTIVE_STORE,storeId||'default');currentDB=null}
-  function makeDB(){return{version:1,createdAt:now(),settings:{martName:'MartAI',adminUser:'admin',adminPass:'mart2024',martPhone:'9800000000',storeLogo:''},stores:[defaultStore()],customers:[],credits:[],sales:[],dailySales:[],partyPayments:[],cheques:[],chequeQueue:[],parties:[],estimateBills:[],activity:[],staffAccounts:[]}}
-  function normalizeDB(db){if(!db||typeof db!=='object')db=makeDB();['settings','stores','customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','activity','loginEvents','staffAccounts','paymentRequests'].forEach(k=>{if(k==='settings'){db[k]=db[k]||makeDB().settings}else if(!Array.isArray(db[k]))db[k]=[]});if(!db.stores.length)db.stores=[defaultStore()];if(!('storeLogo' in db.settings))db.settings.storeLogo='';if(!db.settings.adminUser)db.settings.adminUser='admin';if(!db.settings.adminPass)db.settings.adminPass='mart2024';return db}
-  function readLocal(){let db;try{db=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){db=null}return normalizeDB(db)}
-  function writeLocal(db){localStorage.setItem(KEY,JSON.stringify(db))}
+  function makeDB(){return{version:1,createdAt:now(),settings:{martName:'RD MART',adminUser:'admin',adminPass:'',martPhone:'',storeLogo:'',storePaymentQr:'',storePaymentQrLabel:''},stores:[defaultStore()],customers:[],credits:[],sales:[],dailySales:[],partyPayments:[],cheques:[],chequeQueue:[],parties:[],estimateBills:[],activity:[],staffAccounts:[]}}
+  function normalizeDB(db){
+    if(!db||typeof db!=='object')db=makeDB();
+    ['settings','stores','customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','activity','loginEvents','staffAccounts','paymentRequests'].forEach(k=>{if(k==='settings'){db[k]=db[k]||makeDB().settings}else if(!Array.isArray(db[k]))db[k]=[]});
+    if(!db.stores.length)db.stores=[defaultStore()];
+    if(db.settings.martName==='KHATA PANA'||db.settings.martName==='MartAI'||!db.settings.martName)db.settings.martName='RD MART';
+    db.stores.forEach(s=>{if(s.name==='KHATA PANA'||s.name==='MartAI'||!s.name)s.name='RD MART'});
+    db.settings.storeLogo=safeImageDataUrl(db.settings.storeLogo);db.settings.storePaymentQr=safeImageDataUrl(db.settings.storePaymentQr);if(!db.settings.adminUser)db.settings.adminUser='admin';if(!('adminPass' in db.settings))db.settings.adminPass='';
+    db.stores.forEach(s=>{s.logoData=safeImageDataUrl(s.logoData);s.qrData=safeImageDataUrl(s.qrData)});db.customers.forEach(c=>{c.avatarData=safeImageDataUrl(c.avatarData,700000)});
+    if(tableMode()){const sid=getActiveStoreId();db.sales.forEach(s=>{if(!s.storeId)s.storeId=sid})}
+    return db;
+  }
+  function redactStoredSecrets(db){if(!tableMode()||!db||typeof db!=='object')return db;db.settings=db.settings||{};db.settings.adminPass='';(db.staffAccounts||[]).forEach(s=>{delete s.password});(db.customers||[]).forEach(c=>{if(!dirty.customers.has(c.id))c.pin=''});return db}
+  function readLocal(){let db;try{db=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){db=null}return normalizeDB(redactStoredSecrets(db))}
+  function writeLocal(db){const stored=tableMode()?redactStoredSecrets(JSON.parse(JSON.stringify(db))):db;localStorage.setItem(KEY,JSON.stringify(stored))}
   function getDB(){if(!currentDB)currentDB=readLocal();return currentDB}
   function getSupabase(){const cfg=window.MARTAI_SUPABASE||{};const configured=cfg.url&&cfg.anonKey&&!String(cfg.url).includes('YOUR_SUPABASE')&&!String(cfg.anonKey).includes('YOUR_SUPABASE');if(!configured||!window.supabase)return null;if(!supabaseClient)supabaseClient=window.supabase.createClient(cfg.url,cfg.anonKey);return supabaseClient}
   function dbMode(){return (window.MARTAI_SUPABASE&&window.MARTAI_SUPABASE.mode)||'json'}
   function tableMode(){return dbMode()==='tables'}
   function isoDate(v){return String(v||today()).slice(0,10)}
-  function fromStoreRow(r){return{id:r.id,name:r.name||'Store',phone:r.phone||'',logoData:r.logo_data||'',qrData:r.qr_data||'',qrLabel:r.qr_label||'',createdAt:r.created_at,isActive:r.is_active!==false}}
-  function fromCustomerRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),name:r.name||'',phone:r.phone||'',pin:'',avatarData:r.avatar_data||'',email:r.email||'',address:r.address||'',notes:r.notes||'',creditLimit:num(r.credit_limit)||0,createdAt:r.created_at,updatedAt:r.updated_at}}
+  function fromStoreRow(r){return{id:r.id,name:r.name||'Store',phone:r.phone||'',logoData:safeImageDataUrl(r.logo_data),qrData:safeImageDataUrl(r.qr_data),qrLabel:r.qr_label||'',createdAt:r.created_at,isActive:r.is_active!==false}}
+  function fromCustomerRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),name:r.name||'',phone:r.phone||'',pin:'',avatarData:safeImageDataUrl(r.avatar_data,700000),email:r.email||'',address:r.address||'',notes:r.notes||'',creditLimit:num(r.credit_limit)||0,createdAt:r.created_at,updatedAt:r.updated_at}}
   function fromCreditRow(r,customers){const c=customers.find(x=>x._tableId===r.customer_id)||{};return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),customerId:c.id||r.customer_id,customer:c.name||'',phone:c.phone||'',date:r.credit_date,dueDate:r.due_date||'',items:r.items||'',amount:num(r.amount),paid:num(r.paid),note:r.note||'',paymentNote:r.payment_note||'',paidAt:r.paid_at,createdAt:r.created_at}}
   function fromSaleRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),date:r.sale_date,party:r.party||'Walk-in Customer',amount:num(r.amount),note:r.note||'',createdAt:r.created_at}}
   function fromDailyRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),date:r.sale_date,pos:num(r.pos),fonepay:num(r.fonepay),cash:num(r.cash),finance:num(r.finance),partyPayment:num(r.party_payment),other:num(r.other),note:r.note||'',createdAt:r.created_at}}
@@ -56,13 +66,6 @@
   function fromLoginEventRow(r){return{id:r.id,role:r.login_role||'',customerId:r.customer_id||'',name:r.display_name||'',phone:r.phone||'',email:r.email||'',time:r.created_at}}
   function fromStaffRow(r){return{id:r.id,email:r.email||'',name:r.full_name||'',active:r.is_active!==false,createdAt:r.created_at}}
   function fromPaymentRequestRow(r,customers){const c=customers.find(x=>x._tableId===r.customer_id)||{};return{id:r.id,storeId:r.store_id||getActiveStoreId(),customerId:c.id||r.customer_id,customer:c.name||'Customer',phone:c.phone||'',amount:num(r.amount),method:r.method||'',reference:r.reference||'',note:r.note||'',status:r.status||'pending',createdAt:r.created_at,resolvedAt:r.resolved_at}}
-  async function saveRemoteNow(db){
-    const client=getSupabase();
-    if(!client)return;
-    // UPSERT ensures both INSERT (if new) and UPDATE (if exists) work correctly
-    const result=await client.from(TABLE).upsert({id:STATE_ID,data:db,updated_at:now()},{onConflict:'id'});
-    if(result.error)throw result.error;
-  }
   async function loadTableDB(){
     const client=getSupabase();if(!client)return getDB();
     // Flush unsynced offline changes first — otherwise the remote load would overwrite them.
@@ -215,14 +218,28 @@
     for(const x of db.paymentRequests||[]){const oldId=x.id;if(!dirty.paymentRequests.has(oldId))continue;const c=byId[x.customerId]||{};const customerId=c._tableId||x.customerTableId||x.customerId;if(!customerId)continue;const row={store_id:storeId,customer_id:customerId,amount:num(x.amount),method:x.method||'',reference:x.reference||'',note:x.note||'',status:x.status||'pending',created_at:x.createdAt||now(),resolved_at:x.resolvedAt||null,resolved_by:x.resolvedBy||null};const canKeepId=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(x.id||''));r=canKeepId?await client.from('payment_requests').upsert({id:x.id,...row},{onConflict:'id'}).select('id').single():await client.from('payment_requests').insert(row).select('id').single();if(r.error)throw r.error;x.id=r.data.id;dirty.paymentRequests.delete(oldId)}
     writeLocal(db);remoteEnabled=true;remoteError='';
   }
-  async function loadRemoteDB(){const client=getSupabase();if(!client){remoteEnabled=false;return getDB()}try{const result=await client.from(TABLE).select('data').eq('id',STATE_ID).maybeSingle();if(result.error)throw result.error;if(result.data&&result.data.data){currentDB=normalizeDB(result.data.data);writeLocal(currentDB)}else{currentDB=getDB();await saveRemoteNow(currentDB)}remoteEnabled=true;remoteError='';return currentDB}catch(e){remoteEnabled=false;remoteError=e.message||String(e);console.error('Supabase load failed:',e);return getDB()}}
-  function queueRemoteSave(db){const client=getSupabase();if(!client)return;touchLocal();const saver=tableMode()?saveTableDB:saveRemoteNow;pendingSave=(pendingSave||Promise.resolve()).catch(()=>{}).then(()=>saver(db)).then(()=>{remoteEnabled=true;remoteError='';touchLocal();persistPending()}).catch(e=>{remoteEnabled=false;remoteError=e.message||String(e);persistPending();console.error('Supabase save failed:',e)});return pendingSave}
+  async function loadRemoteDB(){remoteEnabled=false;remoteError='Legacy shared JSON cloud sync is disabled. Configure Supabase tables mode.';return getDB()}
+  function queueRemoteSave(db){if(!tableMode())return;const client=getSupabase();if(!client)return;touchLocal();pendingSave=(pendingSave||Promise.resolve()).catch(()=>{}).then(()=>saveTableDB(db)).then(()=>{remoteEnabled=true;remoteError='';touchLocal();persistPending()}).catch(e=>{remoteEnabled=false;remoteError=e.message||String(e);persistPending();console.error('Supabase save failed:',e)});return pendingSave}
   function saveDB(db){currentDB=normalizeDB(db);writeLocal(currentDB);queueRemoteSave(currentDB);return currentDB}
-  function resetDB(){currentDB=makeDB();saveDB(currentDB);return currentDB}
-  async function restoreBackup(input){
+  function resetDB(){if(!isMainAdminSession())throw new Error('Only the main admin can reset data');currentDB=makeDB();saveDB(currentDB);return currentDB}
+  function validateRestoreBackup(input){
+    if(!isMainAdminSession())throw new Error('Only the main admin can restore backups');
+    const envelope=input&&input.format==='khata-pana-backup'?input:null;
+    if(envelope){
+      const expectedStoreId=tableMode()?String(getActiveStoreId()||'default'):'all-stores';
+      if(String(envelope.storeId||'')!==expectedStoreId)throw new Error(tableMode()?'This backup belongs to a different store. Switch to that store before restoring it.':'This backup is not an all-stores local backup.');
+      if(window.KhataBackup?.validateForRestore)window.KhataBackup.validateForRestore(getDB(),envelope);
+      else if(!envelope.data||typeof envelope.data!=='object')throw new Error('Backup file is empty or invalid');
+      return envelope.data;
+    }
+    if(tableMode())throw new Error('This legacy backup has no store identity, so it cannot be safely restored to the online database. Use a KHATA PANA backup created from this store.');
     const raw=input&&input.data&&input.data.settings?input.data:input;
     if(!raw||typeof raw!=='object')throw new Error('Backup file is empty or invalid');
     if(!raw.settings&&!Array.isArray(raw.customers)&&!Array.isArray(raw.credits)&&!Array.isArray(raw.dailySales))throw new Error('This does not look like a MartAI backup file');
+    return raw;
+  }
+  async function restoreBackup(input){
+    const raw=validateRestoreBackup(input);
     const oldDB=getDB();
     const restored=normalizeDB(JSON.parse(JSON.stringify(raw)));
     restored.version=Math.max(num(restored.version)||1,2);
@@ -251,7 +268,7 @@
     queueRemoteSave(currentDB);
     return currentDB;
   }
-  async function syncNow(){if(tableMode())await loadTableDB();else await loadRemoteDB();return getDB()}
+  async function syncNow(){if(pendingSave)await pendingSave;if(tableMode())await loadTableDB();else await loadRemoteDB();return getDB()}
   function syncInfo(){return{remoteEnabled,remoteError,configured:!!getSupabase(),mode:dbMode(),pendingSave,pendingCount:pendingCount(),hasPending:hasPending()}}
   async function adminLogin(username,password,remember){
     if(!tableMode()){
@@ -306,10 +323,10 @@
     const result=await client.rpc('customer_portal',{raw_token:token});
     if(result.error)throw result.error;
     const data=result.data||{};const c=data.customer||{};
-    const customer={id:c.legacy_id||c.id,_tableId:c.id,name:c.name||'',phone:c.phone||'',avatarData:c.avatar_data||'',email:c.email||'',address:c.address||'',notes:c.notes||'',createdAt:c.created_at,updatedAt:c.updated_at};
+    const customer={id:c.legacy_id||c.id,_tableId:c.id,name:c.name||'',phone:c.phone||'',avatarData:safeImageDataUrl(c.avatar_data,700000),email:c.email||'',address:c.address||'',notes:c.notes||'',createdAt:c.created_at,updatedAt:c.updated_at};
     let storePaymentQr='';let storePaymentQrLabel='';let storeLogo='';let storeName='RD MART';
-    if(data.store){storeName=data.store.name||storeName;storeLogo=data.store.logo_data||'';storePaymentQr=data.store.qr_data||'';storePaymentQrLabel=data.store.qr_label||''}
-    else if(c.store_id){try{const sq=await client.from('mart_stores').select('name,logo_data,qr_data,qr_label').eq('id',c.store_id).maybeSingle();if(!sq.error&&sq.data){storeName=sq.data.name||storeName;storeLogo=sq.data.logo_data||'';storePaymentQr=sq.data.qr_data||'';storePaymentQrLabel=sq.data.qr_label||''}}catch(e){}}
+    if(data.store){storeName=data.store.name||storeName;storeLogo=safeImageDataUrl(data.store.logo_data);storePaymentQr=safeImageDataUrl(data.store.qr_data);storePaymentQrLabel=data.store.qr_label||''}
+    else if(c.store_id){try{const sq=await client.from('mart_stores').select('name,logo_data,qr_data,qr_label').eq('id',c.store_id).maybeSingle();if(!sq.error&&sq.data){storeName=sq.data.name||storeName;storeLogo=safeImageDataUrl(sq.data.logo_data);storePaymentQr=safeImageDataUrl(sq.data.qr_data);storePaymentQrLabel=sq.data.qr_label||''}}catch(e){}}
     currentDB=normalizeDB({version:2,createdAt:now(),settings:{martName:storeName,adminUser:'',adminPass:'',martPhone:'',storeLogo,storePaymentQr,storePaymentQrLabel},customers:[customer],credits:(data.credits||[]).map(r=>fromCreditRow(r,[customer])),sales:[],dailySales:[],partyPayments:[],cheques:[],activity:[],paymentRequests:(data.payment_requests||[]).map(r=>({id:r.id,amount:num(r.amount),method:r.method||'',reference:r.reference||'',note:r.note||'',status:r.status||'pending',createdAt:r.created_at}))});
     writeLocal(currentDB);remoteEnabled=true;remoteError='';return currentDB;
   }
@@ -373,7 +390,8 @@
   function getSession(){try{const s=JSON.parse(sessionStorage.getItem(SESSION)||'null');if(s)return s;const r=JSON.parse(localStorage.getItem(REMEMBER)||'null');if(r&&r.expiresAt>Date.now()){sessionStorage.setItem(SESSION,JSON.stringify(r));return r}if(r)localStorage.removeItem(REMEMBER);return null}catch(e){return null}}
   function isStaffSession(){return getSession()?.role==='staff'}
   function isMainAdminSession(){return getSession()?.role==='admin'}
-  function clearSession(){sessionStorage.removeItem(SESSION);try{localStorage.removeItem(REMEMBER)}catch(e){}}
+  function clearSupabaseAuthStorage(){try{const url=String(window.MARTAI_SUPABASE?.url||''),ref=new URL(url).hostname.split('.')[0],prefix='sb-'+ref+'-auth-token';for(let i=localStorage.length-1;i>=0;i--){const key=localStorage.key(i);if(key&&(key===prefix||key.startsWith(prefix+'-')))localStorage.removeItem(key)}}catch(e){}}
+  async function clearSession(){sessionStorage.removeItem(SESSION);try{localStorage.removeItem(REMEMBER)}catch(e){}const client=getSupabase();try{if(client)await client.auth.signOut({scope:'local'})}catch(e){console.warn('Remote sign-out failed; local credentials were still cleared')}finally{clearSupabaseAuthStorage()}}
   function getStores(){return (getDB().stores||[defaultStore()]).filter(s=>s.isActive!==false)}
   async function addStore(db,input){if(!isMainAdminSession())throw new Error('Only main admin can create stores');const name=String(input.name||'').trim();const phone=phoneClean(input.phone||'');const adminEmail=String(input.adminEmail||'').trim().toLowerCase();if(!name)throw new Error('Store name is required');if(!adminEmail.includes('@'))throw new Error('Store admin email is required');if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_create_store',{name_input:name,phone_input:phone,email_input:adminEmail});if(r.error)throw r.error;setActiveStoreId(r.data);await loadTableDB();return r.data}db.stores.unshift({id:id(),name,phone,adminEmail,createdAt:now(),isActive:true});setActiveStoreId(db.stores[0].id);saveDB(db);return db.stores[0]}
   async function deleteStore(db,storeId){if(!isMainAdminSession())throw new Error('Only main admin can delete stores');const stores=getStores();if(stores.length<=1)throw new Error('You must keep at least one store');if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_delete_store',{store_input:storeId});if(r.error)throw r.error;if(getActiveStoreId()===storeId)setActiveStoreId('default');await loadTableDB();return}db.stores=(db.stores||[]).filter(s=>s.id!==storeId);if(getActiveStoreId()===storeId)setActiveStoreId(db.stores[0]?.id||'default');saveDB(db)}
@@ -389,7 +407,7 @@
   function addCredit(db,input){const c=customerById(db,input.customerId);if(!c)throw new Error('Select customer');const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const limit=num(c.creditLimit)||0;if(limit>0){const{balance}=customerBalance(db,c.id);if(balance+amount>limit)throw new Error(`Credit limit exceeded. ${c.name} limit is ${money(limit)}, current balance ${money(balance)}`)}const cr={id:id(),storeId:getActiveStoreId(),customerId:c.id,customer:c.name,phone:c.phone,date:input.date||today(),dueDate:input.dueDate?isoDate(input.dueDate):'',items:String(input.items||'').trim(),amount,paid:0,note:String(input.note||'').trim(),createdAt:now()};db.credits.unshift(cr);markDirty('credits',cr.id);addActivity(db,`Credit ${money(amount)} added for ${c.name}`,'credit');saveDB(db);return cr}
   function addCreditPayment(db,customerId,amount,note){let remaining=num(amount);if(remaining<=0)throw new Error('Payment amount must be greater than 0');const c=customerById(db,customerId);if(!c)throw new Error('Customer not found');const rows=db.credits.filter(x=>x.customerId===customerId&&num(x.amount)>num(x.paid)).sort((a,b)=>String(a.date).localeCompare(String(b.date)));for(const r of rows){const bal=num(r.amount)-num(r.paid);const pay=Math.min(bal,remaining);r.paid=num(r.paid)+pay;r.paidAt=now();if(note)r.paymentNote=String(note).trim();markDirty('credits',r.id);remaining-=pay;if(remaining<=0)break}addActivity(db,`Payment ${money(amount-remaining)} received from ${c.name}`,'payment');saveDB(db);return amount-remaining}
   function deleteCredit(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.credits.find(x=>x.id===idv);if(!r)throw new Error('Credit not found');deleteTableRow('credits',r);db.credits=db.credits.filter(x=>x.id!==idv);addActivity(db,`Credit deleted: ${r.customer} ${money(r.amount)}`,'credit');saveDB(db)}
-  function addSale(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const s={id:id(),date:input.date||today(),party:String(input.party||'Walk-in Customer').trim(),amount,note:String(input.note||'').trim(),createdAt:now()};db.sales.unshift(s);markDirty('sales',s.id);addActivity(db,`Sale ${money(amount)} - ${s.party}`,'sale');saveDB(db);return s}
+  function addSale(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const s={id:id(),storeId:getActiveStoreId(),date:input.date||today(),party:String(input.party||'Walk-in Customer').trim(),amount,note:String(input.note||'').trim(),createdAt:now()};db.sales.unshift(s);markDirty('sales',s.id);addActivity(db,`Sale ${money(amount)} - ${s.party}`,'sale');saveDB(db);return s}
   function deleteSale(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.sales.find(x=>x.id===idv);deleteTableRow('sales',r);db.sales=db.sales.filter(x=>x.id!==idv);if(r)addActivity(db,`Sale deleted: ${money(r.amount)}`,'sale');saveDB(db)}
   function addDaily(db,input){const fields=['pos','fonepay','cash','finance','partyPayment','other'];const d={id:id(),storeId:getActiveStoreId(),date:input.date||today(),note:String(input.note||'').trim(),createdAt:now()};fields.forEach(f=>d[f]=num(input[f]));db.dailySales.unshift(d);markDirty('dailySales',d.id);addActivity(db,`Daily sales saved for ${d.date}`,'daily');saveDB(db);return d}
   function updateDaily(db,idv,input){const r=db.dailySales.find(x=>x.id===idv);if(!r)throw new Error('Daily sales entry not found');const fields=['pos','fonepay','cash','finance','partyPayment','other'];r.date=input.date||r.date||today();fields.forEach(f=>{if(f in input)r[f]=num(input[f])});r.note=String(input.note||'').trim();r.updatedAt=now();markDirty('dailySales',r.id);addActivity(db,`Daily sales updated for ${r.date}`,'daily');saveDB(db);return r}
@@ -414,13 +432,13 @@
   function addEstimateBill(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const customer=String(input.customer||'').trim();if(!customer)throw new Error('Customer or party name is required');const est={id:id(),storeId:getActiveStoreId(),date:input.date||today(),customer,phone:phoneClean(input.phone||''),items:String(input.items||'').trim(),amount,validUntil:input.validUntil?isoDate(input.validUntil):'',status:estimateStatus(input.status),note:String(input.note||'').trim(),createdAt:now(),updatedAt:now()};db.estimateBills=db.estimateBills||[];db.estimateBills.unshift(est);markDirty('estimateBills',est.id);addActivity(db,`Estimate bill ${money(amount)} - ${customer}`,'estimate');saveDB(db);return est}
   function updateEstimateStatus(db,idv,status){const est=(db.estimateBills||[]).find(x=>x.id===idv);if(!est)throw new Error('Estimate bill not found');est.status=estimateStatus(status);est.updatedAt=now();markDirty('estimateBills',est.id);addActivity(db,`Estimate ${est.customer} marked ${est.status}`,'estimate');saveDB(db);return est}
   function deleteEstimateBill(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=(db.estimateBills||[]).find(x=>x.id===idv);if(!r)throw new Error('Estimate bill not found');deleteTableRow('estimate_bills',r);db.estimateBills=(db.estimateBills||[]).filter(x=>x.id!==idv);addActivity(db,`Estimate deleted: ${r.customer} ${money(r.amount)}`,'estimate');saveDB(db)}
-  function saveSettings(db,input){if(!isMainAdminSession())throw new Error('Only main admin can change settings');db.settings.martName=String(input.martName||db.settings.martName||'MartAI').trim();db.settings.martPhone=phoneClean(input.martPhone||db.settings.martPhone||'');const st=(db.stores||[]).find(x=>x.id===getActiveStoreId());if(st){st.name=db.settings.martName;st.phone=db.settings.martPhone}db.settings.adminUser=String(input.adminUser||db.settings.adminUser||'admin').trim();if(input.adminPass)db.settings.adminPass=String(input.adminPass);settingsDirty=true;addActivity(db,'Settings updated','settings');saveDB(db)}
-  async function saveStoreLogo(logoData){const db=getDB();db.settings.storeLogo=logoData||'';const storeId=getActiveStoreId();const store=(db.stores||[]).find(s=>s.id===storeId);if(store)store.logoData=logoData||'';if(tableMode()){const client=getSupabase();if(client){const r=await client.from('mart_stores').update({logo_data:logoData||'',updated_at:now()}).eq('id',storeId);if(r.error)throw r.error}}saveDB(db)}
-  async function saveStoreQr(qrData,label){const db=getDB();db.settings.storePaymentQr=qrData||'';db.settings.storePaymentQrLabel=label||'';const storeId=getActiveStoreId();const store=(db.stores||[]).find(s=>s.id===storeId);if(store){store.qrData=qrData||'';store.qrLabel=label||''}if(tableMode()){const client=getSupabase();if(client){const r=await client.from('mart_stores').update({qr_data:qrData||'',qr_label:label||'',updated_at:now()}).eq('id',storeId);if(r.error)throw r.error}}saveDB(db)}
+  function saveSettings(db,input){if(!isMainAdminSession())throw new Error('Only main admin can change settings');db.settings.martName=String(input.martName||db.settings.martName||'RD MART').trim();db.settings.martPhone=phoneClean(input.martPhone||db.settings.martPhone||'');const st=(db.stores||[]).find(x=>x.id===getActiveStoreId());if(st){st.name=db.settings.martName;st.phone=db.settings.martPhone}db.settings.adminUser=String(input.adminUser||db.settings.adminUser||'admin').trim();if(input.adminPass)db.settings.adminPass=String(input.adminPass);settingsDirty=true;addActivity(db,'Settings updated','settings');saveDB(db)}
+  async function saveStoreLogo(logoData){const safe=logoData?safeImageDataUrl(logoData):'';if(logoData&&!safe)throw new Error('Logo must be a valid JPG, PNG or WebP image');const db=getDB();db.settings.storeLogo=safe;const storeId=getActiveStoreId();const store=(db.stores||[]).find(s=>s.id===storeId);if(store)store.logoData=safe;if(tableMode()){const client=getSupabase();if(client){const r=await client.from('mart_stores').update({logo_data:safe,updated_at:now()}).eq('id',storeId);if(r.error)throw r.error}}saveDB(db)}
+  async function saveStoreQr(qrData,label){const safe=qrData?safeImageDataUrl(qrData):'';if(qrData&&!safe)throw new Error('Payment QR must be a valid JPG, PNG or WebP image');label=String(label||'').trim().slice(0,80);const db=getDB();db.settings.storePaymentQr=safe;db.settings.storePaymentQrLabel=label;const storeId=getActiveStoreId();const store=(db.stores||[]).find(s=>s.id===storeId);if(store){store.qrData=safe;store.qrLabel=label}if(tableMode()){const client=getSupabase();if(client){const r=await client.from('mart_stores').update({qr_data:safe,qr_label:label,updated_at:now()}).eq('id',storeId);if(r.error)throw r.error}}saveDB(db)}
   async function addStaff(db,input){if(isStaffSession())throw new Error('Staff cannot manage staff');const email=String(input.email||'').trim().toLowerCase();const name=String(input.name||'').trim();if(!email.includes('@'))throw new Error('Enter staff email');if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_add_staff',{email_input:email,name_input:name});if(r.error)throw r.error;await loadTableDB();return r.data}if(db.staffAccounts.some(x=>x.email.toLowerCase()===email))throw new Error('Staff already exists');db.staffAccounts.unshift({id:id(),email,name,password:String(input.password||'1234'),active:true,createdAt:now()});saveDB(db)}
   async function setStaffActive(db,email,active){if(isStaffSession())throw new Error('Staff cannot manage staff');email=String(email||'').toLowerCase();if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_set_staff_active',{email_input:email,active_input:!!active});if(r.error)throw r.error;await loadTableDB();return}const s=db.staffAccounts.find(x=>x.email.toLowerCase()===email);if(s)s.active=!!active;saveDB(db)}
   function csvEscape(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
-  function download(filename,content){const blob=new Blob([content],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},100)}
+  function download(filename,content){const type=/\.json$/i.test(String(filename))?'application/json;charset=utf-8':'text/csv;charset=utf-8';const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},100)}
   function wa(phone,message){const ph=phoneClean(phone);if(!ph)throw new Error('Phone missing');window.open('https://wa.me/977'+ph+'?text='+encodeURIComponent(message),'_blank')}
   function byDate(arr,dateField='date'){return [...arr].sort((a,b)=>String(b[dateField]||b.createdAt).localeCompare(String(a[dateField]||a.createdAt)))}
   // === LIVE MULTI-DEVICE SYNC (Supabase Realtime) ===
@@ -476,8 +494,8 @@
     remoteEnabled=!!getSupabase();return getDB();
   }
   window.addEventListener('online',()=>{const s=getSession();if(tableMode()&&hasPending()&&(s?.role==='admin'||s?.role==='staff'||s?.role==='store_admin'))queueRemoteSave(getDB())});
-  // PWA: register the service worker (all pages load this file)
-  if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
+  // PWA: always check for a fresh worker and reload once when a new release takes control.
+  if('serviceWorker' in navigator){let refreshing=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;location.reload()});window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=34',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})})}
   const ready=initialize();
-  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,phoneClean,getDB,saveDB,markDirty,resetDB,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateChequeStatus,postponeCheque,deleteCheque,addChequeQueue,deleteChequeQueue,addParty,deleteParty,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,csvEscape,download,wa,byDate,tilt3d};
+  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,safeImageDataUrl,phoneClean,getDB,saveDB,markDirty,resetDB,validateRestoreBackup,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateChequeStatus,postponeCheque,deleteCheque,addChequeQueue,deleteChequeQueue,addParty,deleteParty,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,csvEscape,download,wa,byDate,tilt3d};
 })();

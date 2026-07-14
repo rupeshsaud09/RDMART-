@@ -1,13 +1,15 @@
-// RD MART service worker — offline app shell + cached assets.
+// KHATA PANA service worker — offline app shell + cached assets.
 // Bump CACHE version when deploying big changes to force a refresh.
-const CACHE = 'martai-v20';
+const CACHE = 'martai-v34';
 const SHELL = [
   'index.html',
   'customer.html',
   'dashboard.html',
-  'assets/martai.css',
-  'assets/martai-store.js',
-  'assets/martai-bot.js',
+  'assets/martai.css?v=12',
+  'assets/login-experience.css?v=3',
+  'assets/martai-store.js?v=24',
+  'assets/khata-backup.js?v=5',
+  'assets/martai-bot.js?v=4',
   'assets/martai-qr.js',
   'assets/martai-supabase-config.js',
   'assets/icon-192.png',
