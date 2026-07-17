@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/martai.css?v=13">
-<link rel="stylesheet" href="assets/staff.css?v=2">
+<link rel="stylesheet" href="assets/staff.css?v=3">
 </head>
 <body class="staff-page">
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;})();</script>
@@ -73,8 +73,8 @@
 <!-- ============ BOTTOM NAV ============ -->
 <nav class="stf-nav" id="stfNav">
   <button class="active" data-tab="tasks" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="lbl">Tasks</span><span class="stf-nav-badge" id="navTaskBadge" style="display:none">0</span></button>
-  <button data-tab="customers" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lbl">Customers</span></button>
-  <button data-tab="khata" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="lbl">Khata</span></button>
+  <button data-tab="customers" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lbl">Customers</span><span class="stf-nav-lockico" data-lockico><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></button>
+  <button data-tab="khata" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="lbl">Khata</span><span class="stf-nav-lockico" data-lockico><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></button>
 </nav>
 
 <!-- ============ SHEETS ============ -->
@@ -135,6 +135,30 @@
   <div id="detailBody"></div>
 </div>
 
+<div class="stf-lock" id="lockScreen" role="dialog" aria-modal="true" aria-label="Security PIN">
+  <div class="stf-lock-card" id="lockCard">
+    <div class="stf-lock-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+    <h3 id="lockTitle">Enter security PIN</h3>
+    <p class="stf-lock-sub" id="lockSub">Customers &amp; Khata are PIN protected</p>
+    <div class="stf-lock-dots" id="lockDots"><i></i><i></i><i></i><i></i></div>
+    <div class="stf-lock-msg" id="lockMsg"></div>
+    <div class="stf-keypad" id="lockPad">
+      <button class="stf-key" type="button" data-key="1">1</button><button class="stf-key" type="button" data-key="2">2</button><button class="stf-key" type="button" data-key="3">3</button>
+      <button class="stf-key" type="button" data-key="4">4</button><button class="stf-key" type="button" data-key="5">5</button><button class="stf-key" type="button" data-key="6">6</button>
+      <button class="stf-key" type="button" data-key="7">7</button><button class="stf-key" type="button" data-key="8">8</button><button class="stf-key" type="button" data-key="9">9</button>
+      <span></span><button class="stf-key" type="button" data-key="0">0</button><button class="stf-key stf-key-del" type="button" data-key="del" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="m18 9-6 6M12 9l6 6"/></svg></button>
+    </div>
+    <div class="stf-lock-pw" id="lockPw">
+      <div class="stf-field" style="margin-bottom:10px;text-align:left"><label>Your login password</label><input class="input" type="password" id="lockPwInput" autocomplete="current-password" placeholder="Account password"></div>
+      <button class="btn btn-primary stf-submit" type="button" id="lockPwVerify" style="margin-top:0">Verify &amp; reset PIN</button>
+    </div>
+    <div class="stf-lock-foot">
+      <button class="btn btn-soft btn-sm" type="button" id="lockCancel">Cancel</button>
+      <button class="btn btn-soft btn-sm" type="button" id="lockForgot">Forgot PIN?</button>
+    </div>
+  </div>
+</div>
+
 <div class="stf-celebrate" id="celebrate"></div>
 <div class="toast-box" id="toasts"></div>
 
@@ -190,11 +214,84 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
 function celebrate(){if(REDUCED)return;const box=$('celebrate');const colors=['#fbbf24','#34d399','#60a5fa','#f472b6','#a78bfa'];let conf='';for(let i=0;i<14;i++){const a=Math.random()*Math.PI*2,r=70+Math.random()*90;conf+=`<span class="stf-confetti" style="--x:${Math.cos(a)*r}px;--y:${Math.sin(a)*r-40}px;--c:${colors[i%colors.length]};--d:${(Math.random()*.18).toFixed(2)}s"></span>`}
 box.innerHTML=`<div class="ring">${conf}<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>`;box.classList.add('show');setTimeout(()=>{box.classList.remove('show');box.innerHTML=''},1050)}
 
-/* ---------- tabs ---------- */
+/* ---------- tabs (Customers + Khata sit behind the PIN gate) ---------- */
 let activeTab='tasks';
 const TAB_ORDER=['tasks','customers','khata'];
-function setTab(tab){const dir=Math.sign(TAB_ORDER.indexOf(tab)-TAB_ORDER.indexOf(activeTab))||0;activeTab=tab;document.querySelectorAll('#stfNav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));document.querySelectorAll('.stf-page').forEach(p=>p.classList.remove('active'));const pg=$('tab-'+tab);pg.style.setProperty('--dir',dir);void pg.offsetWidth;pg.classList.add('active');if(location.hash!=='#'+tab)try{history.replaceState(null,'','#'+tab)}catch(e){}renderAll()}
+function setTab(tab,unlocked){if(GATED.includes(tab)&&!unlocked&&!isUnlocked()){requestUnlock(tab);return}
+  const dir=Math.sign(TAB_ORDER.indexOf(tab)-TAB_ORDER.indexOf(activeTab))||0;activeTab=tab;document.querySelectorAll('#stfNav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));document.querySelectorAll('.stf-page').forEach(p=>p.classList.remove('active'));const pg=$('tab-'+tab);pg.style.setProperty('--dir',dir);void pg.offsetWidth;pg.classList.add('active');if(location.hash!=='#'+tab)try{history.replaceState(null,'','#'+tab)}catch(e){}renderAll()}
 $('stfNav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(!b||b.dataset.tab===activeTab)return;setTab(b.dataset.tab)});
+
+/* ---------- security PIN gate ----------
+   App-lock for the money pages. The PIN is chosen by this staff member on
+   this device and is stored ONLY as a salted PBKDF2-SHA256 hash (120k
+   iterations) in localStorage — never in plaintext, never synced. Wrong
+   attempts trigger an exponential lockout; the gate auto-relocks after
+   5 minutes of inactivity or 60s in the background. Forgot PIN requires
+   the account's real login password (verified against Supabase auth). */
+const GATED=['customers','khata'];
+const PIN_KEY='martai_staff_lock_v1_'+myEmail;
+const PIN_ITER=120000,UNLOCK_MS=5*60*1000,MAX_TRIES=5;
+let unlockedUntil=0,pendingTab='',lockMode='unlock',pinBuf='',pinFirst='',lockBusy=false,hiddenAt=0,lockTick=0;
+function lockState(){try{return JSON.parse(localStorage.getItem(PIN_KEY)||'null')}catch(e){return null}}
+function saveLockState(s){localStorage.setItem(PIN_KEY,JSON.stringify(s))}
+function isUnlocked(){return Date.now()<unlockedUntil}
+const b64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf)));
+const b64buf=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function pinDigest(pin,saltB64,iter){const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(String(pin)),'PBKDF2',false,['deriveBits']);const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:b64buf(saltB64),iterations:iter,hash:'SHA-256'},key,256);return b64(bits)}
+function lockRemaining(){const s=lockState();return s&&s.lockUntil?Math.max(0,Math.ceil((s.lockUntil-Date.now())/1000)):0}
+function updateNavLocks(){document.querySelectorAll('[data-lockico]').forEach(el=>{el.style.display=isUnlocked()?'none':''})}
+function lockMsg(txt,err){const el=$('lockMsg');el.textContent=txt||'';el.classList.toggle('err',!!err)}
+function renderLockDots(){document.querySelectorAll('#lockDots i').forEach((d,i)=>d.classList.toggle('on',i<pinBuf.length))}
+function lockShake(){const c=$('lockCard'),d=$('lockDots');c.classList.remove('shake');d.classList.remove('errv');void c.offsetWidth;c.classList.add('shake');d.classList.add('errv');if(navigator.vibrate)try{navigator.vibrate([60,40,60])}catch(e){}setTimeout(()=>d.classList.remove('errv'),650)}
+function lockCountdown(){clearInterval(lockTick);const left=lockRemaining();if(!left)return;const tick=()=>{const l=lockRemaining();if(!l){clearInterval(lockTick);lockMsg('Try again now');return}lockMsg('Too many attempts — wait '+l+'s',true)};tick();lockTick=setInterval(tick,1000)}
+function openLock(mode,tab){lockMode=mode;pendingTab=tab||pendingTab;pinBuf='';pinFirst='';renderLockDots();$('lockPw').classList.remove('show');$('lockPad').style.display='';$('lockForgot').style.display=mode==='unlock'?'':'none';
+  $('lockTitle').textContent=mode==='setup'?'Create a security PIN':mode==='confirm'?'Confirm your PIN':'Enter security PIN';
+  $('lockSub').textContent=mode==='setup'?'This 4-digit PIN protects Customers & Khata on this device.':'Customers & Khata are PIN protected';
+  lockMsg('');if(mode==='unlock')lockCountdown();
+  document.body.classList.add('stf-lock-open');$('lockScreen').classList.add('show')}
+function closeLock(){clearInterval(lockTick);document.body.classList.remove('stf-lock-open');$('lockScreen').classList.remove('show');pinBuf='';pinFirst='';$('lockPwInput').value=''}
+function requestUnlock(tab){openLock(lockState()?'unlock':'setup',tab)}
+function grantUnlock(){unlockedUntil=Date.now()+UNLOCK_MS;$('lockDots').classList.add('okv');lockMsg('Unlocked');setTimeout(()=>{$('lockDots').classList.remove('okv');closeLock();updateNavLocks();if(pendingTab)setTab(pendingTab,true);pendingTab=''},REDUCED?0:380)}
+async function submitPin(){if(lockBusy)return;lockBusy=true;try{
+  if(lockMode==='setup'){pinFirst=pinBuf;pinBuf='';renderLockDots();lockMode='confirm';$('lockTitle').textContent='Confirm your PIN';lockMsg('Enter the same PIN again');return}
+  if(lockMode==='confirm'){
+    if(pinBuf!==pinFirst){lockMode='setup';pinBuf='';pinFirst='';renderLockDots();$('lockTitle').textContent='Create a security PIN';lockShake();lockMsg('PINs did not match — start again',true);return}
+    const salt=b64(crypto.getRandomValues(new Uint8Array(16)));
+    const hash=await pinDigest(pinBuf,salt,PIN_ITER);
+    saveLockState({v:1,salt,hash,iter:PIN_ITER,fails:0,lockUntil:0,createdAt:new Date().toISOString()});
+    try{const d=db();A.addActivity(d,'Staff security PIN set — '+myName,'security');A.saveDB(d)}catch(e){}
+    toast('🔒 Security PIN saved');grantUnlock();return}
+  /* unlock */
+  const s=lockState();if(!s){lockMode='setup';pinBuf='';renderLockDots();return}
+  if(lockRemaining()>0){pinBuf='';renderLockDots();lockCountdown();return}
+  const hash=await pinDigest(pinBuf,s.salt,s.iter||PIN_ITER);
+  if(hash===s.hash){s.fails=0;s.lockUntil=0;saveLockState(s);grantUnlock()}
+  else{s.fails=(s.fails||0)+1;
+    if(s.fails%MAX_TRIES===0){const step=Math.floor(s.fails/MAX_TRIES);s.lockUntil=Date.now()+Math.min(600,30*Math.pow(2,step-1))*1000}
+    saveLockState(s);pinBuf='';renderLockDots();lockShake();
+    if(lockRemaining()>0)lockCountdown();else lockMsg('Wrong PIN — '+(MAX_TRIES-(s.fails%MAX_TRIES))+' attempts left',true)}
+}finally{lockBusy=false}}
+function padInput(k){if(lockBusy||$('lockPw').classList.contains('show'))return;
+  if(k==='del'){pinBuf=pinBuf.slice(0,-1);renderLockDots();return}
+  if(!/^\d$/.test(k)||pinBuf.length>=4)return;
+  if(lockMode==='unlock'&&lockRemaining()>0){lockCountdown();return}
+  pinBuf+=k;renderLockDots();if(pinBuf.length===4)setTimeout(submitPin,REDUCED?0:140)}
+$('lockPad').addEventListener('click',e=>{const b=e.target.closest('[data-key]');if(b)padInput(b.dataset.key)});
+document.addEventListener('keydown',e=>{if(!$('lockScreen').classList.contains('show'))return;if(/^\d$/.test(e.key))padInput(e.key);if(e.key==='Backspace')padInput('del')});
+$('lockCancel').addEventListener('click',()=>{pendingTab='';closeLock()});
+$('lockForgot').addEventListener('click',()=>{$('lockPad').style.display='none';$('lockForgot').style.display='none';$('lockPw').classList.add('show');$('lockTitle').textContent='Reset security PIN';lockMsg('Verify it is really you first');$('lockPwInput').focus()});
+$('lockPwVerify').addEventListener('click',async()=>{const pw=$('lockPwInput').value;if(!pw)return lockMsg('Enter your login password',true);
+  $('lockPwVerify').disabled=true;lockMsg('Checking…');
+  try{const ok=await A.verifyAdminPassword(pw);
+    if(ok){localStorage.removeItem(PIN_KEY);try{const d=db();A.addActivity(d,'Staff security PIN reset — '+myName,'security');A.saveDB(d)}catch(e){}
+      $('lockPwInput').value='';openLock('setup',pendingTab);lockMsg('Password verified — create a new PIN')}
+    else lockMsg('Wrong password — PIN not reset',true)}
+  catch(e){lockMsg('Could not verify — check your connection',true)}
+  finally{$('lockPwVerify').disabled=false}});
+/* auto-relock: extend while active, drop after backgrounding or idle */
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{if(isUnlocked())unlockedUntil=Date.now()+UNLOCK_MS},{passive:true}));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else if(hiddenAt&&Date.now()-hiddenAt>60000&&isUnlocked()){unlockedUntil=0;updateNavLocks();if(GATED.includes(activeTab)){setTab('tasks');toast('🔒 Locked for your security')}}});
+setInterval(()=>{updateNavLocks();if(GATED.includes(activeTab)&&!isUnlocked()){setTab('tasks');toast('🔒 Locked for your security')}},15000);
 
 /* ---------- renderers ---------- */
 function renderHero(){const d=sdb();const name=(d.settings||{}).martName||'RD MART';$('heroMart').textContent=name;const logo=(d.settings||{}).storeLogo||'';$('heroLogo').innerHTML=logo?`<img src="${logo}" alt="">`:A.esc(name.charAt(0).toUpperCase());const h=new Date().getHours();const greet=h<12?'Good morning':h<17?'Good afternoon':'Good evening';$('greetTitle').textContent=`${greet}, ${myName.split(' ')[0]}!`;$('greetDate').textContent=npDate(A.today())+' · '+A.today()}
