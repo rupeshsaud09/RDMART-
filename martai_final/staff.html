@@ -12,10 +12,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/martai.css?v=13">
-<link rel="stylesheet" href="assets/staff.css?v=1">
+<link rel="stylesheet" href="assets/staff.css?v=2">
 </head>
 <body class="staff-page">
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;})();</script>
+<div class="stf-bg" aria-hidden="true"><i></i><i></i><i></i></div>
 
 <div class="stf-app">
   <header class="stf-hero">
@@ -58,8 +59,8 @@
     <!-- ============ KHATA (credit) ============ -->
     <section class="stf-page" id="tab-khata">
       <div class="stf-actions">
-        <button class="stf-action red" id="openCreditBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><b>Add credit</b><span>Udhaaro diyeko lekhne</span></button>
-        <button class="stf-action green" id="openPayBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><b>Record payment</b><span>Bhuktani aayeko lekhne</span></button>
+        <button class="stf-action stf-tilt red" id="openCreditBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><b>Add credit</b><span>Udhaaro diyeko lekhne</span></button>
+        <button class="stf-action stf-tilt green" id="openPayBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><b>Record payment</b><span>Bhuktani aayeko lekhne</span></button>
       </div>
       <div class="stf-sec"><h2>Today</h2><span class="stf-small" id="khataDateLbl"></span></div>
       <div class="stf-metrics" id="khataMetrics"></div>
@@ -139,7 +140,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js?v=26"></script>
+<script src="assets/martai-store.js?v=27"></script>
 <script>
 const A=MartAI;const $=id=>document.getElementById(id);
 let session=A.getSession();
@@ -164,7 +165,7 @@ function npDateTime(v){if(!v)return'-';try{const d=new Date(v);return npDate(loc
 function db(){return A.getDB()}
 function sdb(){const d=A.getDB();const sid=A.getActiveStoreId?.();if(!sid)return d;const isDefault=sid==='default';const sf=arr=>(arr||[]).filter(x=>x.storeId===sid||(isDefault&&!x.storeId));return{...d,customers:sf(d.customers),credits:sf(d.credits),tasks:sf(d.tasks)}}
 const myEmail=String(session.email||'').toLowerCase();
-const myName=session.name||myEmail.split('@')[0]||'Staff';
+const myName=(session.name||myEmail.split('@')[0]||'Staff').replace(/^\w/,c=>c.toUpperCase());
 function isMine(t){return !t.assignedToEmail||t.assignedToEmail===myEmail}
 function balances(d){return d.customers.map(c=>({c,...A.customerBalance(d,c.id)}))}
 
@@ -173,7 +174,7 @@ function toast(msg,type='ok'){const el=document.createElement('div');el.classNam
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const lastVals={};
 function countUp(el,to,fmt){const from=Number(lastVals[el.id]||0);lastVals[el.id]=to;if(REDUCED||from===to){el.textContent=fmt(to);return}const t0=performance.now(),dur=620;function step(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(Math.round(from+(to-from)*e));if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
-function metricEl(id,label,color){return `<div class="stf-metric stf-anim" style="--m:${color};--i:${id.length%4}"><b id="${id}" data-v="0">0</b><span>${label}</span></div>`}
+function metricEl(id,label,color){return `<div class="stf-metric stf-anim stf-tilt" style="--m:${color};--i:${id.length%4}"><b id="${id}">0</b><span>${label}</span></div>`}
 function hueOf(name){let h=0;for(const ch of String(name))h=(h*31+ch.charCodeAt(0))%360;return h}
 function ava(name,cls=''){return `<div class="stf-ava ${cls}" style="--h:${hueOf(name)}">${A.esc(String(name||'?').trim().charAt(0).toUpperCase()||'?')}</div>`}
 function submitWrap(fn){try{fn();renderAll();setTimeout(updateSyncChip,500)}catch(e){toast(e.message,'err')}}
@@ -191,7 +192,8 @@ box.innerHTML=`<div class="ring">${conf}<svg viewBox="0 0 24 24"><path d="M5 13l
 
 /* ---------- tabs ---------- */
 let activeTab='tasks';
-function setTab(tab){activeTab=tab;document.querySelectorAll('#stfNav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));document.querySelectorAll('.stf-page').forEach(p=>p.classList.remove('active'));const pg=$('tab-'+tab);void pg.offsetWidth;pg.classList.add('active');if(location.hash!=='#'+tab)try{history.replaceState(null,'','#'+tab)}catch(e){}renderAll()}
+const TAB_ORDER=['tasks','customers','khata'];
+function setTab(tab){const dir=Math.sign(TAB_ORDER.indexOf(tab)-TAB_ORDER.indexOf(activeTab))||0;activeTab=tab;document.querySelectorAll('#stfNav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));document.querySelectorAll('.stf-page').forEach(p=>p.classList.remove('active'));const pg=$('tab-'+tab);pg.style.setProperty('--dir',dir);void pg.offsetWidth;pg.classList.add('active');if(location.hash!=='#'+tab)try{history.replaceState(null,'','#'+tab)}catch(e){}renderAll()}
 $('stfNav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(!b||b.dataset.tab===activeTab)return;setTab(b.dataset.tab)});
 
 /* ---------- renderers ---------- */
@@ -201,7 +203,7 @@ function updateSyncChip(){const i=A.syncInfo();const el=$('syncChip');let cls=''
 function taskCard(t,i){const pri=t.priority==='high'?'pri-high':t.priority==='low'?'pri-low':'';const overdue=t.dueDate&&String(t.dueDate).slice(0,10)<A.today();
   const due=t.dueDate?` <span class="badge ${overdue?'badge-red':'badge-blue'}">Due ${npDate(t.dueDate)}</span>`:'';
   const desc=t.description?`<div class="stf-task-desc">${A.esc(t.description)}</div>`:'';
-  return `<div class="stf-task stf-anim ${pri}" style="--i:${i}" data-task="${A.esc(t.id)}"><div class="stf-task-body"><b>${A.esc(t.title)}</b><div class="stf-task-meta">By ${A.esc(t.createdBy||'Admin')} · ${npDateTime(t.createdAt)}${t.assignedToEmail?'':' · All staff'}</div>${desc}${due}</div><button class="stf-done-btn" type="button" data-task-done="${A.esc(t.id)}" title="Mark done" aria-label="Mark task done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></button></div>`}
+  return `<div class="stf-task stf-anim stf-tilt ${pri}" style="--i:${i}" data-task="${A.esc(t.id)}"><div class="stf-task-body"><b>${A.esc(t.title)}</b><div class="stf-task-meta">By ${A.esc(t.createdBy||'Admin')} · ${npDateTime(t.createdAt)}${t.assignedToEmail?'':' · All staff'}</div>${desc}${due}</div><button class="stf-done-btn" type="button" data-task-done="${A.esc(t.id)}" title="Mark done" aria-label="Mark task done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></button></div>`}
 function doneCard(t,i){return `<div class="stf-task stf-anim is-done" style="--i:${i}"><div class="stf-task-body"><b>${A.esc(t.title)}</b><div class="stf-task-meta">✅ Done by ${A.esc(t.completedBy||'Staff')} · ${npDateTime(t.completedAt)}</div></div></div>`}
 function renderTasks(){const d=sdb();const mine=(d.tasks||[]).filter(isMine);const priRank={high:0,normal:1,low:2};
   const pending=mine.filter(t=>t.status!=='done').sort((a,b)=>(priRank[a.priority]??1)-(priRank[b.priority]??1)||String(a.dueDate||'9999').localeCompare(String(b.dueDate||'9999')));
@@ -215,7 +217,7 @@ function renderTasks(){const d=sdb();const mine=(d.tasks||[]).filter(isMine);con
   $('taskDoneList').innerHTML=done.length?done.slice(0,8).map(doneCard).join(''):'<div class="empty">Nothing completed yet.</div>';
   const badge=$('navTaskBadge');if(pending.length){badge.textContent=pending.length>9?'9+':String(pending.length);badge.style.display='grid'}else badge.style.display='none'}
 
-function custRow(x,i){const due=x.balance>0;return `<button class="stf-cust stf-anim" style="--i:${Math.min(i,10)}" type="button" data-cust="${A.esc(x.c.id)}">${ava(x.c.name)}<div class="stf-cust-info"><b>${A.esc(x.c.name)}</b><span>${A.esc(x.c.phone||'—')}</span></div><div class="stf-bal ${due?'due':''}"><b>${due?A.money(x.balance):'✓'}</b><span>${due?'Due':'Clear'}</span></div></button>`}
+function custRow(x,i){const due=x.balance>0;return `<button class="stf-cust stf-anim stf-tilt" style="--i:${Math.min(i,10)}" type="button" data-cust="${A.esc(x.c.id)}">${ava(x.c.name)}<div class="stf-cust-info"><b>${A.esc(x.c.name)}</b><span>${A.esc(x.c.phone||'—')}</span></div><div class="stf-bal ${due?'due':''}"><b>${due?A.money(x.balance):'✓'}</b><span>${due?'Due':'Clear'}</span></div></button>`}
 function renderCustomers(){const d=sdb();const q=($('custSearch').value||'').toLowerCase().trim();
   let rows=balances(d).sort((a,b)=>b.balance-a.balance||String(a.c.name).localeCompare(String(b.c.name)));
   if(q)rows=rows.filter(x=>(x.c.name+' '+x.c.phone).toLowerCase().includes(q));
@@ -232,7 +234,9 @@ function renderKhata(){const d=sdb();const today=A.today();
   const recent=A.byDate(d.credits,'date').slice(0,12);
   $('entryList').innerHTML=recent.length?recent.map(entryRow).join(''):'<div class="empty">No credit entries yet.</div>'}
 
-function renderAll(){if(!guard())return;renderHero();updateSyncChip();if(activeTab==='tasks')renderTasks();if(activeTab==='customers')renderCustomers();if(activeTab==='khata')renderKhata()}
+function renderAll(){if(!guard())return;renderHero();updateSyncChip();if(activeTab==='tasks')renderTasks();if(activeTab==='customers')renderCustomers();if(activeTab==='khata')renderKhata();applyTilt()}
+function applyTilt(){if(REDUCED)return;document.querySelectorAll('.stf-tilt').forEach(el=>{if(el.dataset.t3)return;el.dataset.t3='1';try{A.tilt3d(el,5)}catch(e){}})}
+document.addEventListener('pointerdown',e=>{if(REDUCED)return;const h=e.target.closest('.btn,.stf-action,#stfNav button,.stf-done-btn,.stf-fab-add,.stf-chip');if(!h)return;const r=h.getBoundingClientRect();const s=document.createElement('span');s.className='stf-ripple';s.style.left=(e.clientX-r.left)+'px';s.style.top=(e.clientY-r.top)+'px';h.appendChild(s);setTimeout(()=>s.remove(),650)});
 
 /* ---------- customer picker (credit + payment sheets) ---------- */
 function initPicker(prefix){const search=$(prefix+'Search'),results=$(prefix+'Results'),sel=$(prefix+'Selected'),hid=$(prefix+'CustomerId');

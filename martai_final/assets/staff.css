@@ -12,7 +12,8 @@ body.staff-page{margin:0;background:var(--bg);font-family:var(--font);color:var(
 .stf-app{max-width:640px;margin:0 auto;min-height:100dvh;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 
 /* ---------- hero header ---------- */
-.stf-hero{position:relative;color:#fff;padding:calc(14px + env(safe-area-inset-top)) 20px 58px;border-radius:0 0 30px 30px;overflow:hidden;background:linear-gradient(135deg,#4338ca 0%,#6d28d9 52%,#9333ea 100%)}
+.stf-hero{position:relative;color:#fff;padding:calc(14px + env(safe-area-inset-top)) 20px 58px;border-radius:0 0 30px 30px;overflow:hidden;background:linear-gradient(120deg,#4338ca,#6d28d9 38%,#9333ea 62%,#4f46e5);background-size:260% 260%;animation:stfHeroShift 18s ease infinite}
+@keyframes stfHeroShift{0%,100%{background-position:0% 40%}50%{background-position:100% 60%}}
 .stf-hero::before,.stf-hero::after{content:'';position:absolute;border-radius:50%;filter:blur(2px);pointer-events:none}
 .stf-hero::before{width:240px;height:240px;right:-90px;top:-110px;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.28),rgba(255,255,255,0) 68%);animation:stfFloat 9s ease-in-out infinite}
 .stf-hero::after{width:180px;height:180px;left:-70px;bottom:-90px;background:radial-gradient(circle at 60% 40%,rgba(255,255,255,.18),rgba(255,255,255,0) 70%);animation:stfFloat 11s ease-in-out infinite reverse}
@@ -40,10 +41,10 @@ body.staff-page{margin:0;background:var(--bg);font-family:var(--font);color:var(
 /* ---------- content ---------- */
 .stf-main{padding:0 16px;margin-top:-36px;position:relative;z-index:2}
 .stf-page{display:none}
-.stf-page.active{display:block;animation:stfPageIn .4s cubic-bezier(.22,.9,.3,1)}
-@keyframes stfPageIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.stf-anim{animation:stfUp .5s cubic-bezier(.22,.9,.3,1) both;animation-delay:calc(var(--i,0)*46ms)}
-@keyframes stfUp{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.stf-page.active{display:block;animation:stfPageIn .44s cubic-bezier(.22,.9,.3,1)}
+@keyframes stfPageIn{from{opacity:0;transform:translateX(calc(var(--dir,0)*40px)) translateY(10px)}to{opacity:1;transform:none}}
+.stf-anim{animation:stfUp .55s cubic-bezier(.22,.9,.3,1) backwards;animation-delay:calc(var(--i,0)*46ms)}
+@keyframes stfUp{from{opacity:0;transform:translateY(16px) rotateX(-9deg) scale(.98)}to{opacity:1;transform:none}}
 
 .stf-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow-md)}
 .stf-card + .stf-card{margin-top:12px}
@@ -95,7 +96,8 @@ body.staff-page{margin:0;background:var(--bg);font-family:var(--font);color:var(
 .stf-search .input{padding-left:40px;height:46px;border-radius:14px}
 .stf-search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted);pointer-events:none}
 .stf-cust{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform .16s,box-shadow .2s;font:inherit;color:inherit}
-.stf-cust + .stf-cust{margin-top:9px}
+#custList{display:grid;grid-template-columns:1fr;gap:9px}
+@media(min-width:860px){#custList{grid-template-columns:1fr 1fr}#custList .empty{grid-column:1/-1}}
 .stf-cust:hover{box-shadow:var(--shadow-md)}
 .stf-cust:active{transform:scale(.985)}
 .stf-ava{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:850;font-size:15px;background:linear-gradient(140deg,hsl(var(--h,230) 62% 55%),hsl(calc(var(--h,230) + 34) 66% 45%))}
@@ -188,9 +190,59 @@ body.stf-sheet-open{overflow:hidden}
 .stf-skel{height:64px;border-radius:16px;background:linear-gradient(100deg,var(--surface-2) 40%,var(--surface-3) 50%,var(--surface-2) 60%);background-size:200% 100%;animation:stfShimmer 1.2s linear infinite;border:1px solid var(--line);margin-top:9px}
 @keyframes stfShimmer{to{background-position:-200% 0}}
 
-body[data-theme="dark"] .stf-hero{background:linear-gradient(135deg,#3730a3 0%,#5b21b6 52%,#7e22ce 100%)}
+body[data-theme="dark"] .stf-hero{background:linear-gradient(120deg,#312e81,#5b21b6 38%,#7e22ce 62%,#3730a3);background-size:260% 260%}
 body[data-theme="dark"] .stf-nav{background:color-mix(in srgb,var(--surface) 82%,transparent)}
 
+/* ============================================================
+   v2 — ambient aurora, 3D tilt, ripples, desktop management
+   ============================================================ */
+
+/* animated aurora backdrop behind the whole app */
+.stf-bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.stf-app{position:relative;z-index:1}
+.stf-bg i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55}
+.stf-bg i:nth-child(1){width:540px;height:540px;background:#c7d2fe;top:-180px;left:-140px;animation:stfDrift1 26s ease-in-out infinite alternate}
+.stf-bg i:nth-child(2){width:460px;height:460px;background:#e9d5ff;bottom:-160px;right:-120px;animation:stfDrift2 33s ease-in-out infinite alternate}
+.stf-bg i:nth-child(3){width:340px;height:340px;background:#bae6fd;top:38%;left:62%;animation:stfDrift3 40s ease-in-out infinite alternate}
+@keyframes stfDrift1{to{transform:translate(110px,70px) scale(1.18)}}
+@keyframes stfDrift2{to{transform:translate(-90px,-80px) scale(1.12)}}
+@keyframes stfDrift3{to{transform:translate(-120px,90px) scale(1.22)}}
+body[data-theme="dark"] .stf-bg i{opacity:.14}
+body[data-theme="dark"] .stf-bg i:nth-child(1){background:#4338ca}
+body[data-theme="dark"] .stf-bg i:nth-child(2){background:#7e22ce}
+body[data-theme="dark"] .stf-bg i:nth-child(3){background:#0ea5e9}
+
+/* 3D: perspective on card containers so entrances/tilt read as depth */
+#taskList,#taskDoneList,#custList,#taskMetrics,#khataMetrics,.stf-actions,#entryList{perspective:950px}
+.stf-tilt{transform-style:preserve-3d}
+.stf-tilt:hover{box-shadow:var(--shadow-lg)}
+.stf-metric b,.stf-metric span{transform:translateZ(18px)}
+.stf-action b,.stf-action span,.stf-action svg{transform:translateZ(16px)}
+
+/* click ripple */
+.staff-page .btn,.stf-action,.stf-nav button,.stf-done-btn,.stf-fab-add,.stf-chip{position:relative;overflow:hidden}
+.stf-ripple{position:absolute;width:12px;height:12px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;background:radial-gradient(circle,rgba(255,255,255,.55),rgba(255,255,255,0) 65%);animation:stfRipple .6s ease-out forwards}
+.btn-soft .stf-ripple,.stf-chip .stf-ripple{background:radial-gradient(circle,var(--brand-ring),rgba(0,0,0,0) 65%)}
+@keyframes stfRipple{to{width:240px;height:240px;opacity:0}}
+
+/* gentle attention pulse on due balances */
+.stf-bal.due b{animation:stfDuePulse 3s ease-in-out infinite}
+@keyframes stfDuePulse{50%{opacity:.7}}
+
+/* nav icon pop when a tab becomes active */
+.stf-nav button.active svg{animation:stfIconPop .45s cubic-bezier(.34,1.56,.64,1)}
+@keyframes stfIconPop{0%{transform:scale(.6) rotate(-8deg)}100%{transform:scale(1)}}
+
+/* desktop management: wider column, roomier grids, floating depth */
+@media(min-width:1024px){
+  .stf-app{max-width:760px}
+  .stf-hero{border-radius:0 0 34px 34px}
+  .stf-main{padding:0 24px}
+  .stf-metrics{gap:12px}
+  .stf-metric b{font-size:21px}
+  .stf-task:hover,.stf-cust:hover{transform:translateY(-2px)}
+}
+
 @media(prefers-reduced-motion:reduce){
-  .stf-app *,.stf-app,.stf-sheet,.stf-scrim,.stf-celebrate .ring,.stf-celebrate svg{animation:none!important;transition:none!important}
+  .stf-app *,.stf-app,.stf-sheet,.stf-scrim,.stf-celebrate .ring,.stf-celebrate svg,.stf-bg i,.stf-hero{animation:none!important;transition:none!important}
 }
