@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Staff · RD MART</title>
+<meta name="theme-color" content="#4338ca">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/martai.css?v=13">
+<link rel="stylesheet" href="assets/staff.css?v=1">
+</head>
+<body class="staff-page">
+<script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;})();</script>
+
+<div class="stf-app">
+  <header class="stf-hero">
+    <div class="stf-hero-top">
+      <div class="stf-logo" id="heroLogo">R</div>
+      <div class="stf-hero-name"><b id="heroMart">RD MART</b><span>Staff workspace</span></div>
+      <div class="stf-hero-actions">
+        <button class="stf-icon-btn" id="themeBtn" type="button" title="Light / dark theme" aria-label="Toggle theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></button>
+        <button class="stf-icon-btn" id="logoutBtn" type="button" title="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
+      </div>
+    </div>
+    <div class="stf-greet">
+      <h1 id="greetTitle">Namaste!</h1>
+      <p id="greetDate"></p>
+      <div class="stf-sync" id="syncChip"><i></i><span>Checking…</span></div>
+    </div>
+  </header>
+
+  <main class="stf-main">
+
+    <!-- ============ TASKS ============ -->
+    <section class="stf-page active" id="tab-tasks">
+      <div class="stf-metrics" id="taskMetrics"></div>
+      <div class="stf-sec"><h2>My tasks</h2><span class="stf-small" id="taskCountLbl"></span></div>
+      <div id="taskList"><div class="stf-skel"></div><div class="stf-skel"></div></div>
+      <div class="stf-sec"><h2>Completed</h2><span class="stf-small">Latest first</span></div>
+      <div id="taskDoneList"></div>
+    </section>
+
+    <!-- ============ CUSTOMERS ============ -->
+    <section class="stf-page" id="tab-customers">
+      <div class="stf-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input class="input" id="custSearch" placeholder="Search name or phone…" autocomplete="off">
+      </div>
+      <div class="stf-sec"><h2>Customers</h2><button class="stf-fab-add" id="addCustBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add customer</button></div>
+      <div id="custList"><div class="stf-skel"></div><div class="stf-skel"></div><div class="stf-skel"></div></div>
+    </section>
+
+    <!-- ============ KHATA (credit) ============ -->
+    <section class="stf-page" id="tab-khata">
+      <div class="stf-actions">
+        <button class="stf-action red" id="openCreditBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><b>Add credit</b><span>Udhaaro diyeko lekhne</span></button>
+        <button class="stf-action green" id="openPayBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><b>Record payment</b><span>Bhuktani aayeko lekhne</span></button>
+      </div>
+      <div class="stf-sec"><h2>Today</h2><span class="stf-small" id="khataDateLbl"></span></div>
+      <div class="stf-metrics" id="khataMetrics"></div>
+      <div class="stf-sec"><h2>Recent entries</h2><span class="stf-small">Credit book</span></div>
+      <div class="stf-card" id="entryList"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ BOTTOM NAV ============ -->
+<nav class="stf-nav" id="stfNav">
+  <button class="active" data-tab="tasks" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="lbl">Tasks</span><span class="stf-nav-badge" id="navTaskBadge" style="display:none">0</span></button>
+  <button data-tab="customers" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lbl">Customers</span></button>
+  <button data-tab="khata" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="lbl">Khata</span></button>
+</nav>
+
+<!-- ============ SHEETS ============ -->
+<div class="stf-scrim" id="sheetScrim"></div>
+
+<div class="stf-sheet" id="sheetCust">
+  <div class="stf-grip"></div>
+  <h3>Add customer</h3><div class="stf-sub">They can log in to the customer portal with phone + PIN.</div>
+  <form id="custForm" autocomplete="off">
+    <div class="stf-field"><label>Full name</label><input class="input" name="name" required placeholder="e.g. Ram Bahadur Thapa"></div>
+    <div class="stf-row2">
+      <div class="stf-field"><label>Phone (10 digit)</label><input class="input" name="phone" required inputmode="tel" maxlength="10" pattern="\d{10}" placeholder="98XXXXXXXX"></div>
+      <div class="stf-field"><label>Portal PIN (4 digit)</label><input class="input" name="pin" required inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="e.g. 1234"></div>
+    </div>
+    <div class="stf-field"><label>Address <span style="opacity:.5">(optional)</span></label><input class="input" name="address" placeholder="Tole / village"></div>
+    <button class="btn btn-primary stf-submit" type="submit">Save customer</button>
+  </form>
+</div>
+
+<div class="stf-sheet" id="sheetCredit">
+  <div class="stf-grip"></div>
+  <h3>Add credit</h3><div class="stf-sub">Write new udhaaro in the customer's khata.</div>
+  <form id="creditForm" autocomplete="off">
+    <div class="stf-field"><label>Customer</label><input class="input" id="crSearch" placeholder="Type name or phone…" autocomplete="off"></div>
+    <div class="stf-pick" id="crResults"></div>
+    <div class="stf-selected" id="crSelected"><b id="crSelName"></b><span class="small" id="crSelBal"></span><button class="x" type="button" data-clear-pick="cr" aria-label="Change customer">&#10005;</button></div>
+    <input type="hidden" name="customerId" id="crCustomerId">
+    <div class="stf-field"><label>Amount (Rs)</label><input class="input" name="amount" required inputmode="decimal" placeholder="e.g. 1500"></div>
+    <div class="stf-field"><label>Items / note <span style="opacity:.5">(optional)</span></label><input class="input" name="items" placeholder="e.g. Rice 5kg, oil 1L"></div>
+    <div class="stf-field"><label>Due after</label>
+      <div class="stf-chips" id="crDueChips">
+        <button class="stf-chip active" type="button" data-due="0">No due date</button>
+        <button class="stf-chip" type="button" data-due="7">7 days</button>
+        <button class="stf-chip" type="button" data-due="15">15 days</button>
+        <button class="stf-chip" type="button" data-due="30">30 days</button>
+      </div>
+    </div>
+    <button class="btn btn-red stf-submit" type="submit">Save credit</button>
+  </form>
+</div>
+
+<div class="stf-sheet" id="sheetPay">
+  <div class="stf-grip"></div>
+  <h3>Record payment</h3><div class="stf-sub">Payment is applied to the oldest unpaid credit first.</div>
+  <form id="payForm" autocomplete="off">
+    <div class="stf-field"><label>Customer</label><input class="input" id="pmSearch" placeholder="Type name or phone…" autocomplete="off"></div>
+    <div class="stf-pick" id="pmResults"></div>
+    <div class="stf-selected" id="pmSelected"><b id="pmSelName"></b><span class="small" id="pmSelBal"></span><button class="x" type="button" data-clear-pick="pm" aria-label="Change customer">&#10005;</button></div>
+    <input type="hidden" name="customerId" id="pmCustomerId">
+    <div class="stf-field"><label>Amount received (Rs)</label><input class="input" name="amount" required inputmode="decimal" placeholder="e.g. 1000"></div>
+    <div class="stf-field"><label>Note <span style="opacity:.5">(optional)</span></label><input class="input" name="note" placeholder="e.g. Cash / eSewa"></div>
+    <button class="btn btn-green stf-submit" type="submit">Save payment</button>
+  </form>
+</div>
+
+<div class="stf-sheet" id="sheetDetail">
+  <div class="stf-grip"></div>
+  <div id="detailBody"></div>
+</div>
+
+<div class="stf-celebrate" id="celebrate"></div>
+<div class="toast-box" id="toasts"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
+<script src="assets/martai-supabase-config.js"></script>
+<script src="assets/martai-store.js?v=26"></script>
+<script>
+const A=MartAI;const $=id=>document.getElementById(id);
+let session=A.getSession();
+function guard(){const s=A.getSession();if(s?.role==='staff')return true;if(s?.role==='admin'||s?.role==='store_admin')location.replace('dashboard.html');else if(s?.role==='customer')location.replace('customer.html');else location.replace('index.html');return false}
+if(!guard())throw new Error('redirect');
+
+/* ---------- BS date helpers (compact copy of the dashboard set) ---------- */
+const BS_MONTH_NAMES=['Baisakh','Jestha','Asar','Shrawan','Bhadra','Aswin','Kartik','Mangsir','Poush','Magh','Falgun','Chaitra'];
+const BS_MONTHS={2070:[31,31,31,32,31,31,29,30,30,29,30,30],2071:[31,31,32,31,31,31,30,29,30,29,30,30],2072:[31,32,31,32,31,30,30,29,30,29,30,30],2073:[31,32,31,32,31,30,30,30,29,29,30,31],2074:[31,31,31,32,31,31,30,29,30,29,30,30],2075:[31,31,32,31,31,31,30,29,30,29,30,30],2076:[31,32,31,32,31,30,30,30,29,29,30,30],2077:[31,32,31,32,31,30,30,30,29,30,29,31],2078:[31,31,31,32,31,31,30,29,30,29,30,30],2079:[31,31,32,31,31,31,30,29,30,29,30,30],2080:[31,32,31,32,31,30,30,30,29,29,30,30],2081:[31,32,31,32,31,30,30,30,29,30,29,31],2082:[31,31,32,31,31,31,30,29,30,29,30,30],2083:[31,31,32,31,31,31,30,29,30,29,30,30],2084:[31,32,31,32,31,30,30,30,29,29,30,31],2085:[30,32,31,32,31,30,30,30,29,30,29,31],2086:[31,31,32,31,31,31,30,29,30,29,30,30],2087:[31,31,32,31,31,31,30,30,29,30,30,30],2088:[30,31,32,32,30,31,30,30,29,30,30,30],2089:[30,32,31,32,31,30,30,30,29,30,30,30],2090:[30,32,31,32,31,30,30,30,29,30,30,30]};
+const BS_ANCHOR={bsYear:2070,ad:'2013-04-14'};
+function pad2(n){return String(n).padStart(2,'0')}
+function isoParts(iso){const m=String(iso||'').slice(0,10).match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?[Number(m[1]),Number(m[2]),Number(m[3])]:null}
+function isoUtcMs(iso){const p=isoParts(iso);return p?Date.UTC(p[0],p[1]-1,p[2]):Date.UTC(1970,0,1)}
+function addDaysIso(iso,days){const d=new Date(isoUtcMs(iso)+Number(days||0)*86400000);return d.getUTCFullYear()+'-'+pad2(d.getUTCMonth()+1)+'-'+pad2(d.getUTCDate())}
+function daysBetween(a,b){return Math.round((isoUtcMs(b)-isoUtcMs(a))/86400000)}
+function localIsoDate(d=new Date()){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
+function bsParts(date){const iso=String(date||'').slice(0,10);let diff=daysBetween(BS_ANCHOR.ad,iso);let year=BS_ANCHOR.bsYear;if(diff<0)return{year:String(BS_ANCHOR.bsYear),month:'01',day:'01'};while(BS_MONTHS[year]){const yd=BS_MONTHS[year].reduce((s,x)=>s+x,0);if(diff<yd)break;diff-=yd;year++}if(!BS_MONTHS[year])year=Number(Object.keys(BS_MONTHS).at(-1));const months=BS_MONTHS[year];let month=1;for(const len of months){if(diff<len)break;diff-=len;month++}return{year:String(year),month:pad2(month),day:pad2(Math.max(1,diff+1))}}
+function npDate(date){if(!date)return'-';try{const p=bsParts(date);return p.year+' '+BS_MONTH_NAMES[Number(p.month)-1]+' '+Number(p.day)+' BS'}catch(e){return String(date)}}
+function npDateTime(v){if(!v)return'-';try{const d=new Date(v);return npDate(localIsoDate(d))+' '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}catch(e){return String(v)}}
+
+/* ---------- data helpers ---------- */
+function db(){return A.getDB()}
+function sdb(){const d=A.getDB();const sid=A.getActiveStoreId?.();if(!sid)return d;const isDefault=sid==='default';const sf=arr=>(arr||[]).filter(x=>x.storeId===sid||(isDefault&&!x.storeId));return{...d,customers:sf(d.customers),credits:sf(d.credits),tasks:sf(d.tasks)}}
+const myEmail=String(session.email||'').toLowerCase();
+const myName=session.name||myEmail.split('@')[0]||'Staff';
+function isMine(t){return !t.assignedToEmail||t.assignedToEmail===myEmail}
+function balances(d){return d.customers.map(c=>({c,...A.customerBalance(d,c.id)}))}
+
+/* ---------- ui helpers ---------- */
+function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>el.remove(),240)},2600)}
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const lastVals={};
+function countUp(el,to,fmt){const from=Number(lastVals[el.id]||0);lastVals[el.id]=to;if(REDUCED||from===to){el.textContent=fmt(to);return}const t0=performance.now(),dur=620;function step(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(Math.round(from+(to-from)*e));if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
+function metricEl(id,label,color){return `<div class="stf-metric stf-anim" style="--m:${color};--i:${id.length%4}"><b id="${id}" data-v="0">0</b><span>${label}</span></div>`}
+function hueOf(name){let h=0;for(const ch of String(name))h=(h*31+ch.charCodeAt(0))%360;return h}
+function ava(name,cls=''){return `<div class="stf-ava ${cls}" style="--h:${hueOf(name)}">${A.esc(String(name||'?').trim().charAt(0).toUpperCase()||'?')}</div>`}
+function submitWrap(fn){try{fn();renderAll();setTimeout(updateSyncChip,500)}catch(e){toast(e.message,'err')}}
+
+/* ---------- sheets ---------- */
+let openSheetId=null;
+function openSheet(id){closeSheet();openSheetId=id;document.body.classList.add('stf-sheet-open');$(id).classList.add('open');const f=$(id).querySelector('input:not([type=hidden])');if(f&&!('ontouchstart' in window))setTimeout(()=>f.focus(),320)}
+function closeSheet(){if(!openSheetId)return;$(openSheetId).classList.remove('open');openSheetId=null;document.body.classList.remove('stf-sheet-open')}
+$('sheetScrim').addEventListener('click',closeSheet);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+
+/* ---------- celebration ---------- */
+function celebrate(){if(REDUCED)return;const box=$('celebrate');const colors=['#fbbf24','#34d399','#60a5fa','#f472b6','#a78bfa'];let conf='';for(let i=0;i<14;i++){const a=Math.random()*Math.PI*2,r=70+Math.random()*90;conf+=`<span class="stf-confetti" style="--x:${Math.cos(a)*r}px;--y:${Math.sin(a)*r-40}px;--c:${colors[i%colors.length]};--d:${(Math.random()*.18).toFixed(2)}s"></span>`}
+box.innerHTML=`<div class="ring">${conf}<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>`;box.classList.add('show');setTimeout(()=>{box.classList.remove('show');box.innerHTML=''},1050)}
+
+/* ---------- tabs ---------- */
+let activeTab='tasks';
+function setTab(tab){activeTab=tab;document.querySelectorAll('#stfNav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));document.querySelectorAll('.stf-page').forEach(p=>p.classList.remove('active'));const pg=$('tab-'+tab);void pg.offsetWidth;pg.classList.add('active');if(location.hash!=='#'+tab)try{history.replaceState(null,'','#'+tab)}catch(e){}renderAll()}
+$('stfNav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(!b||b.dataset.tab===activeTab)return;setTab(b.dataset.tab)});
+
+/* ---------- renderers ---------- */
+function renderHero(){const d=sdb();const name=(d.settings||{}).martName||'RD MART';$('heroMart').textContent=name;const logo=(d.settings||{}).storeLogo||'';$('heroLogo').innerHTML=logo?`<img src="${logo}" alt="">`:A.esc(name.charAt(0).toUpperCase());const h=new Date().getHours();const greet=h<12?'Good morning':h<17?'Good afternoon':'Good evening';$('greetTitle').textContent=`${greet}, ${myName.split(' ')[0]}!`;$('greetDate').textContent=npDate(A.today())+' · '+A.today()}
+function updateSyncChip(){const i=A.syncInfo();const el=$('syncChip');let cls='',txt='Online · synced';if(!i.configured){cls='warn';txt='Local device mode'}else if(i.remoteError){cls='err';txt='Offline · will sync later'}else if(i.hasPending||i.pendingSave){cls='warn';txt='Syncing…'}el.className='stf-sync '+cls;el.querySelector('span').textContent=txt}
+
+function taskCard(t,i){const pri=t.priority==='high'?'pri-high':t.priority==='low'?'pri-low':'';const overdue=t.dueDate&&String(t.dueDate).slice(0,10)<A.today();
+  const due=t.dueDate?` <span class="badge ${overdue?'badge-red':'badge-blue'}">Due ${npDate(t.dueDate)}</span>`:'';
+  const desc=t.description?`<div class="stf-task-desc">${A.esc(t.description)}</div>`:'';
+  return `<div class="stf-task stf-anim ${pri}" style="--i:${i}" data-task="${A.esc(t.id)}"><div class="stf-task-body"><b>${A.esc(t.title)}</b><div class="stf-task-meta">By ${A.esc(t.createdBy||'Admin')} · ${npDateTime(t.createdAt)}${t.assignedToEmail?'':' · All staff'}</div>${desc}${due}</div><button class="stf-done-btn" type="button" data-task-done="${A.esc(t.id)}" title="Mark done" aria-label="Mark task done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></button></div>`}
+function doneCard(t,i){return `<div class="stf-task stf-anim is-done" style="--i:${i}"><div class="stf-task-body"><b>${A.esc(t.title)}</b><div class="stf-task-meta">✅ Done by ${A.esc(t.completedBy||'Staff')} · ${npDateTime(t.completedAt)}</div></div></div>`}
+function renderTasks(){const d=sdb();const mine=(d.tasks||[]).filter(isMine);const priRank={high:0,normal:1,low:2};
+  const pending=mine.filter(t=>t.status!=='done').sort((a,b)=>(priRank[a.priority]??1)-(priRank[b.priority]??1)||String(a.dueDate||'9999').localeCompare(String(b.dueDate||'9999')));
+  const done=mine.filter(t=>t.status==='done').sort((a,b)=>String(b.completedAt||'').localeCompare(String(a.completedAt||'')));
+  const doneToday=done.filter(t=>String(t.completedAt||'').slice(0,10)===A.today()).length;
+  const bals=balances(d);const dueTotal=bals.reduce((s,x)=>s+x.balance,0);
+  $('taskMetrics').innerHTML=metricEl('mPending','To do','var(--amber)')+metricEl('mDoneToday','Done today','var(--green)')+metricEl('mCust','Customers','var(--blue)')+metricEl('mDues','Total dues','var(--red)');
+  countUp($('mPending'),pending.length,v=>String(v));countUp($('mDoneToday'),doneToday,v=>String(v));countUp($('mCust'),d.customers.length,v=>String(v));countUp($('mDues'),dueTotal,v=>A.money(v));
+  $('taskCountLbl').textContent=pending.length?pending.length+' pending':'All caught up';
+  $('taskList').innerHTML=pending.length?pending.map(taskCard).join(''):'<div class="empty">🎉 No pending tasks. Great work!</div>';
+  $('taskDoneList').innerHTML=done.length?done.slice(0,8).map(doneCard).join(''):'<div class="empty">Nothing completed yet.</div>';
+  const badge=$('navTaskBadge');if(pending.length){badge.textContent=pending.length>9?'9+':String(pending.length);badge.style.display='grid'}else badge.style.display='none'}
+
+function custRow(x,i){const due=x.balance>0;return `<button class="stf-cust stf-anim" style="--i:${Math.min(i,10)}" type="button" data-cust="${A.esc(x.c.id)}">${ava(x.c.name)}<div class="stf-cust-info"><b>${A.esc(x.c.name)}</b><span>${A.esc(x.c.phone||'—')}</span></div><div class="stf-bal ${due?'due':''}"><b>${due?A.money(x.balance):'✓'}</b><span>${due?'Due':'Clear'}</span></div></button>`}
+function renderCustomers(){const d=sdb();const q=($('custSearch').value||'').toLowerCase().trim();
+  let rows=balances(d).sort((a,b)=>b.balance-a.balance||String(a.c.name).localeCompare(String(b.c.name)));
+  if(q)rows=rows.filter(x=>(x.c.name+' '+x.c.phone).toLowerCase().includes(q));
+  $('custList').innerHTML=rows.length?rows.slice(0,80).map(custRow).join(''):`<div class="empty">${q?'No customer matches "'+A.esc(q)+'".':'No customers yet. Add your first one!'}</div>`}
+
+function entryRow(x){const paid=A.num(x.paid),amt=A.num(x.amount);const st=paid>=amt?'<span class="badge badge-green">Paid</span>':paid>0?'<span class="badge badge-amber">Partial</span>':'<span class="badge badge-red">Due</span>';
+  return `<div class="stf-entry"><div class="stf-entry-ico red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div><div class="stf-entry-info"><b>${A.esc(x.customer)}</b><span>${npDate(x.date)}${x.items?' · '+A.esc(x.items):''}</span></div><div style="text-align:right"><div class="stf-entry-amt red">${A.money(amt)}</div>${st}</div></div>`}
+function renderKhata(){const d=sdb();const today=A.today();
+  const givenToday=d.credits.filter(x=>String(x.date).slice(0,10)===today).reduce((s,x)=>s+A.num(x.amount),0);
+  const bals=balances(d);const dueRows=bals.filter(x=>x.balance>0);
+  $('khataDateLbl').textContent=npDate(today);
+  $('khataMetrics').innerHTML=metricEl('kGiven','Credit given today','var(--red)')+metricEl('kDueTotal','Outstanding','var(--amber)')+metricEl('kDueCust','Customers with dues','var(--blue)')+metricEl('kClear','Clear customers','var(--green)');
+  countUp($('kGiven'),givenToday,v=>A.money(v));countUp($('kDueTotal'),dueRows.reduce((s,x)=>s+x.balance,0),v=>A.money(v));countUp($('kDueCust'),dueRows.length,v=>String(v));countUp($('kClear'),bals.length-dueRows.length,v=>String(v));
+  const recent=A.byDate(d.credits,'date').slice(0,12);
+  $('entryList').innerHTML=recent.length?recent.map(entryRow).join(''):'<div class="empty">No credit entries yet.</div>'}
+
+function renderAll(){if(!guard())return;renderHero();updateSyncChip();if(activeTab==='tasks')renderTasks();if(activeTab==='customers')renderCustomers();if(activeTab==='khata')renderKhata()}
+
+/* ---------- customer picker (credit + payment sheets) ---------- */
+function initPicker(prefix){const search=$(prefix+'Search'),results=$(prefix+'Results'),sel=$(prefix+'Selected'),hid=$(prefix+'CustomerId');
+  function choose(id){const d=sdb();const c=d.customers.find(x=>x.id===id);if(!c)return;hid.value=c.id;$(prefix+'SelName').textContent=c.name;const b=A.customerBalance(d,c.id).balance;$(prefix+'SelBal').textContent=b>0?'Due '+A.money(b):'No dues';sel.classList.add('show');search.style.display='none';results.classList.remove('show')}
+  function clear(){hid.value='';sel.classList.remove('show');search.style.display='';search.value='';results.classList.remove('show')}
+  search.addEventListener('input',()=>{const q=search.value.toLowerCase().trim();if(q.length<1){results.classList.remove('show');return}
+    const d=sdb();const hits=d.customers.filter(c=>(c.name+' '+c.phone).toLowerCase().includes(q)).slice(0,6);
+    results.innerHTML=hits.length?hits.map(c=>{const b=A.customerBalance(d,c.id).balance;return `<button type="button" data-pick="${A.esc(c.id)}"><span><b>${A.esc(c.name)}</b> <span class="small">${A.esc(c.phone||'')}</span></span><span class="small">${b>0?A.money(b):'Clear'}</span></button>`}).join(''):'<button type="button" disabled><span class="small">No match found</span></button>';
+    results.classList.add('show')});
+  results.addEventListener('click',e=>{const b=e.target.closest('[data-pick]');if(b)choose(b.dataset.pick)});
+  return{choose,clear}}
+const crPicker=initPicker('cr'),pmPicker=initPicker('pm');
+document.addEventListener('click',e=>{const b=e.target.closest('[data-clear-pick]');if(b)(b.dataset.clearPick==='cr'?crPicker:pmPicker).clear()});
+
+let crDueDays=0;
+$('crDueChips').addEventListener('click',e=>{const b=e.target.closest('[data-due]');if(!b)return;crDueDays=Number(b.dataset.due);document.querySelectorAll('#crDueChips .stf-chip').forEach(x=>x.classList.toggle('active',x===b))});
+
+/* ---------- forms ---------- */
+function formData(form){return Object.fromEntries(new FormData(form).entries())}
+$('custForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{const c=A.addCustomer(db(),formData(e.target));e.target.reset();closeSheet();toast('Customer saved: '+c.name);celebrate()})});
+$('creditForm').addEventListener('submit',e=>{e.preventDefault();const data=formData(e.target);if(!data.customerId)return toast('Select a customer first','err');
+  if(crDueDays)data.dueDate=addDaysIso(A.today(),crDueDays);
+  submitWrap(()=>{const cr=A.addCredit(db(),data);e.target.reset();crPicker.clear();closeSheet();toast('Credit '+A.money(cr.amount)+' saved for '+cr.customer);celebrate()})});
+$('payForm').addEventListener('submit',e=>{e.preventDefault();const data=formData(e.target);if(!data.customerId)return toast('Select a customer first','err');
+  submitWrap(()=>{const applied=A.addCreditPayment(db(),data.customerId,A.num(data.amount),data.note);e.target.reset();pmPicker.clear();closeSheet();
+    toast(applied>0?'Payment '+A.money(applied)+' recorded':'No dues to apply this payment to',applied>0?'ok':'err');if(applied>0)celebrate()})});
+
+/* ---------- customer detail ---------- */
+function openDetail(custId){const d=sdb();const c=d.customers.find(x=>x.id===custId);if(!c)return;
+  const bal=A.customerBalance(d,c.id);const recent=A.byDate(bal.rows,'date').slice(0,5);
+  $('detailBody').innerHTML=`<div class="stf-detail-head">${ava(c.name)}<div><h3>${A.esc(c.name)}</h3><div class="stf-sub" style="margin:0">📱 ${A.esc(c.phone||'No phone')}${c.address?' · '+A.esc(c.address):''}</div></div></div>
+  <div class="stf-detail-bal"><div class="${bal.balance>0?'due':''}"><b>${A.money(bal.balance)}</b><span>Balance due</span></div><div><b>${A.money(bal.taken)}</b><span>Total credit</span></div><div><b>${A.money(bal.paid)}</b><span>Total paid</span></div></div>
+  <div class="stf-detail-actions">
+    <button class="btn btn-red" type="button" data-act-credit="${A.esc(c.id)}">+ Credit</button>
+    <button class="btn btn-green" type="button" data-act-pay="${A.esc(c.id)}">Payment</button>
+    <button class="btn btn-soft" type="button" data-act-wa="${A.esc(c.id)}" ${c.phone&&bal.balance>0?'':'disabled'}>WhatsApp</button>
+  </div>
+  ${recent.length?'<div class="stf-sec" style="margin:14px 0 4px"><h2>Recent entries</h2></div>'+recent.map(entryRow).join(''):''}`;
+  openSheet('sheetDetail')}
+$('custList').addEventListener('click',e=>{const b=e.target.closest('[data-cust]');if(b)openDetail(b.dataset.cust)});
+$('detailBody').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.actCredit){closeSheet();crPicker.clear();crPicker.choose(b.dataset.actCredit);openSheet('sheetCredit')}
+  if(b.dataset.actPay){closeSheet();pmPicker.clear();pmPicker.choose(b.dataset.actPay);openSheet('sheetPay')}
+  if(b.dataset.actWa){const d=sdb();const c=d.customers.find(x=>x.id===b.dataset.actWa);if(!c)return;const bal=A.customerBalance(d,c.id).balance;
+    try{A.wa(c.phone,`Namaste ${c.name} ji! 🙏 ${(d.settings||{}).martName||'RD MART'} bata reminder: tapaiko udhaaro baki Rs ${Number(bal).toLocaleString('en-IN')} cha. Kripaya milayera bhuktani garnuhola. Dhanyabad!`)}catch(err){toast(err.message,'err')}}});
+
+/* ---------- task actions ---------- */
+$('taskList').addEventListener('click',e=>{const b=e.target.closest('[data-task-done]');if(!b)return;const id=b.dataset.taskDone;const card=b.closest('.stf-task');
+  card.classList.add('done-anim');celebrate();
+  setTimeout(()=>{submitWrap(()=>{A.completeTask(db(),id);toast('Task marked done — admin will see it')})},REDUCED?0:480)});
+
+/* ---------- static events ---------- */
+$('addCustBtn').addEventListener('click',()=>openSheet('sheetCust'));
+$('openCreditBtn').addEventListener('click',()=>{crPicker.clear();openSheet('sheetCredit')});
+$('openPayBtn').addEventListener('click',()=>{pmPicker.clear();openSheet('sheetPay')});
+$('custSearch').addEventListener('input',()=>renderCustomers());
+$('themeBtn').addEventListener('click',()=>{const t=document.body.dataset.theme==='dark'?'light':'dark';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;localStorage.setItem('martai_dashboard_theme',t)});
+$('logoutBtn').addEventListener('click',()=>{A.clearSession().finally(()=>location.replace('index.html'))});
+
+/* ---------- boot ---------- */
+(async()=>{try{await A.ready}catch(e){}
+  session=A.getSession()||session;if(!guard())return;
+  const h=location.hash.slice(1);if(['customers','khata'].includes(h)){setTab(h)}else renderAll();
+  A.onDataChange(()=>{renderAll();toast('Updated from another device')});
+  try{A.startRealtime()}catch(e){}
+  setInterval(updateSyncChip,5000);
+})();
+</script>
+</body>
+</html>

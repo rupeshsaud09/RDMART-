@@ -546,7 +546,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js?v=25"></script>
+<script src="assets/martai-store.js?v=26"></script>
 <script src="assets/khata-backup.js?v=5"></script>
 <script src="assets/martai-qr.js?v=1"></script>
 <script>
@@ -560,7 +560,7 @@ function isStoreAdmin(){return session().role==='store_admin'}
 function isAdmin(){return session().role==='admin'}
 let currentPage='dashboard';
 const titles={dashboard:['Dashboard','Your mart summary'],tasks:['Tasks','Assign work to staff and track what gets done'],followup:['Follow-Up','Priority work queue'],customers:['Customers','Create customer portal login'],credits:['Credit Book','Customer credit and payments'],daily:['Daily Sales','Date-wise sales totals'],estimates:['Estimate Bills','Quotation tracking for admins and staff'],payments:['Party Payments','Supplier/vendor payment records'],cheques:['Cheque Tracker','Cheque status management'],rooms:['Room Rent','Rent, electricity and water for Rooms 1-4'],reports:['Reports','CSV downloads and analytics'],settings:['Settings','Admin and data tools']};
-function requireAdmin(){const s=A.getSession();if(!s||!['admin','staff','store_admin'].includes(s.role)){A.clearSession().finally(()=>location.replace('index.html'));return false}return true}
+function requireAdmin(){const s=A.getSession();if(s?.role==='staff'){location.replace('staff.html');return false}if(!s||!['admin','store_admin'].includes(s.role)){A.clearSession().finally(()=>location.replace('index.html'));return false}return true}
 function db(){return A.getDB()}
 function sdb(){const d=A.getDB();const sid=A.getActiveStoreId?.();if(!sid)return d;const isDefault=sid==='default';function sf(arr){if(!arr)return[];return arr.filter(x=>x.storeId===sid||(isDefault&&!x.storeId))}return{...d,customers:sf(d.customers),credits:sf(d.credits),dailySales:sf(d.dailySales),partyPayments:sf(d.partyPayments),cheques:sf(d.cheques),chequeQueue:sf(d.chequeQueue),parties:sf(d.parties),estimateBills:sf(d.estimateBills),sales:sf(d.sales),paymentRequests:sf(d.paymentRequests),tasks:sf(d.tasks)}}
 function save(x){A.saveDB(x)}function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>el.remove(),240)},2600)}
