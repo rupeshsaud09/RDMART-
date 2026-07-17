@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=12">
+<link rel="stylesheet" href="assets/martai.css?v=13">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -26,6 +26,8 @@
     </div>
     <div class="nav-group">Overview</div>
     <button class="nav-btn active" data-page="dashboard" data-tip="Dashboard"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="nav-txt">Dashboard</span></button>
+    <div class="nav-group">Team</div>
+    <button class="nav-btn" data-page="tasks" data-tip="Tasks"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span class="nav-txt">Tasks</span><span class="badge badge-red nav-count" id="taskNavBadge" style="display:none">0</span></button>
     <div class="nav-group">Sales</div>
     <button class="nav-btn" data-page="daily" data-tip="Daily Sales"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg></span><span class="nav-txt">Daily Sales</span></button>
     <button class="nav-btn" data-page="estimates" data-tip="Estimates"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span><span class="nav-txt">Estimates</span></button>
@@ -111,6 +113,31 @@
           <div class="card dash-card"><div class="section-head compact-head"><div><div class="section-title">Cheques needing action</div><div class="section-sub">To write, due today or on hold</div></div><button class="btn btn-soft btn-sm" data-page="cheques">View all</button></div><div class="dash-scroll" id="todayChequeList"></div></div>
         </div>
         <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Recent activity</div><div class="section-sub">Latest saved actions</div></div></div><div class="activity-scroll" id="activityList"></div></div>
+      </section>
+
+      <section class="page" id="page-tasks">
+        <div class="section-head"><div><div class="page-title">Tasks</div><div class="page-sub">Assign work to staff and track what gets done</div></div><div class="section-head-actions"><button class="btn btn-soft btn-sm" id="taskNotifyBtn" type="button">Enable desktop alerts</button></div></div>
+        <div id="taskAlertBanner" style="margin-bottom:14px"></div>
+        <div class="grid grid-4" id="taskMetrics"></div>
+        <div class="card" style="margin-top:16px" id="taskAssignCard">
+          <div class="section-title" style="margin-bottom:14px">Assign new task</div>
+          <form id="taskForm" class="form-grid">
+            <div class="field span-2"><label>Task title</label><input class="input" name="title" required placeholder="e.g. Restock shelf 3, count today's cash..."></div>
+            <div class="field"><label>Assign to</label><select class="select" name="assignedToEmail" id="taskAssignSelect"><option value="">All staff (broadcast)</option></select></div>
+            <div class="field"><label>Priority</label><select class="select" name="priority"><option value="normal" selected>Normal</option><option value="high">High</option><option value="low">Low</option></select></div>
+            <div class="field"><label>Due date BS <span style="opacity:.55;font-weight:400">(optional)</span></label><div style="display:flex;gap:6px;align-items:center"><input class="input" name="dueDate" data-bs-date-input data-bs-optional readonly placeholder="No due date" style="flex:1"><button class="btn btn-soft btn-sm" type="button" data-clear-task-due title="Clear due date">&#10005;</button></div></div>
+            <div class="field span-2"><label>Details <span style="opacity:.55;font-weight:400">(optional)</span></label><input class="input" name="description" placeholder="Instructions or notes for staff"></div>
+            <div class="field span-2"><button class="btn btn-primary full" type="submit">Assign task</button></div>
+          </form>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="section-head compact-head"><div><div class="section-title">Pending tasks</div><div class="section-sub">Not yet marked done</div></div></div>
+          <div id="taskPendingList"></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="section-head compact-head"><div><div class="section-title">Completed tasks</div><div class="section-sub">Marked done by staff &mdash; newest first</div></div></div>
+          <div id="taskDoneList"></div>
+        </div>
       </section>
 
       <section class="page" id="page-followup">
@@ -519,7 +546,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js?v=24"></script>
+<script src="assets/martai-store.js?v=25"></script>
 <script src="assets/khata-backup.js?v=5"></script>
 <script src="assets/martai-qr.js?v=1"></script>
 <script>
@@ -532,10 +559,10 @@ function isMainAdmin(){return session().role==='admin'}
 function isStoreAdmin(){return session().role==='store_admin'}
 function isAdmin(){return session().role==='admin'}
 let currentPage='dashboard';
-const titles={dashboard:['Dashboard','Your mart summary'],followup:['Follow-Up','Priority work queue'],customers:['Customers','Create customer portal login'],credits:['Credit Book','Customer credit and payments'],daily:['Daily Sales','Date-wise sales totals'],estimates:['Estimate Bills','Quotation tracking for admins and staff'],payments:['Party Payments','Supplier/vendor payment records'],cheques:['Cheque Tracker','Cheque status management'],rooms:['Room Rent','Rent, electricity and water for Rooms 1-4'],reports:['Reports','CSV downloads and analytics'],settings:['Settings','Admin and data tools']};
+const titles={dashboard:['Dashboard','Your mart summary'],tasks:['Tasks','Assign work to staff and track what gets done'],followup:['Follow-Up','Priority work queue'],customers:['Customers','Create customer portal login'],credits:['Credit Book','Customer credit and payments'],daily:['Daily Sales','Date-wise sales totals'],estimates:['Estimate Bills','Quotation tracking for admins and staff'],payments:['Party Payments','Supplier/vendor payment records'],cheques:['Cheque Tracker','Cheque status management'],rooms:['Room Rent','Rent, electricity and water for Rooms 1-4'],reports:['Reports','CSV downloads and analytics'],settings:['Settings','Admin and data tools']};
 function requireAdmin(){const s=A.getSession();if(!s||!['admin','staff','store_admin'].includes(s.role)){A.clearSession().finally(()=>location.replace('index.html'));return false}return true}
 function db(){return A.getDB()}
-function sdb(){const d=A.getDB();const sid=A.getActiveStoreId?.();if(!sid)return d;const isDefault=sid==='default';function sf(arr){if(!arr)return[];return arr.filter(x=>x.storeId===sid||(isDefault&&!x.storeId))}return{...d,customers:sf(d.customers),credits:sf(d.credits),dailySales:sf(d.dailySales),partyPayments:sf(d.partyPayments),cheques:sf(d.cheques),chequeQueue:sf(d.chequeQueue),parties:sf(d.parties),estimateBills:sf(d.estimateBills),sales:sf(d.sales),paymentRequests:sf(d.paymentRequests)}}
+function sdb(){const d=A.getDB();const sid=A.getActiveStoreId?.();if(!sid)return d;const isDefault=sid==='default';function sf(arr){if(!arr)return[];return arr.filter(x=>x.storeId===sid||(isDefault&&!x.storeId))}return{...d,customers:sf(d.customers),credits:sf(d.credits),dailySales:sf(d.dailySales),partyPayments:sf(d.partyPayments),cheques:sf(d.cheques),chequeQueue:sf(d.chequeQueue),parties:sf(d.parties),estimateBills:sf(d.estimateBills),sales:sf(d.sales),paymentRequests:sf(d.paymentRequests),tasks:sf(d.tasks)}}
 function save(x){A.saveDB(x)}function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>el.remove(),240)},2600)}
 const THEME_KEY='martai_dashboard_theme';
 function preferredTheme(){const saved=localStorage.getItem(THEME_KEY);if(saved==='light'||saved==='dark')return saved;return 'light'}
@@ -743,8 +770,62 @@ function downloadRoomsCSV(){const d=sdb();const roomOf={};for(let n=1;n<=4;n++){
 function renderEstimates(){const d=sdb();const q=($('estimateSearch')?.value||'').toLowerCase();const st=$('estimateStatusFilter')?.value||'';const estimates=d.estimateBills||[];const open=estimates.filter(estimateOpen);const approved=estimates.filter(x=>x.status==='approved');const closed=estimates.filter(x=>['rejected','expired'].includes(String(x.status||'')));const sum=arr=>arr.reduce((s,x)=>s+A.num(x.amount),0);$('estimateSummary').innerHTML=[metric('Open estimates',open.length,A.money(sum(open))+' draft/sent value','rgba(6,182,212,.20)'),metric('Approved value',A.money(sum(approved)),approved.length+' approved','rgba(34,197,94,.18)'),metric('Closed / lost',closed.length,'Rejected or expired','rgba(239,68,68,.16)'),metric('All estimate value',A.money(sum(estimates)),estimates.length+' total records','rgba(124,58,237,.18)')].join('');const allEst=A.byDate(estimates,'date').filter(x=>(x.customer+' '+x.phone+' '+x.items+' '+x.note+' '+x.amount).toLowerCase().includes(q)).filter(x=>!st||x.status===st);const tp=Math.ceil(allEst.length/PER_PAGE)||1;const pg=pgState.estimates=Math.max(1,Math.min(pgState.estimates,tp));const rows=allEst.slice((pg-1)*PER_PAGE,pg*PER_PAGE);const act=(x,st,label,cls)=>`<button class="btn ${cls} btn-sm" data-estimate-status="${st}" data-id="${A.esc(x.id)}" ${x.status===st?'disabled':''}>${label}</button>`;$('estimateRows').innerHTML=rows.length?rows.map(x=>{const passed=x.validUntil&&String(x.validUntil).slice(0,10)<A.today()&&estimateOpen(x);const valid=x.validUntil?`${npDate(x.validUntil)}${passed?'<div class="small amount-red">validity passed</div>':''}`:'<span style="opacity:.4">-</span>';return `<tr><td>${npDate(x.date)}</td><td><b>${A.esc(x.customer)}</b><div class="small">${A.esc(x.phone||x.note||'')}</div></td><td>${A.esc(x.items||'-')}</td><td><b>${A.money(x.amount)}</b></td><td>${valid}</td><td>${estimateBadge(x.status)}</td><td>${act(x,'sent','Sent','btn-soft')} ${act(x,'approved','Approve','btn-green')} ${act(x,'rejected','Reject','btn-red')} ${act(x,'expired','Expire','btn-amber')} <button class="btn btn-primary btn-sm" data-estimate-credit="${A.esc(x.id)}" title="Add this amount as customer credit">&#8594; Credit</button> <button class="btn btn-soft btn-sm" data-delete-estimate="${A.esc(x.id)}">Delete</button></td></tr>`}).join(''):`<tr><td colspan="7"><div class="empty">${q||st?'No estimate bills found for this filter.':'No estimate bills saved yet.'}</div></td></tr>`;if($('estimatesPagination'))$('estimatesPagination').innerHTML=paginationHTML('estimates',pg,allEst.length,PER_PAGE);renderParties(d)}
 function renderReports(){const d=sdb();const balances=allCustomerBalances(d);const pending=balances.reduce((s,x)=>s+x.balance,0);const paid=balances.reduce((s,x)=>s+x.paid,0);const totalSales=d.dailySales.reduce((s,x)=>s+totalDaily(x),0);$('reportCards').innerHTML=[metric('Total daily sales',A.money(totalSales),`${d.dailySales.length} records`,'rgba(6,182,212,.20)'),metric('Credit pending',A.money(pending),'Need collection','rgba(239,68,68,.16)'),metric('Credit collected',A.money(paid),'Received from customers','rgba(34,197,94,.18)'),metric('Party payments',A.money(d.partyPayments.reduce((s,x)=>s+A.num(x.amount),0)),`${d.partyPayments.length} records`,'rgba(124,58,237,.18)')].join('');renderBars('reportBars',last7().map(date=>({label:shortDate(date),value:d.dailySales.filter(x=>x.date===date).reduce((s,x)=>s+totalDaily(x),0)})));renderBars('dailySalesBars',last7().map(date=>({label:shortDate(date),value:d.dailySales.filter(x=>x.date===date).reduce((s,x)=>s+totalDaily(x),0)})));const rate=paid+pending>0?Math.round((paid/(paid+pending))*100):100;$('reportCreditBox').innerHTML=`<div class="metric-label">Collection progress</div><div class="metric-value">${rate}%</div><div class="progress"><span style="width:${rate}%"></span></div><div class="small" style="margin-top:12px">Collected ${A.money(paid)} out of ${A.money(paid+pending)} total customer credit.</div>`;const nowD=new Date(),months=[];for(let i=5;i>=0;i--){const dt=new Date(nowD.getFullYear(),nowD.getMonth()-i,1);months.push(dt.toISOString().slice(0,7))}const adML=ym=>{const[,m]=ym.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(m)-1]};renderBars('monthlyTrendBars',months.map(ym=>({label:adML(ym),value:d.dailySales.filter(x=>String(x.date).startsWith(ym)).reduce((s,x)=>s+totalDaily(x),0)})));const topCr=allCustomerBalances(d).filter(x=>x.balance>0).sort((a,b)=>b.balance-a.balance).slice(0,5);renderBars('topCreditBars',topCr.length?topCr.map(x=>({label:x.customer.name,value:x.balance})):[{label:'No pending credit',value:0}]);const weekEnd=addDaysIso(A.today(),7);const weekChq=d.cheques.filter(x=>{const cd=String(x.chequeDate||'').slice(0,10);return cd>=A.today()&&cd<=weekEnd&&x.status!=='bounce'}).sort((a,b)=>String(a.chequeDate).localeCompare(String(b.chequeDate))).slice(0,15);renderBars('weekChequeBars',weekChq.length?weekChq.map(x=>({label:`${x.party} · ${shortDate(x.chequeDate)}${x.status==='clear'?' ✓':''}`,value:A.num(x.amount)})):[{label:'No cheques dated in the next 7 days',value:0}]);const bsMonthPrefix=bsKey(A.today()).slice(0,7);const byParty={};d.cheques.forEach(x=>{if(x.status!=='bounce'&&bsKey(x.chequeDate).startsWith(bsMonthPrefix)){const p=String(x.party||'').trim()||'Unknown';byParty[p]=(byParty[p]||0)+A.num(x.amount)}});const topParty=Object.entries(byParty).sort((a,b)=>b[1]-a[1]).slice(0,10);renderBars('monthPartyBars',topParty.length?topParty.map(([p,v])=>({label:p,value:v})):[{label:'No cheques this BS month',value:0}]);renderMonthlyReport()}
 function renderSettings(){const d=db();const inp=$('portalUrlInput');if(inp&&document.activeElement!==inp)inp.value=localStorage.getItem(PORTAL_URL_KEY)||'';const hintEl=$('portalUrlHint');if(hintEl){const eff=getPortalUrl();hintEl.innerHTML=isLocalUrl(eff)?'⚠ Current portal link is <b>'+A.esc(eff)+'</b> — it only opens on this computer. Enter your live site address (e.g. from Netlify/Vercel) and save.':'Portal QR and WhatsApp links point to: <b>'+A.esc(eff)+'</b>'}const f=$('settingsForm');f.martName.value=d.settings.martName||'MartAI';f.martPhone.value=d.settings.martPhone||'';f.adminUser.value=d.settings.adminUser||'admin';f.adminPass.value='';const stores=A.getStores?A.getStores():d.stores||[];const tpSt=Math.ceil(stores.length/PER_PAGE)||1;const pgSt=pgState.stores=Math.max(1,Math.min(pgState.stores,tpSt));if($('storesPagination'))$('storesPagination').innerHTML=paginationHTML('stores',pgSt,stores.length,PER_PAGE);$('storeRows').innerHTML=stores.length?stores.slice((pgSt-1)*PER_PAGE,pgSt*PER_PAGE).map(s=>`<tr><td><b>${A.esc(s.name)}</b></td><td>${A.esc(s.phone||'-')}</td><td>${s.id===A.getActiveStoreId()?'<span class="badge badge-green">Active now</span>':'<span class="badge badge-blue">Available</span>'}</td><td><button class="btn btn-soft btn-sm" data-edit-store="${A.esc(s.id)}">Edit</button> <button class="btn btn-red btn-sm" data-delete-store="${A.esc(s.id)}" ${stores.length<=1?'disabled':''}>Delete</button></td></tr>`).join(''):'<tr><td colspan="4"><div class="empty">No stores yet.</div></td></tr>';const staff=d.staffAccounts||[];const tpSf=Math.ceil(staff.length/PER_PAGE)||1;const pgSf=pgState.staff=Math.max(1,Math.min(pgState.staff,tpSf));if($('staffPagination'))$('staffPagination').innerHTML=paginationHTML('staff',pgSf,staff.length,PER_PAGE);$('staffRows').innerHTML=staff.length?staff.slice((pgSf-1)*PER_PAGE,pgSf*PER_PAGE).map(s=>`<tr><td>${A.esc(s.name||'-')}</td><td>${A.esc(s.email)}</td><td><span class="badge ${s.active!==false?'badge-green':'badge-red'}">${s.active!==false?'Active':'Blocked'}</span></td><td><button class="btn btn-soft btn-sm" data-staff-active="${A.esc(s.email)}" data-active="${s.active!==false?'false':'true'}">${s.active!==false?'Block':'Activate'}</button></td></tr>`).join(''):'<tr><td colspan="4"><div class="empty">No staff access added yet.</div></td></tr>';const rows=d.loginEvents||[];const tpLg=Math.ceil(rows.length/PER_PAGE)||1;const pgLg=pgState.logins=Math.max(1,Math.min(pgState.logins,tpLg));if($('loginsPagination'))$('loginsPagination').innerHTML=paginationHTML('logins',pgLg,rows.length,PER_PAGE);$('loginRows').innerHTML=rows.length?rows.slice((pgLg-1)*PER_PAGE,pgLg*PER_PAGE).map(x=>`<tr><td>${npDateTime(x.time)}</td><td><span class="badge ${x.role==='customer'?'badge-green':'badge-blue'}">${A.esc(x.role)}</span></td><td>${A.esc(x.name||x.email||'-')}</td><td>${A.esc(x.phone||'-')}</td></tr>`).join(''):'<tr><td colspan="4"><div class="empty">No login records yet. New customer and admin logins will appear here.</div></td></tr>';const qr=d.settings.storePaymentQr||'';const qrLabel=d.settings.storePaymentQrLabel||'';const labelInp=$('storeQrLabel');if(labelInp&&!labelInp._dirty)labelInp.value=qrLabel;const qrPrev=$('storeQrPreview');if(qrPrev)qrPrev.innerHTML=qr?`<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:4px 0"><img src="${qr}" style="width:140px;height:140px;object-fit:contain;border-radius:10px;background:#fff;padding:8px;border:2px solid rgba(255,255,255,.15)"><div><div class="badge badge-green" style="margin-bottom:8px">${A.esc(qrLabel||'Payment QR')}</div><p class="hint" style="margin:0">QR saved. Customers can see and scan this in their portal.</p></div></div>`:'<p class="hint" style="margin:0">No QR uploaded yet. Upload an image of your eSewa, Khalti, or FonePay QR code.</p>'}
-function applyStaffRestrictions(){if(!isStaff()&&!isStoreAdmin())return;['resetBtn','backupJsonBtn','backupBtn','downloadAllBtn','restoreJsonLabel','autoBackupCard'].forEach(id=>{const el=$(id);if(el)el.style.display='none'});if(isStaff())document.querySelectorAll('[data-delete-customer],[data-delete-credit],[data-delete-sale],[data-delete-daily],[data-delete-payment],[data-delete-cheque],[data-delete-estimate],[data-delete-party]').forEach(el=>el.style.display='none')}
-function renderAll(){updateSyncStatus();checkBackupReminder();polishStaticText();renderStoreSelector();const brandDB=sdb();applyBrandLogo((brandDB.settings||{}).storeLogo||'',(brandDB.settings||{}).martName||'MartAI');renderCustomerOptions();renderPartyOptions();setTodayInputs();syncDateButtons();if(currentPage==='dashboard'){renderDashboard();renderDashboardPremium()}if(currentPage==='followup')renderFollowup();if(currentPage==='customers')renderCustomers();if(currentPage==='credits')renderCredits();if(currentPage==='daily')renderDaily();if(currentPage==='estimates')renderEstimates();if(currentPage==='payments')renderPayments();if(currentPage==='cheques')renderCheques();if(currentPage==='rooms')renderRooms();if(currentPage==='reports')renderReports();if(currentPage==='settings'){renderSettings();renderBrandSettings();refreshAutoBackupStatus()}applyStaffRestrictions();polishEmptyStates()}
+/* ---------- Tasks: admin assigns work to staff, staff mark done ---------- */
+const toastedTaskIds=new Set();let taskAnnounceReady=false;
+function taskCanComplete(t){if(isMainAdmin()||isStoreAdmin())return true;const email=String(session().email||'').toLowerCase();return !t.assignedToEmail||t.assignedToEmail===email}
+function taskPriorityBadge(p){if(p==='high')return '<span class="badge badge-red">High</span>';if(p==='low')return '<span class="badge badge-blue">Low</span>';return '<span class="badge badge-amber">Normal</span>'}
+function taskCard(t,canAct,canManage){
+  const who=A.esc(t.assignedToName||t.assignedToEmail||'All staff');
+  const dueBadge=t.dueDate?` <span class="badge ${t.status!=='done'&&String(t.dueDate).slice(0,10)<A.today()?'badge-red':'badge-blue'}">Due ${npDate(t.dueDate)}</span>`:'';
+  const desc=t.description?`<div class="small" style="opacity:.7;margin-top:2px">${A.esc(t.description)}</div>`:'';
+  if(t.status==='done'){
+    const isNew=canManage&&!t.ackByAdmin;
+    return `<div class="history-card"><div><b>${A.esc(t.title)}</b><div class="small">${who} &middot; assigned by ${A.esc(t.createdBy||'Admin')}</div>${desc}<div class="small" style="margin-top:4px">&#9989; Done by <b>${A.esc(t.completedBy||'Staff')}</b> &middot; ${npDateTime(t.completedAt)}</div></div><div style="text-align:right">${isNew?'<span class="badge badge-red">New</span> ':''}${taskPriorityBadge(t.priority)}${dueBadge}${canManage?`<div style="margin-top:6px"><button class="btn btn-soft btn-sm" data-task-reopen="${A.esc(t.id)}">Reopen</button> <button class="btn btn-red btn-sm" data-task-delete="${A.esc(t.id)}">Delete</button></div>`:''}</div></div>`;
+  }
+  return `<div class="history-card"><div><b>${A.esc(t.title)}</b><div class="small">Assigned to ${who} &middot; by ${A.esc(t.createdBy||'Admin')} &middot; ${npDateTime(t.createdAt)}</div>${desc}</div><div style="text-align:right">${taskPriorityBadge(t.priority)}${dueBadge}<div style="margin-top:6px">${canAct?`<button class="btn btn-green btn-sm" data-task-complete="${A.esc(t.id)}">Mark done</button> `:''}${canManage?`<button class="btn btn-red btn-sm" data-task-delete="${A.esc(t.id)}">Delete</button>`:''}</div></div></div>`;
+}
+function renderTaskAssignOptions(d){const sel=$('taskAssignSelect');if(!sel)return;const staff=(d.staffAccounts||[]).filter(s=>s.active!==false);const old=sel.value;sel.innerHTML='<option value="">All staff (broadcast)</option>'+staff.map(s=>`<option value="${A.esc(s.email)}">${A.esc(s.name||s.email)}</option>`).join('');if([...sel.options].some(o=>o.value===old))sel.value=old}
+function renderTasks(){
+  const d=sdb();const canManage=isMainAdmin()||isStoreAdmin();const email=String(session().email||'').toLowerCase();
+  const all=canManage?(d.tasks||[]):(d.tasks||[]).filter(t=>!t.assignedToEmail||t.assignedToEmail===email);
+  const priRank={high:0,normal:1,low:2};
+  const pending=all.filter(t=>t.status!=='done').sort((a,b)=>(priRank[a.priority]??1)-(priRank[b.priority]??1)||String(a.dueDate||'9999-99-99').localeCompare(String(b.dueDate||'9999-99-99')));
+  const done=all.filter(t=>t.status==='done').sort((a,b)=>String(b.completedAt||'').localeCompare(String(a.completedAt||'')));
+  const newDone=done.filter(t=>!t.ackByAdmin).length;
+  $('taskMetrics').innerHTML=[metric('Pending tasks',pending.length,canManage?'Across all staff':'Assigned to you','rgba(245,158,11,.18)'),metric('Completed',done.length,'All time','rgba(34,197,94,.18)'),metric('Needs your review',canManage?newDone:0,'Newly completed','rgba(239,68,68,.16)'),metric('High priority open',pending.filter(t=>t.priority==='high').length,'Open & urgent','rgba(124,58,237,.18)')].join('');
+  $('taskPendingList').innerHTML=pending.length?pending.map(t=>taskCard(t,taskCanComplete(t),canManage)).join(''):'<div class="empty">No pending tasks. All caught up!</div>';
+  $('taskDoneList').innerHTML=done.length?done.slice(0,40).map(t=>taskCard(t,false,canManage)).join(''):'<div class="empty">No completed tasks yet.</div>';
+  renderTaskAssignOptions(d);
+  if(canManage)A.acknowledgeTasks(db());
+}
+function renderTaskBanner(d,canManage,email){
+  const el=$('taskAlertBanner');if(!el)return;
+  if(canManage){
+    const n=(d.tasks||[]).filter(t=>t.status==='done'&&!t.ackByAdmin).length;
+    el.innerHTML=n?`<div style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:1.15em">&#9989;</span><span style="flex:1;min-width:200px;font-size:.88em"><b>${n} task${n!==1?'s':''} completed</b> by staff &mdash; ready for your review.</span><button class="btn btn-primary btn-sm" data-page="tasks">Review tasks</button></div>`:'';
+  }else{
+    const n=(d.tasks||[]).filter(t=>t.status!=='done'&&(!t.assignedToEmail||t.assignedToEmail===email)).length;
+    el.innerHTML=n?`<div style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:1.15em">&#128221;</span><span style="flex:1;min-width:200px;font-size:.88em"><b>${n} task${n!==1?'s':''}</b> assigned to you by admin.</span><button class="btn btn-primary btn-sm" data-page="tasks">View tasks</button></div>`:'';
+  }
+}
+function renderTaskAlerts(){
+  const d=sdb();const canManage=isMainAdmin()||isStoreAdmin();const email=String(session().email||'').toLowerCase();
+  const count=canManage?(d.tasks||[]).filter(t=>t.status==='done'&&!t.ackByAdmin).length:(d.tasks||[]).filter(t=>t.status!=='done'&&(!t.assignedToEmail||t.assignedToEmail===email)).length;
+  const badge=$('taskNavBadge');
+  if(badge){if(count>0){badge.textContent=count>99?'99+':String(count);badge.style.display='inline-flex'}else{badge.style.display='none'}}
+  if(currentPage==='dashboard')renderTaskBanner(d,canManage,email);
+  if(canManage){
+    const fresh=(d.tasks||[]).filter(t=>t.status==='done'&&!t.ackByAdmin&&!toastedTaskIds.has(t.id));
+    fresh.forEach(t=>toastedTaskIds.add(t.id));
+    if(taskAnnounceReady)fresh.forEach(t=>{
+      toast('✅ '+(t.completedBy||'Staff')+' finished: '+t.title,'ok');
+      if(typeof Notification!=='undefined'&&Notification.permission==='granted'){try{new Notification((d.settings.martName||'RD MART')+' — task done',{body:(t.completedBy||'Staff')+' finished: '+t.title})}catch(e){}}
+    });
+    taskAnnounceReady=true;
+  }
+}
+function applyStaffRestrictions(){if(!isStaff()&&!isStoreAdmin())return;['resetBtn','backupJsonBtn','backupBtn','downloadAllBtn','restoreJsonLabel','autoBackupCard'].forEach(id=>{const el=$(id);if(el)el.style.display='none'});if(isStaff()){document.querySelectorAll('[data-delete-customer],[data-delete-credit],[data-delete-sale],[data-delete-daily],[data-delete-payment],[data-delete-cheque],[data-delete-estimate],[data-delete-party]').forEach(el=>el.style.display='none');const tc=$('taskAssignCard');if(tc)tc.style.display='none'}}
+function renderAll(){updateSyncStatus();checkBackupReminder();polishStaticText();renderStoreSelector();const brandDB=sdb();applyBrandLogo((brandDB.settings||{}).storeLogo||'',(brandDB.settings||{}).martName||'MartAI');renderCustomerOptions();renderPartyOptions();setTodayInputs();syncDateButtons();renderTaskAlerts();if(currentPage==='dashboard'){renderDashboard();renderDashboardPremium()}if(currentPage==='tasks')renderTasks();if(currentPage==='followup')renderFollowup();if(currentPage==='customers')renderCustomers();if(currentPage==='credits')renderCredits();if(currentPage==='daily')renderDaily();if(currentPage==='estimates')renderEstimates();if(currentPage==='payments')renderPayments();if(currentPage==='cheques')renderCheques();if(currentPage==='rooms')renderRooms();if(currentPage==='reports')renderReports();if(currentPage==='settings'){renderSettings();renderBrandSettings();refreshAutoBackupStatus()}applyStaffRestrictions();polishEmptyStates()}
 let backupScheduleTimer=0;
 function scheduleAutoBackup(delay=15000){if(!isMainAdmin()&&!isStoreAdmin())return;clearTimeout(backupScheduleTimer);backupScheduleTimer=setTimeout(()=>runAutoBackupCheck({quiet:true}),delay)}
 function submitWrap(fn){try{fn();renderAll();setTimeout(updateSyncStatus,400);scheduleAutoBackup()}catch(e){toast(e.message,'err')}}
@@ -894,6 +975,14 @@ $('roomFilter')?.addEventListener('change',()=>{pgState.roomLedger=1;renderAll()
 $('downloadRoomsBtn')?.addEventListener('click',downloadRoomsCSV);
 $('estimateForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.addEstimateBill(db(),formData(e.target));e.target.reset();toast('Estimate bill saved')})});
 $('partyForm')?.addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{const p=A.addParty(db(),formData(e.target));e.target.reset();toast('Party account saved: '+p.name)})});
+$('taskForm')?.addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.addTask(db(),formData(e.target));e.target.reset();toast('Task assigned')})});
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.hasAttribute('data-clear-task-due')){const inp=document.querySelector('#taskForm [name="dueDate"]');if(inp)inp.value='';return}
+  if(b.dataset.taskComplete){submitWrap(()=>{A.completeTask(db(),b.dataset.taskComplete);toast('Task marked done')});return}
+  if(b.dataset.taskReopen){submitWrap(()=>{A.reopenTask(db(),b.dataset.taskReopen);toast('Task reopened')});return}
+  if(b.dataset.taskDelete){if(isStaff())return toast('Staff cannot delete tasks','err');submitWrap(()=>{if(confirm('Delete this task?'))A.deleteTask(db(),b.dataset.taskDelete)});return}
+  if(b.id==='taskNotifyBtn'){if(typeof Notification==='undefined')return toast('Notifications not supported in this browser','err');Notification.requestPermission().then(p=>toast(p==='granted'?'Desktop alerts enabled':'Notifications blocked'));return}
+});
 // Picking a saved party in the estimate form auto-fills its phone
 document.querySelector('#estimateForm [name="customer"]')?.addEventListener('change',e=>{const p=(sdb().parties||[]).find(x=>String(x.name).trim().toLowerCase()===String(e.target.value).trim().toLowerCase());const ph=document.querySelector('#estimateForm [name="phone"]');if(p&&p.phone&&ph&&!ph.value)ph.value=p.phone});
 $('settingsForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.saveSettings(db(),formData(e.target));toast('Settings saved')})});
@@ -1065,6 +1154,6 @@ MartAI.ready.then(async()=>{
   document.body.classList.remove('boot-nav-collapsed');
 })();
 </script>
-<script src="assets/martai-bot.js?v=4"></script>
+<script src="assets/martai-bot.js?v=5"></script>
 </body>
 </html>

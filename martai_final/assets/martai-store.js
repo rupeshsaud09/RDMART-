@@ -9,7 +9,7 @@
   let pendingSave=null;
   // Dirty tracking: only records touched since the last successful sync are pushed to Supabase.
   // Records without a _tableId (never synced) are always pushed.
-  const dirty={customers:new Set(),credits:new Set(),sales:new Set(),dailySales:new Set(),partyPayments:new Set(),cheques:new Set(),chequeQueue:new Set(),parties:new Set(),estimateBills:new Set(),paymentRequests:new Set()};
+  const dirty={customers:new Set(),credits:new Set(),sales:new Set(),dailySales:new Set(),partyPayments:new Set(),cheques:new Set(),chequeQueue:new Set(),parties:new Set(),estimateBills:new Set(),paymentRequests:new Set(),tasks:new Set()};
   let settingsDirty=false;
   // Offline queue: dirty ids and pending deletions survive reloads via localStorage,
   // and are flushed to Supabase before any remote load can overwrite local data.
@@ -32,10 +32,10 @@
   function defaultStore(){return{id:'default',name:'RD MART',phone:'',logoData:'',createdAt:now(),isActive:true}}
   function getActiveStoreId(){return localStorage.getItem(ACTIVE_STORE)||'default'}
   function setActiveStoreId(storeId){localStorage.setItem(ACTIVE_STORE,storeId||'default');currentDB=null}
-  function makeDB(){return{version:1,createdAt:now(),settings:{martName:'RD MART',adminUser:'admin',adminPass:'',martPhone:'',storeLogo:'',storePaymentQr:'',storePaymentQrLabel:''},stores:[defaultStore()],customers:[],credits:[],sales:[],dailySales:[],partyPayments:[],cheques:[],chequeQueue:[],parties:[],estimateBills:[],activity:[],staffAccounts:[]}}
+  function makeDB(){return{version:1,createdAt:now(),settings:{martName:'RD MART',adminUser:'admin',adminPass:'',martPhone:'',storeLogo:'',storePaymentQr:'',storePaymentQrLabel:''},stores:[defaultStore()],customers:[],credits:[],sales:[],dailySales:[],partyPayments:[],cheques:[],chequeQueue:[],parties:[],estimateBills:[],activity:[],staffAccounts:[],tasks:[]}}
   function normalizeDB(db){
     if(!db||typeof db!=='object')db=makeDB();
-    ['settings','stores','customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','activity','loginEvents','staffAccounts','paymentRequests'].forEach(k=>{if(k==='settings'){db[k]=db[k]||makeDB().settings}else if(!Array.isArray(db[k]))db[k]=[]});
+    ['settings','stores','customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','activity','loginEvents','staffAccounts','paymentRequests','tasks'].forEach(k=>{if(k==='settings'){db[k]=db[k]||makeDB().settings}else if(!Array.isArray(db[k]))db[k]=[]});
     if(!db.stores.length)db.stores=[defaultStore()];
     if(db.settings.martName==='KHATA PANA'||db.settings.martName==='MartAI'||!db.settings.martName)db.settings.martName='RD MART';
     db.stores.forEach(s=>{if(s.name==='KHATA PANA'||s.name==='MartAI'||!s.name)s.name='RD MART'});
@@ -66,6 +66,7 @@
   function fromLoginEventRow(r){return{id:r.id,role:r.login_role||'',customerId:r.customer_id||'',name:r.display_name||'',phone:r.phone||'',email:r.email||'',time:r.created_at}}
   function fromStaffRow(r){return{id:r.id,email:r.email||'',name:r.full_name||'',active:r.is_active!==false,createdAt:r.created_at}}
   function fromPaymentRequestRow(r,customers){const c=customers.find(x=>x._tableId===r.customer_id)||{};return{id:r.id,storeId:r.store_id||getActiveStoreId(),customerId:c.id||r.customer_id,customer:c.name||'Customer',phone:c.phone||'',amount:num(r.amount),method:r.method||'',reference:r.reference||'',note:r.note||'',status:r.status||'pending',createdAt:r.created_at,resolvedAt:r.resolved_at}}
+  function fromTaskRow(r){return{id:r.legacy_id||r.id,_tableId:r.id,storeId:r.store_id||getActiveStoreId(),title:r.title||'',description:r.description||'',assignedToEmail:r.assigned_to_email||'',assignedToName:r.assigned_to_name||'',priority:r.priority||'normal',dueDate:r.due_date||'',status:r.status||'pending',createdBy:r.created_by||'',completedAt:r.completed_at||'',completedBy:r.completed_by||'',ackByAdmin:!!r.ack_by_admin,createdAt:r.created_at,updatedAt:r.updated_at}}
   async function loadTableDB(){
     const client=getSupabase();if(!client)return getDB();
     // Flush unsynced offline changes first — otherwise the remote load would overwrite them.
@@ -78,7 +79,7 @@
       const stores=storeResult.error?[defaultStore()]:(storeResult.data||[]).map(fromStoreRow);
       let storeId=getActiveStoreId();if(!stores.some(s=>s.id===storeId)){storeId=stores[0]?.id||'default';setActiveStoreId(storeId)}
       const byStore=q=>storeResult.error?q:q.eq('store_id',storeId);
-      const [settings,customers,credits,sales,daily,party,cheques,estimates,activity,payReqs,chequeQueueRes,partiesRes]=await Promise.all([
+      const [settings,customers,credits,sales,daily,party,cheques,estimates,activity,payReqs,chequeQueueRes,partiesRes,tasksRes]=await Promise.all([
         client.from('mart_settings').select('*').eq('id',true).maybeSingle(),
         byStore(client.from('customers').select('*')).order('created_at',{ascending:false}),
         byStore(client.from('credits').select('*')).order('credit_date',{ascending:false}),
@@ -90,7 +91,8 @@
         byStore(client.from('activity').select('*')).order('created_at',{ascending:false}).limit(60),
         byStore(client.from('payment_requests').select('*')).order('created_at',{ascending:false}).limit(120),
         byStore(client.from('cheque_queue').select('*')).order('created_at',{ascending:true}),
-        byStore(client.from('parties').select('*')).order('name',{ascending:true})
+        byStore(client.from('parties').select('*')).order('name',{ascending:true}),
+        byStore(client.from('mart_tasks').select('*')).order('created_at',{ascending:false}).limit(300)
       ]);
       [settings,customers,credits,sales,daily,party,cheques,activity].forEach(r=>{if(r.error)throw r.error});
       const customerRows=(customers.data||[]).map(fromCustomerRow);
@@ -113,6 +115,8 @@
         estimateBills:estimates.error?[]:(estimates.data||[]).map(fromEstimateRow),
         activity:(activity.data||[]).map(fromActivityRow),
         paymentRequests:payReqs.error?[]:(payReqs.data||[]).map(r=>fromPaymentRequestRow(r,customerRows)),
+        // mart_tasks table may not exist until add-tasks.sql is run — keep local copy then
+        tasks:tasksRes.error?(getDB().tasks||[]):(tasksRes.data||[]).map(fromTaskRow),
         loginEvents:[]
       });
       const logins=await client.from('login_events').select('*').order('created_at',{ascending:false}).limit(80);
@@ -216,6 +220,14 @@
       dirty.estimateBills.delete(x.id)
     }
     for(const x of db.paymentRequests||[]){const oldId=x.id;if(!dirty.paymentRequests.has(oldId))continue;const c=byId[x.customerId]||{};const customerId=c._tableId||x.customerTableId||x.customerId;if(!customerId)continue;const row={store_id:storeId,customer_id:customerId,amount:num(x.amount),method:x.method||'',reference:x.reference||'',note:x.note||'',status:x.status||'pending',created_at:x.createdAt||now(),resolved_at:x.resolvedAt||null,resolved_by:x.resolvedBy||null};const canKeepId=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(x.id||''));r=canKeepId?await client.from('payment_requests').upsert({id:x.id,...row},{onConflict:'id'}).select('id').single():await client.from('payment_requests').insert(row).select('id').single();if(r.error)throw r.error;x.id=r.data.id;dirty.paymentRequests.delete(oldId)}
+    for(const x of db.tasks||[]){
+      if(x._tableId&&!dirty.tasks.has(x.id))continue;
+      const row={legacy_id:x.id,store_id:storeId,title:x.title||'',description:x.description||'',assigned_to_email:x.assignedToEmail||'',assigned_to_name:x.assignedToName||'',priority:x.priority||'normal',due_date:x.dueDate?isoDate(x.dueDate):null,status:x.status||'pending',created_by:x.createdBy||'',completed_at:x.completedAt||null,completed_by:x.completedBy||'',ack_by_admin:!!x.ackByAdmin,created_at:x.createdAt||now(),updated_at:x.updatedAt||now()};
+      // Table may not exist until add-tasks.sql is run — keep tasks local-only then
+      try{x._tableId=await saveLegacyRow(client,'mart_tasks',row,x._tableId)}
+      catch(e){if(String(e.message||'').includes('mart_tasks')){dirty.tasks.clear();console.warn('mart_tasks table missing — run add-tasks.sql in Supabase to sync staff tasks');break}throw e}
+      dirty.tasks.delete(x.id)
+    }
     writeLocal(db);remoteEnabled=true;remoteError='';
   }
   async function loadRemoteDB(){remoteEnabled=false;remoteError='Legacy shared JSON cloud sync is disabled. Configure Supabase tables mode.';return getDB()}
@@ -244,23 +256,23 @@
     const restored=normalizeDB(JSON.parse(JSON.stringify(raw)));
     restored.version=Math.max(num(restored.version)||1,2);
     restored.restoredAt=now();
-    ['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','activity','loginEvents','staffAccounts','paymentRequests'].forEach(k=>{restored[k]=Array.isArray(restored[k])?restored[k]:[]});
-    ['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','paymentRequests'].forEach(k=>restored[k].forEach(x=>{if(!x.id)x.id=id();if(!x.createdAt)x.createdAt=now()}));
+    ['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','activity','loginEvents','staffAccounts','paymentRequests','tasks'].forEach(k=>{restored[k]=Array.isArray(restored[k])?restored[k]:[]});
+    ['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','paymentRequests','tasks'].forEach(k=>restored[k].forEach(x=>{if(!x.id)x.id=id();if(!x.createdAt)x.createdAt=now()}));
     if(!Array.isArray(restored.activity))restored.activity=[];
     restored.activity.unshift({id:id(),type:'settings',message:'Backup restored',time:now()});
     restored.activity=restored.activity.slice(0,60);
     Object.values(dirty).forEach(s=>s.clear());
     deleteQueue=[];
     if(tableMode()){
-      const tableMap={credits:'credits',sales:'sales',dailySales:'daily_sales',partyPayments:'party_payments',cheques:'cheques',chequeQueue:'cheque_queue',parties:'parties',estimateBills:'estimate_bills',paymentRequests:'payment_requests',customers:'customers'};
+      const tableMap={credits:'credits',sales:'sales',dailySales:'daily_sales',partyPayments:'party_payments',cheques:'cheques',chequeQueue:'cheque_queue',parties:'parties',estimateBills:'estimate_bills',paymentRequests:'payment_requests',customers:'customers',tasks:'mart_tasks'};
       const uuidRe=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      ['credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','paymentRequests','customers'].forEach(k=>{
+      ['credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','paymentRequests','customers','tasks'].forEach(k=>{
         const tableId=x=>x._tableId||(k==='paymentRequests'&&uuidRe.test(String(x.id||''))?x.id:'');
         const keep=new Set((restored[k]||[]).map(tableId).filter(Boolean));
         (oldDB[k]||[]).forEach(x=>{const tid=tableId(x);if(tid&&!keep.has(tid))deleteQueue.push({table:tableMap[k],tableId:tid})});
       });
     }
-    ['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','paymentRequests'].forEach(k=>(restored[k]||[]).forEach(x=>dirty[k].add(x.id)));
+    ['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','paymentRequests','tasks'].forEach(k=>(restored[k]||[]).forEach(x=>dirty[k].add(x.id)));
     settingsDirty=true;
     currentDB=restored;
     writeLocal(currentDB);
@@ -432,6 +444,34 @@
   function addEstimateBill(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const customer=String(input.customer||'').trim();if(!customer)throw new Error('Customer or party name is required');const est={id:id(),storeId:getActiveStoreId(),date:input.date||today(),customer,phone:phoneClean(input.phone||''),items:String(input.items||'').trim(),amount,validUntil:input.validUntil?isoDate(input.validUntil):'',status:estimateStatus(input.status),note:String(input.note||'').trim(),createdAt:now(),updatedAt:now()};db.estimateBills=db.estimateBills||[];db.estimateBills.unshift(est);markDirty('estimateBills',est.id);addActivity(db,`Estimate bill ${money(amount)} - ${customer}`,'estimate');saveDB(db);return est}
   function updateEstimateStatus(db,idv,status){const est=(db.estimateBills||[]).find(x=>x.id===idv);if(!est)throw new Error('Estimate bill not found');est.status=estimateStatus(status);est.updatedAt=now();markDirty('estimateBills',est.id);addActivity(db,`Estimate ${est.customer} marked ${est.status}`,'estimate');saveDB(db);return est}
   function deleteEstimateBill(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=(db.estimateBills||[]).find(x=>x.id===idv);if(!r)throw new Error('Estimate bill not found');deleteTableRow('estimate_bills',r);db.estimateBills=(db.estimateBills||[]).filter(x=>x.id!==idv);addActivity(db,`Estimate deleted: ${r.customer} ${money(r.amount)}`,'estimate');saveDB(db)}
+  // Staff tasks: admin/store admin assigns work to one staff member (or leaves
+  // assignedToEmail blank to broadcast to every active staff account); the
+  // assignee marks it done, which flips ackByAdmin off so the dashboard can
+  // surface a "needs your review" badge until the admin actually opens Tasks.
+  function taskSessionIdentity(db){const s=getSession()||{};const email=String(s.email||'').toLowerCase();const staffMember=email?(db?.staffAccounts||[]).find(x=>String(x.email).toLowerCase()===email):null;const label=s.role==='admin'?'Admin':s.role==='store_admin'?'Store Admin':(s.name||staffMember?.name||staffMember?.email||email||'Staff');return{email,name:label}}
+  function addTask(db,input){
+    if(isStaffSession())throw new Error('Staff cannot assign tasks');
+    const title=String(input.title||'').trim();if(!title)throw new Error('Task title is required');
+    const priority=['low','normal','high'].includes(String(input.priority))?String(input.priority):'normal';
+    const assignedToEmail=String(input.assignedToEmail||'').trim().toLowerCase();
+    const staffMember=assignedToEmail?(db.staffAccounts||[]).find(s=>String(s.email).toLowerCase()===assignedToEmail):null;
+    if(assignedToEmail&&!staffMember)throw new Error('Select a valid staff member');
+    const who=taskSessionIdentity(db);
+    const t={id:id(),storeId:getActiveStoreId(),title,description:String(input.description||'').trim(),assignedToEmail,assignedToName:staffMember?(staffMember.name||staffMember.email):'',priority,dueDate:input.dueDate?isoDate(input.dueDate):'',status:'pending',createdBy:who.name,completedAt:'',completedBy:'',ackByAdmin:false,createdAt:now(),updatedAt:now()};
+    db.tasks=db.tasks||[];db.tasks.unshift(t);markDirty('tasks',t.id);addActivity(db,`Task assigned: ${t.title}${t.assignedToName?' → '+t.assignedToName:' (all staff)'}`,'task');saveDB(db);return t;
+  }
+  function completeTask(db,idv){
+    const t=(db.tasks||[]).find(x=>x.id===idv);if(!t)throw new Error('Task not found');
+    if(t.status==='done')return t;
+    const s=getSession()||{};
+    if(s.role==='staff'&&t.assignedToEmail&&t.assignedToEmail!==String(s.email||'').toLowerCase())throw new Error('This task is not assigned to you');
+    const who=taskSessionIdentity(db);
+    t.status='done';t.completedAt=now();t.completedBy=who.name;t.ackByAdmin=false;t.updatedAt=now();
+    markDirty('tasks',t.id);addActivity(db,`Task completed: ${t.title} — by ${t.completedBy}`,'task');saveDB(db);return t;
+  }
+  function reopenTask(db,idv){if(isStaffSession())throw new Error('Staff cannot reopen tasks');const t=(db.tasks||[]).find(x=>x.id===idv);if(!t)throw new Error('Task not found');t.status='pending';t.completedAt='';t.completedBy='';t.ackByAdmin=false;t.updatedAt=now();markDirty('tasks',t.id);addActivity(db,`Task reopened: ${t.title}`,'task');saveDB(db);return t}
+  function deleteTask(db,idv){if(isStaffSession())throw new Error('Staff cannot delete tasks');const r=(db.tasks||[]).find(x=>x.id===idv);if(!r)throw new Error('Task not found');deleteTableRow('mart_tasks',r);db.tasks=(db.tasks||[]).filter(x=>x.id!==idv);dirty.tasks.delete(idv);persistPending();addActivity(db,`Task deleted: ${r.title}`,'task');saveDB(db);return r}
+  function acknowledgeTasks(db){if(isStaffSession())return 0;const targets=(db.tasks||[]).filter(x=>x.status==='done'&&!x.ackByAdmin);if(!targets.length)return 0;targets.forEach(t=>{t.ackByAdmin=true;t.updatedAt=now();markDirty('tasks',t.id)});saveDB(db);return targets.length}
   function saveSettings(db,input){if(!isMainAdminSession())throw new Error('Only main admin can change settings');db.settings.martName=String(input.martName||db.settings.martName||'RD MART').trim();db.settings.martPhone=phoneClean(input.martPhone||db.settings.martPhone||'');const st=(db.stores||[]).find(x=>x.id===getActiveStoreId());if(st){st.name=db.settings.martName;st.phone=db.settings.martPhone}db.settings.adminUser=String(input.adminUser||db.settings.adminUser||'admin').trim();if(input.adminPass)db.settings.adminPass=String(input.adminPass);settingsDirty=true;addActivity(db,'Settings updated','settings');saveDB(db)}
   async function saveStoreLogo(logoData){const safe=logoData?safeImageDataUrl(logoData):'';if(logoData&&!safe)throw new Error('Logo must be a valid JPG, PNG or WebP image');const db=getDB();db.settings.storeLogo=safe;const storeId=getActiveStoreId();const store=(db.stores||[]).find(s=>s.id===storeId);if(store)store.logoData=safe;if(tableMode()){const client=getSupabase();if(client){const r=await client.from('mart_stores').update({logo_data:safe,updated_at:now()}).eq('id',storeId);if(r.error)throw r.error}}saveDB(db)}
   async function saveStoreQr(qrData,label){const safe=qrData?safeImageDataUrl(qrData):'';if(qrData&&!safe)throw new Error('Payment QR must be a valid JPG, PNG or WebP image');label=String(label||'').trim().slice(0,80);const db=getDB();db.settings.storePaymentQr=safe;db.settings.storePaymentQrLabel=label;const storeId=getActiveStoreId();const store=(db.stores||[]).find(s=>s.id===storeId);if(store){store.qrData=safe;store.qrLabel=label}if(tableMode()){const client=getSupabase();if(client){const r=await client.from('mart_stores').update({qr_data:safe,qr_label:label,updated_at:now()}).eq('id',storeId);if(r.error)throw r.error}}saveDB(db)}
@@ -451,7 +491,7 @@
     if(!tableMode()||realtimeChannel)return false;
     const client=getSupabase();if(!client||typeof client.channel!=='function')return false;
     const s=getSession();if(!(s?.role==='admin'||s?.role==='staff'||s?.role==='store_admin'))return false;
-    const tables=['customers','credits','sales','daily_sales','party_payments','cheques','cheque_queue','parties','estimate_bills','payment_requests','mart_stores'];
+    const tables=['customers','credits','sales','daily_sales','party_payments','cheques','cheque_queue','parties','estimate_bills','payment_requests','mart_stores','mart_tasks'];
     realtimeChannel=client.channel('martai-live');
     tables.forEach(t=>realtimeChannel.on('postgres_changes',{event:'*',schema:'public',table:t},()=>{
       if(Date.now()-lastLocalWriteAt<3000)return; // our own write echoing back
@@ -495,7 +535,7 @@
   }
   window.addEventListener('online',()=>{const s=getSession();if(tableMode()&&hasPending()&&(s?.role==='admin'||s?.role==='staff'||s?.role==='store_admin'))queueRemoteSave(getDB())});
   // PWA: always check for a fresh worker and reload once when a new release takes control.
-  if('serviceWorker' in navigator){let refreshing=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;location.reload()});window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=34',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})})}
+  if('serviceWorker' in navigator){let refreshing=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;location.reload()});window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=35',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})})}
   const ready=initialize();
-  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,safeImageDataUrl,phoneClean,getDB,saveDB,markDirty,resetDB,validateRestoreBackup,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateChequeStatus,postponeCheque,deleteCheque,addChequeQueue,deleteChequeQueue,addParty,deleteParty,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,csvEscape,download,wa,byDate,tilt3d};
+  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,safeImageDataUrl,phoneClean,getDB,saveDB,markDirty,resetDB,validateRestoreBackup,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateChequeStatus,postponeCheque,deleteCheque,addChequeQueue,deleteChequeQueue,addParty,deleteParty,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,addTask,completeTask,reopenTask,deleteTask,acknowledgeTasks,csvEscape,download,wa,byDate,tilt3d};
 })();

@@ -82,11 +82,21 @@ const T={
   askAmount:L('💵 Amount? (e.g. 500)','💵 रकम कति? (जस्तै ५००)','💵 रकम कितनी? (जैसे 500)'),
   askItems:L('🛒 Items / note? (or type <i>skip</i>)','🛒 सामान / नोट? (नभए <i>skip</i> लेख्नुहोस्)','🛒 सामान / नोट? (नहीं तो <i>skip</i> लिखें)'),
   askParty:L('🧾 Customer/party name? (or type <i>skip</i> for walk-in)','🧾 ग्राहक/पार्टीको नाम? (नभए <i>skip</i>)','🧾 ग्राहक/पार्टी का नाम? (नहीं तो <i>skip</i>)'),
+  askOptionalPhone:L('📱 Phone number? (or type <i>skip</i>)','📱 फोन नम्बर? (नभए <i>skip</i>)','📱 फोन नंबर? (नहीं तो <i>skip</i>)'),
+  askNote:L('📝 Note? (or type <i>skip</i>)','📝 नोट? (नभए <i>skip</i>)','📝 नोट? (नहीं तो <i>skip</i>)'),
+  askRoom:L('🏠 Which room? (1, 2, 3 or 4)','🏠 कुन कोठा? (१, २, ३ वा ४)','🏠 कौन-सा कमरा? (1, 2, 3 या 4)'),
+  askTenant:L('👤 Tenant name?','👤 भाडामा बस्ने व्यक्तिको नाम?','👤 किरायेदार का नाम?'),
+  askChargeType:L('🏠 Charge type? (rent / electricity / water / other)','🏠 शुल्कको प्रकार? (भाडा / बिजुली / पानी / अन्य)','🏠 शुल्क का प्रकार? (किराया / बिजली / पानी / अन्य)'),
+  askChequeDate:L('📅 Cheque date? Use BS <b>2083-03-15</b>, AD <b>2026-06-29</b>, or say <b>today</b>.','📅 चेक मिति? BS <b>2083-03-15</b>, AD <b>2026-06-29</b>, वा <b>आज</b> भन्नुहोस्।','📅 चेक की तारीख? BS <b>2083-03-15</b>, AD <b>2026-06-29</b>, या <b>आज</b> कहें।'),
+  askNewDate:L('📅 New later date? Use BS or AD format.','📅 पछिको नयाँ मिति? BS वा AD लेख्नुहोस्।','📅 बाद की नई तारीख? BS या AD लिखें।'),
   badPhone:L('⚠️ That is not a valid 10-digit phone. Try again.','⚠️ १० अङ्कको सही फोन भएन। फेरि भन्नुहोस्।','⚠️ सही 10 अंकों का फोन नहीं है। फिर बताइए।'),
   badPin:L('⚠️ PIN must be exactly 4 digits. Try again.','⚠️ PIN ठ्याक्कै ४ अङ्ककै हुनुपर्छ। फेरि भन्नुहोस्।','⚠️ PIN ठीक 4 अंकों का होना चाहिए। फिर बताइए।'),
   badAmount:L('⚠️ Please give an amount greater than 0.','⚠️ ० भन्दा बढी रकम भन्नुहोस्।','⚠️ 0 से ज़्यादा रकम बताइए।'),
   badName:L('⚠️ Name is too short. Try again.','⚠️ नाम मिलेन। फेरि भन्नुहोस्।','⚠️ नाम बहुत छोटा है। फिर बताइए।'),
-  cfCustomer:L('Add customer <b>{name}</b> · 📱 {phone} · PIN {pin}. Save?','ग्राहक <b>{name}</b> · 📱 {phone} · PIN {pin} थप्ने। सेभ गरूँ?','ग्राहक <b>{name}</b> · 📱 {phone} · PIN {pin} जोड़ूँ। सेव करूँ?'),
+  badRoom:L('⚠️ Room must be 1, 2, 3 or 4.','⚠️ कोठा १, २, ३ वा ४ हुनुपर्छ।','⚠️ कमरा 1, 2, 3 या 4 होना चाहिए।'),
+  badChargeType:L('⚠️ Choose rent, electricity, water or other.','⚠️ भाडा, बिजुली, पानी वा अन्य छान्नुहोस्।','⚠️ किराया, बिजली, पानी या अन्य चुनें।'),
+  badDate:L('⚠️ I could not read that date. Use YYYY-MM-DD (BS or AD).','⚠️ मिति बुझिनँ। YYYY-MM-DD (BS वा AD) लेख्नुहोस्।','⚠️ तारीख समझ नहीं आई। YYYY-MM-DD (BS या AD) लिखें।'),
+  cfCustomer:L('Add customer <b>{name}</b> · 📱 {phone} · PIN ••••. Save?','ग्राहक <b>{name}</b> · 📱 {phone} · PIN •••• थप्ने। सेभ गरूँ?','ग्राहक <b>{name}</b> · 📱 {phone} · PIN •••• जोड़ूँ। सेव करूँ?'),
   cfCredit:L('Add credit of <b>{amt}</b> for <b>{name}</b>{items}. Save?','<b>{name}</b> लाई <b>{amt}</b> उधारो{items} लेख्ने। सेभ गरूँ?','<b>{name}</b> के नाम <b>{amt}</b> उधार{items} लिखूँ। सेव करूँ?'),
   cfPayment:L('Record payment of <b>{amt}</b> from <b>{name}</b>. Save?','<b>{name}</b> बाट <b>{amt}</b> भुक्तानी लेख्ने। सेभ गरूँ?','<b>{name}</b> से <b>{amt}</b> भुगतान दर्ज करूँ। सेव करूँ?'),
   cfSale:L('Record sale of <b>{amt}</b> ({party}). Save?','<b>{amt}</b> को बिक्री ({party}) लेख्ने। सेभ गरूँ?','<b>{amt}</b> की बिक्री ({party}) दर्ज करूँ। सेव करूँ?'),
@@ -95,6 +105,18 @@ const T={
   donePayment:L('✅ Payment of <b>{amt}</b> recorded. <b>{name}</b> now owes <b>{bal}</b>.','✅ <b>{amt}</b> भुक्तानी लेखियो। अब <b>{name}</b> को बाँकी <b>{bal}</b>।','✅ <b>{amt}</b> भुगतान दर्ज। अब <b>{name}</b> का बकाया <b>{bal}</b>।'),
   overPaid:L('(Note: {extra} was more than the dues, so only the due part was applied.)','(नोट: {extra} बाँकीभन्दा बढी थियो, बाँकी जति मात्र मिलान भयो।)','(नोट: {extra} बकाया से ज़्यादा था, केवल बकाया जितना ही लगा।)'),
   doneSale:L('✅ Sale of <b>{amt}</b> recorded for {party}.','✅ {party} को <b>{amt}</b> बिक्री लेखियो।','✅ {party} की <b>{amt}</b> बिक्री दर्ज हो गई।'),
+  cfPartyPayment:L('Record party payment of <b>{amt}</b> to <b>{party}</b> via {method}{ref}. Save?','<b>{party}</b> लाई {method} बाट <b>{amt}</b> भुक्तानी लेख्ने{ref}। सेभ गरूँ?','<b>{party}</b> को {method} से <b>{amt}</b> भुगतान दर्ज करूँ{ref}?'),
+  donePartyPayment:L('✅ Party payment of <b>{amt}</b> to <b>{party}</b> saved.','✅ <b>{party}</b> लाई <b>{amt}</b> भुक्तानी सेभ भयो।','✅ <b>{party}</b> को <b>{amt}</b> भुगतान सेव हो गया।'),
+  cfPartyAccount:L('Create party account <b>{party}</b>{phone}?','पार्टी खाता <b>{party}</b>{phone} बनाउने?','पार्टी खाता <b>{party}</b>{phone} बनाऊँ?'),
+  donePartyAccount:L('✅ Party account <b>{party}</b> created.','✅ पार्टी खाता <b>{party}</b> बन्यो।','✅ पार्टी खाता <b>{party}</b> बन गया।'),
+  cfChequeQueue:L('Add <b>{party}</b>{amt} to the cheque-to-write queue?','<b>{party}</b>{amt} लाई लेख्न बाँकी चेक सूचीमा थप्ने?','<b>{party}</b>{amt} को लिखने वाले चेक की सूची में जोड़ूँ?'),
+  doneChequeQueue:L('✅ <b>{party}</b> added to the cheque queue.','✅ <b>{party}</b> चेक सूचीमा थपियो।','✅ <b>{party}</b> चेक सूची में जुड़ गया।'),
+  cfRoomAccount:L('Create Room <b>{room}</b> account for <b>{tenant}</b> · 📱 {phone} · PIN ••••?','कोठा <b>{room}</b> को खाता <b>{tenant}</b> · 📱 {phone} · PIN •••• बनाउने?','कमरा <b>{room}</b> का खाता <b>{tenant}</b> · 📱 {phone} · PIN •••• बनाऊँ?'),
+  doneRoomAccount:L('✅ Room <b>{room}</b> tenant account created.','✅ कोठा <b>{room}</b> को खाता बन्यो।','✅ कमरा <b>{room}</b> का किरायेदार खाता बन गया।'),
+  cfRoomCharge:L('Add <b>{type}</b> charge of <b>{amt}</b> to Room <b>{room}</b>{note}?','कोठा <b>{room}</b> मा <b>{type}</b> <b>{amt}</b>{note} थप्ने?','कमरा <b>{room}</b> में <b>{type}</b> <b>{amt}</b>{note} जोड़ूँ?'),
+  doneRoomCharge:L('✅ Room <b>{room}</b> charge of <b>{amt}</b> saved.','✅ कोठा <b>{room}</b> को <b>{amt}</b> शुल्क सेभ भयो।','✅ कमरा <b>{room}</b> का <b>{amt}</b> शुल्क सेव हो गया।'),
+  cfRoomPayment:L('Apply payment of <b>{amt}</b> to Room <b>{room}</b>{note}?','कोठा <b>{room}</b> मा <b>{amt}</b> भुक्तानी{note} मिलाउने?','कमरा <b>{room}</b> में <b>{amt}</b> भुगतान{note} लगाऊँ?'),
+  doneRoomPayment:L('✅ Payment of <b>{amt}</b> applied to Room <b>{room}</b>.','✅ कोठा <b>{room}</b> मा <b>{amt}</b> भुक्तानी मिल्यो।','✅ कमरा <b>{room}</b> में <b>{amt}</b> भुगतान लग गया।'),
   helpDash:L('Here is what I can do 👇<br>• <b>"Today\'s sales"</b> — daily summary<br>• <b>"Total dues"</b> / <b>"Top dues"</b><br>• <b>"Balance of Ram"</b> — any customer<br>• <b>"Add customer"</b>, <b>"Add credit"</b>, <b>"Record payment"</b>, <b>"Add sale"</b><br>• <b>"Open reports"</b> (any page)<br>• <b>"Backup"</b>, <b>"Export CSV"</b>, <b>"Sync"</b>, <b>"Dark/Light theme"</b><br>• <b>"Send reminder"</b> — WhatsApp dues reminder<br>• <b>"Pending requests"</b>, <b>"Cheques"</b>, <b>"This month"</b><br>🗣 Talk to me in English, नेपाली or हिंदी — typed or spoken!',
     'म यी काम गर्न सक्छु 👇<br>• <b>"आजको बिक्री"</b> — दैनिक हिसाब<br>• <b>"जम्मा उधारो"</b> / <b>"धेरै उधारो"</b><br>• <b>"राम को बाँकी"</b> — जुनसुकै ग्राहक<br>• <b>"नयाँ ग्राहक"</b>, <b>"उधारो थप्ने"</b>, <b>"भुक्तानी लेख्ने"</b>, <b>"बिक्री थप्ने"</b><br>• <b>"रिपोर्ट खोल"</b> (जुनसुकै पेज)<br>• <b>"ब्याकअप"</b>, <b>"CSV"</b>, <b>"सिंक"</b>, <b>"डार्क/लाइट थिम"</b><br>• <b>"रिमाइन्डर पठाऊ"</b> — WhatsApp<br>• <b>"पेन्डिङ रिपोर्ट"</b>, <b>"चेक"</b>, <b>"यो महिना"</b><br>🗣 नेपाली, हिंदी वा English — लेखेर वा बोलेर!',
     'मैं ये काम कर सकता हूँ 👇<br>• <b>"आज की बिक्री"</b> — दैनिक हिसाब<br>• <b>"कुल उधार"</b> / <b>"सबसे ज़्यादा उधार"</b><br>• <b>"राम का बकाया"</b> — कोई भी ग्राहक<br>• <b>"नया ग्राहक"</b>, <b>"उधार जोड़ें"</b>, <b>"भुगतान दर्ज"</b>, <b>"बिक्री जोड़ें"</b><br>• <b>"रिपोर्ट खोलो"</b> (कोई भी पेज)<br>• <b>"बैकअप"</b>, <b>"CSV"</b>, <b>"सिंक"</b>, <b>"डार्क/लाइट थीम"</b><br>• <b>"रिमाइंडर भेजो"</b> — WhatsApp<br>• <b>"पेंडिंग रिपोर्ट"</b>, <b>"चेक"</b>, <b>"इस महीने"</b><br>🗣 हिंदी, नेपाली या English — लिखकर या बोलकर!'),
@@ -115,7 +137,7 @@ const T={
   briefSales:L('Sales today','आजको बिक्री','आज की बिक्री'),
   briefDues:L('Outstanding dues','उधारो बाँकी','बकाया उधार'),
   briefReqs:L('Payment reports waiting','भुक्तानी रिपोर्ट पर्खाइमा','भुगतान रिपोर्ट प्रतीक्षा में'),
-  briefOverdue:L('Customers overdue 7+ days','७+ दिन ढिला ग्राहक','7+ दिन लेट ग्राहक'),
+  briefOverdue:L('Overdue credit accounts','म्याद नाघेका उधारो खाता','मियाद पार उधार खाते'),
   briefCheques:L('Cheques due within 7 days','७ दिनभित्रका चेक','7 दिन में आने वाले चेक'),
   briefClear:L('All clear — nothing needs attention right now. ✅','सबै ठिकठाक — अहिले केही हेर्नु पर्दैन। ✅','सब ठीक — अभी कुछ देखना नहीं है। ✅'),
   wkHead:L('📈 <b>Last 7 days</b> (vs previous 7):','📈 <b>पछिल्लो ७ दिन</b> (अघिल्लो ७ सँग तुलना):','📈 <b>पिछले 7 दिन</b> (पिछले 7 से तुलना):'),
@@ -126,7 +148,7 @@ const T={
   wkUp:L('⬆ Up {p}% from last week — great going!','⬆ गत हप्ताभन्दा {p}% बढी — बधाई छ!','⬆ पिछले हफ्ते से {p}% ज़्यादा — बहुत बढ़िया!'),
   wkDown:L('⬇ Down {p}% from last week.','⬇ गत हप्ताभन्दा {p}% कम।','⬇ पिछले हफ्ते से {p}% कम।'),
   overdueHead:L('⏰ Overdue customers (oldest unpaid credit):','⏰ ढिला भएका ग्राहक (सबैभन्दा पुरानो नतिरेको उधारो):','⏰ लेट ग्राहक (सबसे पुराना बिना चुकाया उधार):'),
-  overdueNone:L('✅ Nobody is overdue by 7+ days. Well managed!','✅ ७+ दिन ढिला कोही छैन। राम्रो व्यवस्थापन!','✅ 7+ दिन से लेट कोई नहीं। बढ़िया प्रबंधन!'),
+  overdueNone:L('✅ No credit is overdue right now. Well managed!','✅ अहिले कुनै उधारो म्याद नाघेको छैन। राम्रो व्यवस्थापन!','✅ अभी कोई उधार मियाद से बाहर नहीं है। बढ़िया प्रबंधन!'),
   daysWord:L('{n} days','{n} दिन','{n} दिन'),
   profileHead:L('👤 <b>{name}</b>','👤 <b>{name}</b>','👤 <b>{name}</b>'),
   pfPhone:L('Phone','फोन','फोन'),
@@ -152,10 +174,16 @@ const T={
   badDaily:L('⚠️ I could not read any amounts. Try like: <b>cash 5000 pos 2000</b>','⚠️ रकम बुझिनँ। यसरी भन्नुहोस्: <b>नगद 5000 पोस 2000</b>','⚠️ रकम समझ नहीं आई। ऐसे बताइए: <b>नकद 5000 पोस 2000</b>'),
   askMethod:L('💳 Paid via? (eSewa / Khalti / FonePay / Bank / Cash)','💳 केबाट तिर्नुभयो? (eSewa / Khalti / FonePay / Bank / Cash)','💳 किससे चुकाया? (eSewa / Khalti / FonePay / Bank / Cash)'),
   askReference:L('🧾 Transaction ID / note? (or type <i>skip</i>)','🧾 ट्रान्ज्याक्सन ID / नोट? (नभए <i>skip</i>)','🧾 ट्रांज़ैक्शन ID / नोट? (नहीं तो <i>skip</i>)'),
-  cfCheque:L('Add cheque <b>{no}</b> · {party} · <b>{amt}</b>{bank}. Save?','चेक <b>{no}</b> · {party} · <b>{amt}</b>{bank} थप्ने। सेभ गरूँ?','चेक <b>{no}</b> · {party} · <b>{amt}</b>{bank} जोड़ूँ। सेव करूँ?'),
-  doneCheque:L('✅ Cheque <b>{no}</b> for <b>{amt}</b> saved (status: hold).','✅ चेक <b>{no}</b>, <b>{amt}</b> सेभ भयो (स्थिति: होल्ड)।','✅ चेक <b>{no}</b>, <b>{amt}</b> सेव हो गया (स्थिति: होल्ड)।'),
+  cfCheque:L('Add cheque <b>{no}</b> · {party} · <b>{amt}</b>{bank} · {date}. Save?','चेक <b>{no}</b> · {party} · <b>{amt}</b>{bank} · {date} थप्ने। सेभ गरूँ?','चेक <b>{no}</b> · {party} · <b>{amt}</b>{bank} · {date} जोड़ूँ। सेव करूँ?'),
+  doneCheque:L('✅ Cheque <b>{no}</b> for <b>{amt}</b> saved for {date} (status: hold).','✅ चेक <b>{no}</b>, <b>{amt}</b>, {date} का लागि सेभ भयो (होल्ड)।','✅ चेक <b>{no}</b>, <b>{amt}</b>, {date} के लिए सेव हो गया (होल्ड)।'),
+  cfChequeStatus:L('Mark cheque <b>{no}</b> · {party} · <b>{amt}</b> as <b>{status}</b>?','चेक <b>{no}</b> · {party} · <b>{amt}</b> लाई <b>{status}</b> गर्ने?','चेक <b>{no}</b> · {party} · <b>{amt}</b> को <b>{status}</b> करूँ?'),
+  cfPostpone:L('Move cheque <b>{no}</b> · {party} from {oldDate} to <b>{newDate}</b>{reason}?','चेक <b>{no}</b> · {party} लाई {oldDate} बाट <b>{newDate}</b>{reason} सार्ने?','चेक <b>{no}</b> · {party} को {oldDate} से <b>{newDate}</b>{reason} करूँ?'),
+  donePostpone:L('✅ Cheque <b>{no}</b> moved to {date}.','✅ चेक <b>{no}</b> {date} मा सारियो।','✅ चेक <b>{no}</b> को {date} पर कर दिया।'),
   cfEstimate:L('Create estimate of <b>{amt}</b> for <b>{party}</b>{items}. Save?','<b>{party}</b> का लागि <b>{amt}</b> को इस्टिमेट{items} बनाउने। सेभ गरूँ?','<b>{party}</b> के लिए <b>{amt}</b> का एस्टीमेट{items} बनाऊँ। सेव करूँ?'),
   doneEstimate:L('✅ Estimate bill of <b>{amt}</b> created for {party} (status: draft).','✅ {party} को <b>{amt}</b> इस्टिमेट बन्यो (स्थिति: draft)।','✅ {party} का <b>{amt}</b> एस्टीमेट बन गया (स्थिति: draft)।'),
+  cfEstimateStatus:L('Mark estimate for <b>{party}</b> · <b>{amt}</b> as <b>{status}</b>?','<b>{party}</b> को <b>{amt}</b> इस्टिमेट <b>{status}</b> गर्ने?','<b>{party}</b> के <b>{amt}</b> एस्टीमेट को <b>{status}</b> करूँ?'),
+  doneEstimateStatus:L('✅ Estimate for <b>{party}</b> marked <b>{status}</b>.','✅ <b>{party}</b> को इस्टिमेट <b>{status}</b> भयो।','✅ <b>{party}</b> का एस्टीमेट <b>{status}</b> हो गया।'),
+  cfPaymentRequest:L('{action} payment report of <b>{amt}</b> from <b>{party}</b>?','<b>{party}</b> को <b>{amt}</b> भुक्तानी रिपोर्ट {action} गर्ने?','<b>{party}</b> की <b>{amt}</b> भुगतान रिपोर्ट {action} करूँ?'),
   cfDaily:L('Save today\'s daily sales — total <b>{amt}</b>?<br>{rows}','आजको दैनिक बिक्री सेभ गर्ने — जम्मा <b>{amt}</b>?<br>{rows}','आज की दैनिक बिक्री सेव करूँ — कुल <b>{amt}</b>?<br>{rows}'),
   doneDaily:L('✅ Daily sales saved! Total <b>{amt}</b> for {d}.','✅ दैनिक बिक्री सेभ भयो! {d} को जम्मा <b>{amt}</b>।','✅ दैनिक बिक्री सेव हो गई! {d} का कुल <b>{amt}</b>।'),
   cfLimit:L('Set credit limit of <b>{amt}</b> for <b>{name}</b>?','<b>{name}</b> को उधारो सीमा <b>{amt}</b> राख्ने?','<b>{name}</b> की उधार सीमा <b>{amt}</b> रखूँ?'),
@@ -176,9 +204,23 @@ const T={
   cfCustPay:L('Send payment report: <b>{amt}</b> via {method}{ref}?','भुक्तानी रिपोर्ट पठाउने: <b>{amt}</b>, {method}{ref}?','भुगतान रिपोर्ट भेजूँ: <b>{amt}</b>, {method}{ref}?'),
   goodMorning:L('Good morning','शुभ प्रभात','सुप्रभात'),
   goodAfternoon:L('Good afternoon','नमस्कार','नमस्कार'),
-  goodEvening:L('Good evening','शुभ सन्ध्या','शुभ संध्या')
+  goodEvening:L('Good evening','शुभ सन्ध्या','शुभ संध्या'),
+  cfPartyPay:L('Pay <b>{amt}</b> to party <b>{party}</b> via {method}{ref}. Save?','पार्टी <b>{party}</b> लाई <b>{amt}</b> {method} बाट तिर्ने{ref}। सेभ गरूँ?','पार्टी <b>{party}</b> को <b>{amt}</b> {method} से चुकाऊँ{ref}। सेव करूँ?'),
+  donePartyPay:L('✅ Payment of <b>{amt}</b> to <b>{party}</b> recorded.','✅ <b>{party}</b> लाई <b>{amt}</b> भुक्तानी लेखियो।','✅ <b>{party}</b> को <b>{amt}</b> भुगतान दर्ज हो गया।'),
+  cfAddParty:L('Add party account <b>{name}</b>. Save?','पार्टी खाता <b>{name}</b> थप्ने। सेभ गरूँ?','पार्टी खाता <b>{name}</b> जोड़ूँ। सेव करूँ?'),
+  doneAddParty:L('✅ Party account <b>{name}</b> added.','✅ पार्टी खाता <b>{name}</b> थपियो।','✅ पार्टी खाता <b>{name}</b> जुड़ गया।'),
+  cfChequeQueue:L('Add <b>{party}</b> to the cheque-to-write list?','<b>{party}</b> लाई चेक लेख्न बाँकी सूचीमा राख्ने?','<b>{party}</b> को चेक लिखना-बाकी सूची में डालूँ?'),
+  doneChequeQueue:L('✅ Added <b>{party}</b> to the cheque-to-write list.','✅ <b>{party}</b> चेक लेख्न बाँकी सूचीमा थपियो।','✅ <b>{party}</b> चेक लिखना-बाकी सूची में जुड़ गया।'),
+  chequePickPostpone:L('Which cheque do you want to postpone? 👇','कुन चेक पछि सार्ने? 👇','कौन-सा चेक टालना है? 👇'),
+  cfPostpone:L('Postpone cheque <b>{no}</b> ({party}) from {old} to <b>{new}</b>?','चेक <b>{no}</b> ({party}) {old} बाट <b>{new}</b> मा सार्ने?','चेक <b>{no}</b> ({party}) {old} से <b>{new}</b> पर टालूँ?'),
+  donePostpone:L('✅ Cheque <b>{no}</b> postponed to <b>{d}</b>.','✅ चेक <b>{no}</b> <b>{d}</b> मा सारियो।','✅ चेक <b>{no}</b> <b>{d}</b> पर टल गया।'),
+  cfResetPin:L('Reset PIN for <b>{name}</b> to <b>{pin}</b>?','<b>{name}</b> को PIN <b>{pin}</b> मा फेर्ने?','<b>{name}</b> का PIN <b>{pin}</b> कर दूँ?'),
+  doneResetPin:L('✅ PIN for <b>{name}</b> reset. They can login with the new PIN now.','✅ <b>{name}</b> को PIN फेरियो। उहाँ अब नयाँ PIN ले लगइन गर्न सक्नुहुन्छ।','✅ <b>{name}</b> का PIN बदल गया। वे अब नए PIN से लॉगिन कर सकते हैं।'),
+  cfUndo:L('Delete this entry — {label}?','यो प्रविष्टि मेटाउने — {label}?','यह प्रविष्टि हटाऊँ — {label}?'),
+  doneUndo:L('✅ Entry deleted.','✅ प्रविष्टि मेटियो।','✅ प्रविष्टि हट गई।'),
+  undoNone:L('😕 No matching entry found to undo.','😕 मेटाउन मिल्ने प्रविष्टि भेटिएन।','😕 हटाने लायक कोई प्रविष्टि नहीं मिली।')
 };
-const PAGE_LABEL={dashboard:L('Dashboard','ड्यासबोर्ड','डैशबोर्ड'),customers:L('Customers','ग्राहक','ग्राहक'),credits:L('Credit Book','उधारो खाता','उधार खाता'),daily:L('Daily Sales','दैनिक बिक्री','दैनिक बिक्री'),payments:L('Party Payments','पार्टी भुक्तानी','पार्टी भुगतान'),cheques:L('Cheques','चेक','चेक'),estimates:L('Estimates','इस्टिमेट','एस्टीमेट'),reports:L('Reports','रिपोर्ट','रिपोर्ट'),followup:L('Follow-Up','फलो-अप','फॉलो-अप'),settings:L('Settings','सेटिङ','सेटिंग')};
+const PAGE_LABEL={dashboard:L('Dashboard','ड्यासबोर्ड','डैशबोर्ड'),customers:L('Customers','ग्राहक','ग्राहक'),credits:L('Credit Book','उधारो खाता','उधार खाता'),daily:L('Daily Sales','दैनिक बिक्री','दैनिक बिक्री'),payments:L('Party Payments','पार्टी भुक्तानी','पार्टी भुगतान'),cheques:L('Cheques','चेक','चेक'),estimates:L('Estimates','इस्टिमेट','एस्टीमेट'),rooms:L('Room Rent','कोठा भाडा','कमरा किराया'),reports:L('Reports','रिपोर्ट','रिपोर्ट'),followup:L('Follow-Up','फलो-अप','फॉलो-अप'),settings:L('Settings','सेटिङ','सेटिंग')};
 const CHIPS={
   dash:[
     {t:L('📋 Briefing','📋 ब्रिफिङ','📋 ब्रीफिंग')},
@@ -460,13 +502,47 @@ function startListen(){
 
 /* ---------- text utils ---------- */
 function digitsAscii(s){return String(s||'').replace(/[०-९]/g,d=>'०१२३४५६७८९'.indexOf(d))}
-function norm(s){return digitsAscii(s).toLowerCase().replace(/[?!।,.:;'"“”()\[\]]/g,' ').replace(/\s+/g,' ').trim()}
-function has(text,words){return words.some(w=>text.includes(w))}
-function findPhoneIn(text){const m=text.replace(/[\s-]/g,' ').match(/\b\d{10}\b/);return m?m[0]:''}
+/* Keep punctuation inside numbers so 5,000 and 125.50 stay intact, while
+   punctuation elsewhere still behaves like a word separator. */
+function norm(s){
+  const numbers=[];
+  let out=digitsAscii(s).toLowerCase().replace(/-?\d[\d,]*(?:\.\d+)?/g,m=>` zznum${numbers.push(m)-1}zz `);
+  out=out.replace(/[?!।,.:;'"“”()\[\]{}–—/\\-]/g,' ').replace(/\s+/g,' ').trim();
+  return out.replace(/zznum(\d+)zz/g,(_,i)=>numbers[Number(i)]).replace(/\s+/g,' ').trim();
+}
+function oneEditAway(a,b){
+  if(a===b)return true;if(Math.abs(a.length-b.length)>1)return false;
+  let i=0,j=0,diff=0;
+  while(i<a.length&&j<b.length){if(a[i]===b[j]){i++;j++;continue}if(++diff>1)return false;if(a.length>b.length)i++;else if(b.length>a.length)j++;else{i++;j++}}
+  return diff+(i<a.length||j<b.length?1:0)<=1;
+}
+/* ASCII keywords use token boundaries (plus one-character typo tolerance for
+   longer words). This prevents "update" matching "date" and "unpaid"
+   matching "paid". Devanagari stems intentionally keep substring matching. */
+function has(text,words){
+  const clean=norm(text),tokens=clean.split(' ').filter(Boolean);
+  return words.some(raw=>{
+    const w=norm(raw);if(!w)return false;
+    if(w.includes(' '))return (` ${clean} `).includes(` ${w} `);
+    if(/[ऀ-ॿ]/.test(w))return clean.includes(w);
+    if(tokens.includes(w))return true;
+    return /^[a-z]+$/.test(w)&&w.length>=5&&tokens.some(tok=>/^[a-z]+$/.test(tok)&&tok.length>=4&&oneEditAway(tok,w));
+  });
+}
+function phoneMatch(text){return digitsAscii(text).match(/(?:\+?977[\s-]*)?9(?:[\s-]*\d){9}(?!\d)/)}
+function findPhoneIn(text){const m=phoneMatch(text);if(!m)return'';const ds=m[0].replace(/\D/g,'');return ds.length===13&&ds.startsWith('977')?ds.slice(3):ds.slice(-10)}
 function parseAmount(text){
-  const phone=findPhoneIn(text);
-  const all=text.match(/\d[\d,]*(?:\.\d+)?/g)||[];
-  for(const raw of all){const clean=raw.replace(/,/g,'');if(phone&&clean===phone)continue;if(clean.length>=10)continue;const n=Number(clean);if(n>0)return n}
+  let source=digitsAscii(text).toLowerCase();
+  const number='-?\\d[\\d,]*(?:\\.\\d+)?';
+  const labelled=source.match(new RegExp('(?:amount|amt|npr|rs\\.?|रकम|रु\\.?|रुपैयाँ|रुपये)\\s*[:=]?\\s*('+number+')','i'));
+  if(labelled)return Number(labelled[1].replace(/,/g,''));
+  const directed=source.match(new RegExp('(?:for|of|को|का|की|लाई)\\s*('+number+')','i'));
+  if(directed)return Number(directed[1].replace(/,/g,''));
+  const pm=phoneMatch(source);if(pm)source=source.replace(pm[0],' ');
+  source=source.replace(/\b(?:19|20)\d{2}[-/.]\d{1,2}[-/.]\d{1,2}\b/g,' ')
+    .replace(/\b(?:room|कोठा|कमरा)\s*[1-4]\b/g,' ');
+  const all=source.match(/-?\d[\d,]*(?:\.\d+)?/g)||[];
+  for(const raw of all){const clean=raw.replace(/,/g,'');if(clean.replace(/^-/,'').length>=10)continue;const n=Number(clean);if(Number.isFinite(n)&&n!==0)return n}
   return 0;
 }
 const STOP=['the','a','an','of','for','is','are','what','how','much','many','please','me','my','check','show','tell','give','balance','due','dues','baki','baaki','baanki','udharo','udhaar','udhar','khata','khaata','credit','kati','kitna','kitne','ko','ka','ki','ke','le','lai','laai','se','sang','remaining','left','rs','rupees','rupaiya','rupaya','ji','jyu','को','का','की','के','ले','लाई','सँग','से','बाँकी','बाकी','बकाया','उधारो','उधार','खाता','कति','कितना','कितने','देखाऊ','देखाउनुस्','देखाउनुहोस्','दिखाओ','दिखाइए','बताओ','बताइए','भन','भन्नुस्','हेर','हेर्ने','छ','हो','है','हैं','कसको','कस्को','किसका','किसकी','किसके','whose','who','ma','मा','mero','मेरो','mera','मेरा','meri','मेरी','saathi','sathi','साथी','record','payment','paid','received','from','add','new','naya','pay','bhuktani','tiryo','tirnu','thap','hal','lekh','likh','de','do','send','reminder','remind','whatsapp','भुक्तानी','भुगतान','थप','थप्ने','जोड','जोड़','हाल','लेख','लेख्ने','दर्ज','करें','गर','गर्ने','गर्नुस्','दे','देऊ','दो','तिर्यो','तिरेको','चुकाया','सम्झाऊ','रिमाइन्डर','रिमाइंडर'];
@@ -519,6 +595,48 @@ function searchCust(q){
 }
 function rerender(){try{if(typeof window.renderAll==='function')window.renderAll()}catch(e){}}
 function isMainAdminNow(){try{return typeof window.isMainAdmin==='function'?window.isMainAdmin():M().getSession()?.role==='admin'}catch(e){return false}}
+function sessionRole(){try{return M()?.getSession?.()?.role||''}catch(e){return''}}
+function dashboardRoleAllowed(){return ['admin','staff','store_admin'].includes(sessionRole())}
+function dateLabel(iso){
+  if(!iso)return'-';
+  try{return typeof window.npDate==='function'?window.npDate(iso)+' (AD '+iso+')':iso}catch(e){return iso}
+}
+function parseBusinessDate(raw){
+  const txt=norm(raw),today=M().today();
+  if(has(txt,['today','aaja','aaj','आज']))return today;
+  if(has(txt,['tomorrow','bholi','kal','भोलि','कल']))return addDaysIso(today,1);
+  const m=digitsAscii(raw).match(/\b(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})\b/);if(!m)return'';
+  const key=m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');
+  if(Number(m[1])>=2070){
+    try{return typeof window.adFromBsKey==='function'?(window.adFromBsKey(key)||''):''}catch(e){return''}
+  }
+  const d=new Date(key+'T00:00:00Z');return Number.isNaN(d.getTime())||d.toISOString().slice(0,10)!==key?'':key;
+}
+function roomCustomer(room){
+  const re=/^ROOM\s*([1-4])(?:\s*[-–—:]\s*.*)?$/i;
+  return data().customers.find(c=>{const m=String(c.name||'').match(re);return m&&Number(m[1])===Number(room)})||null;
+}
+function chargeType(raw){
+  const txt=norm(raw);
+  if(has(txt,['rent','bhada','भाडा','किराया']))return'Rent';
+  if(has(txt,['electricity','electric','bijuli','बिजुली','बिजली']))return'Electricity';
+  if(has(txt,['water','pani','पानी']))return'Water';
+  if(has(txt,['other','aru','anya','अन्य','अरू']))return'Other';
+  return'';
+}
+async function savedReply(html){
+  rerender();let suffix='';
+  try{
+    const before=M().syncInfo?.();
+    if(before?.mode==='tables'){
+      await M().syncNow();const after=M().syncInfo?.()||{};rerender();
+      suffix=after.remoteError||after.hasPending
+        ?(lang==='en'?'<br><small>⚠️ Saved on this device; online sync is still waiting.</small>':lang==='ne'?'<br><small>⚠️ यो डिभाइसमा सेभ भयो; अनलाइन सिंक बाँकी छ।</small>':'<br><small>⚠️ इस डिवाइस पर सेव हुआ; ऑनलाइन सिंक बाकी है।</small>')
+        :(lang==='en'?'<br><small>☁️ Saved online.</small>':lang==='ne'?'<br><small>☁️ अनलाइन सेभ भयो।</small>':'<br><small>☁️ ऑनलाइन सेव हो गया।</small>');
+    }
+  }catch(e){suffix=lang==='en'?'<br><small>⚠️ Saved locally; check the sync indicator.</small>':lang==='ne'?'<br><small>⚠️ लोकल सेभ भयो; सिंक स्थिति जाँच्नुहोस्।</small>':'<br><small>⚠️ लोकल सेव हुआ; सिंक स्थिति जाँचें।</small>'}
+  botSay(html+suffix);
+}
 
 /* ---------- task helpers (dashboard) ---------- */
 function doNav(page){
@@ -547,22 +665,25 @@ function todaySummary(){
   let html=fmt(t('todayHead'),{d:esc(bs)});
   ['cash','pos','fonepay','finance','partyPayment','other'].forEach(f=>{const v=sum(f);if(v>0)html+=`<div class="mbot-lrow"><span>${lbl[f][lang]}</span><b>${money(v)}</b></div>`});
   html+=`<div class="mbot-lrow"><span>${lang==='en'?'Daily sales total':lang==='ne'?'दैनिक बिक्री जम्मा':'दैनिक बिक्री कुल'}</span><b>${money(total)}</b></div>`;
-  html+=`<div class="mbot-lrow"><span>${lang==='en'?'Counter sales':lang==='ne'?'काउन्टर बिक्री':'काउंटर बिक्री'}</span><b>${money(salesToday)}</b></div>`;
+  if(salesToday)html+=`<div class="mbot-lrow"><span>${lang==='en'?'Quick counter sales':lang==='ne'?'छिटो काउन्टर बिक्री':'त्वरित काउंटर बिक्री'}</span><b>${money(salesToday)}</b></div>`;
+  if(salesToday)html+=`<div class="mbot-lrow"><span>${lang==='en'?'All sales':lang==='ne'?'सबै बिक्री':'सभी बिक्री'}</span><b>${money(total+salesToday)}</b></div>`;
   html+=`<div class="mbot-lrow"><span>${lang==='en'?'Credit given today':lang==='ne'?'आज दिएको उधारो':'आज दिया उधार'}</span><b>${money(creditsToday)}</b></div>`;
   botSay(html,{acts:act(lang==='en'?'Open Daily Sales':lang==='ne'?'दैनिक बिक्री खोल्ने':'दैनिक बिक्री खोलें','nav:daily'),
-    speak:(lang==='en'?'Today\'s sales total is ':lang==='ne'?'आजको बिक्री जम्मा ':'आज की कुल बिक्री ')+money(total)});
+    speak:(lang==='en'?'Today\'s sales total is ':lang==='ne'?'आजको बिक्री जम्मा ':'आज की कुल बिक्री ')+money(total+salesToday)});
 }
 function monthSummary(){
   const d=data(),ym=M().today().slice(0,7);
   const inM=x=>String(x.date||'').slice(0,7)===ym;
   const daily=d.dailySales.filter(inM).reduce((s,x)=>s+['pos','fonepay','cash','finance','partyPayment','other'].reduce((a,f)=>a+num(x[f]),0),0);
+  const counter=d.sales.filter(inM).reduce((s,x)=>s+num(x.amount),0);
   const credit=d.credits.filter(inM).reduce((s,x)=>s+num(x.amount),0);
-  const paid=d.credits.filter(x=>String(x.paidAt||'').slice(0,7)===ym).reduce((s,x)=>s+num(x.paid),0);
   let html=fmt(t('monthHead'),{m:ym});
   html+=`<div class="mbot-lrow"><span>${lang==='en'?'Daily sales':lang==='ne'?'दैनिक बिक्री':'दैनिक बिक्री'}</span><b>${money(daily)}</b></div>`;
+  if(counter)html+=`<div class="mbot-lrow"><span>${lang==='en'?'Quick counter sales':lang==='ne'?'छिटो काउन्टर बिक्री':'त्वरित काउंटर बिक्री'}</span><b>${money(counter)}</b></div>`;
+  if(counter)html+=`<div class="mbot-lrow"><span>${lang==='en'?'All sales':lang==='ne'?'सबै बिक्री':'सभी बिक्री'}</span><b>${money(daily+counter)}</b></div>`;
   html+=`<div class="mbot-lrow"><span>${lang==='en'?'Credit given':lang==='ne'?'दिएको उधारो':'दिया उधार'}</span><b>${money(credit)}</b></div>`;
   botSay(html,{acts:act(lang==='en'?'Open Reports':lang==='ne'?'रिपोर्ट खोल्ने':'रिपोर्ट खोलें','nav:reports'),
-    speak:(lang==='en'?'This month daily sales total ':lang==='ne'?'यो महिनाको दैनिक बिक्री ':'इस महीने की दैनिक बिक्री ')+money(daily)});
+    speak:(lang==='en'?'This month sales total ':lang==='ne'?'यो महिनाको बिक्री ':'इस महीने की बिक्री ')+money(daily+counter)});
 }
 function topDues(){
   const rows=balancesAll().filter(x=>x.balance>0).slice(0,5);
@@ -576,7 +697,7 @@ function duesTotal(){
   const rows=balancesAll().filter(x=>x.balance>0);
   if(!rows.length){botSay(t('noDues'));return}
   const total=rows.reduce((s,x)=>s+x.balance,0);
-  botSay(fmt(t('duesTotal'),{amt:money(total),n:rows.length}),{acts:act(lang==='en'?'Top dues':lang==='ne'?'धेरै उधारो':'सबसे ज़्यादा','send:'+CHIPS.dash[2].t[lang])});
+  botSay(fmt(t('duesTotal'),{amt:money(total),n:rows.length}),{acts:act(lang==='en'?'Top dues':lang==='ne'?'धेरै उधारो':'सबसे ज़्यादा','send:'+CHIPS.dash[3].t[lang])});
 }
 function waReminder(custId){
   try{
@@ -591,18 +712,23 @@ function waReminder(custId){
 function addDaysIso(iso,days){const d=new Date(Date.parse(String(iso).slice(0,10))+days*86400000);return d.toISOString().slice(0,10)}
 function daysDiff(a,b){return Math.round((Date.parse(String(b).slice(0,10))-Date.parse(String(a).slice(0,10)))/86400000)}
 function dailyTotal(x){return ['pos','fonepay','cash','finance','partyPayment','other'].reduce((s,f)=>s+num(x[f]),0)}
-function rangeTotal(d,from,to){return d.dailySales.filter(x=>{const dt=String(x.date||'').slice(0,10);return dt>=from&&dt<=to}).reduce((s,x)=>s+dailyTotal(x),0)}
+function rangeTotal(d,from,to){
+  const inRange=x=>{const dt=String(x.date||'').slice(0,10);return dt>=from&&dt<=to};
+  return d.dailySales.filter(inRange).reduce((s,x)=>s+dailyTotal(x),0)+d.sales.filter(inRange).reduce((s,x)=>s+num(x.amount),0);
+}
 function lrow(label,value){return `<div class="mbot-lrow"><span>${label}</span><b>${value}</b></div>`}
 function overdueList(minDays){
   const d=data(),today=M().today();
   return d.customers.map(c=>{
     const rows=d.credits.filter(x=>x.customerId===c.id&&num(x.amount)>num(x.paid));
     if(!rows.length)return null;
-    const oldest=rows.reduce((m,x)=>String(x.date)<m?String(x.date):m,'9999-12-31');
-    const days=Math.max(0,daysDiff(oldest,today));
+    const overdue=rows.map(x=>{const dueBased=!!x.dueDate,base=String(x.dueDate||x.date).slice(0,10),days=Math.max(0,daysDiff(base,today));return{x,dueBased,days}})
+      .filter(x=>x.dueBased?x.days>0:x.days>=(minDays||30));
+    if(!overdue.length)return null;
+    const days=Math.max(...overdue.map(x=>x.days));
     const bal=rows.reduce((s,x)=>s+num(x.amount)-num(x.paid),0);
     return{c,days,bal};
-  }).filter(x=>x&&x.days>=(minDays||7)).sort((a,b)=>b.days-a.days);
+  }).filter(Boolean).sort((a,b)=>b.days-a.days);
 }
 function chequesDueSoon(){
   const d=data(),today=M().today(),limit=addDaysIso(today,7);
@@ -614,7 +740,7 @@ function briefing(){
   const salesToday=d.dailySales.filter(x=>String(x.date)===today).reduce((s,x)=>s+dailyTotal(x),0)+d.sales.filter(x=>String(x.date)===today).reduce((s,x)=>s+num(x.amount),0);
   const dueRows=balancesAll().filter(x=>x.balance>0);
   const dueTotal=dueRows.reduce((s,x)=>s+x.balance,0);
-  const reqs=pendingReqs().length,over=overdueList(7).length,chq=chequesDueSoon().length;
+  const reqs=pendingReqs().length,over=overdueList(30).length,chq=chequesDueSoon().length;
   const bs=typeof window.npDate==='function'?window.npDate(today):today;
   let html=fmt(t('briefHead'),{d:esc(bs)});
   html+=lrow(t('briefSales'),money(salesToday));
@@ -634,8 +760,10 @@ function weekSummary(){
   const d=data(),today=M().today();
   const from=addDaysIso(today,-6),prevFrom=addDaysIso(today,-13),prevTo=addDaysIso(today,-7);
   const cur=rangeTotal(d,from,today),prev=rangeTotal(d,prevFrom,prevTo);
-  let best={date:'',v:0};
-  d.dailySales.forEach(x=>{const dt=String(x.date||'').slice(0,10);if(dt>=from&&dt<=today){const v=dailyTotal(x);if(v>best.v)best={date:dt,v}}});
+  let best={date:'',v:0};const byDay={};
+  d.dailySales.forEach(x=>{const dt=String(x.date||'').slice(0,10);if(dt>=from&&dt<=today)byDay[dt]=(byDay[dt]||0)+dailyTotal(x)});
+  d.sales.forEach(x=>{const dt=String(x.date||'').slice(0,10);if(dt>=from&&dt<=today)byDay[dt]=(byDay[dt]||0)+num(x.amount)});
+  Object.keys(byDay).forEach(dt=>{if(byDay[dt]>best.v)best={date:dt,v:byDay[dt]}});
   const credit=d.credits.filter(x=>{const dt=String(x.date||'').slice(0,10);return dt>=from&&dt<=today}).reduce((s,x)=>s+num(x.amount),0);
   let html=t('wkHead');
   html+=lrow(t('wkTotal'),money(cur));
@@ -675,7 +803,7 @@ function listPayRequests(){
   botSay(html,{acts,speak:t('reqListHead')+' '+reqs.length});
 }
 function overdueCard(){
-  const rows=overdueList(7).slice(0,6);
+  const rows=overdueList(30).slice(0,6);
   if(!rows.length){botSay(t('overdueNone'));return}
   let html=t('overdueHead');
   rows.forEach(x=>{html+=lrow(esc(x.c.name)+' · '+fmt(t('daysWord'),{n:x.days}),money(x.bal))});
@@ -709,6 +837,46 @@ function doMarkCheque(cid,st){
     botSay(fmt(t('chequeMarkDone'),{no:esc(ch.chequeNo),party:esc(ch.party),amt:money(ch.amount),st:st==='clear'?'✅ clear':'⚠️ bounce'}));
   }catch(e){botSay(t('error')+esc(e.message))}
 }
+/* "postpone cheque 12345" / "postpone cheque 12345 15 days" — default 7 days from its current date */
+function postponeChequeFlow(txt){
+  const no=(txt.match(/\d{3,}/)||[])[0];
+  const daysMatch=txt.match(/(\d{1,3})\s*(day|days|din|दिन)/);
+  const days=daysMatch?Math.max(1,Number(daysMatch[1])):7;
+  const holds=data().cheques.filter(x=>x.status==='hold');
+  if(!holds.length){botSay(t('chequeNone'));return}
+  if(!no){botSay(t('chequePickPostpone'),{acts:holds.slice(0,4).map(x=>act(esc(x.chequeNo)+' · '+esc((x.party||'').split(' ')[0])+' · '+money(x.amount),'pchq:'+x.id+'|'+days)).join('')});return}
+  const chosen=holds.find(x=>String(x.chequeNo).includes(no));
+  if(!chosen){botSay(fmt(t('chequeNotFound'),{no:esc(no)}));return}
+  startPostpone(chosen.id,days);
+}
+function startPostpone(cid,days){
+  const ch=data().cheques.find(x=>x.id===cid);if(!ch)return;
+  const newDate=addDaysIso(String(ch.chequeDate||M().today()).slice(0,10),days);
+  flow={type:'postponeCheque',step:'confirm',data:{chequeId:cid,newDate}};
+  const oldBs=typeof window.npDate==='function'?window.npDate(ch.chequeDate):ch.chequeDate;
+  const newBs=typeof window.npDate==='function'?window.npDate(newDate):newDate;
+  botSay(fmt(t('cfPostpone'),{no:esc(ch.chequeNo),party:esc(ch.party),old:esc(oldBs),new:esc(newBs)}),{acts:act(UI.yes[lang],'cf:yes')+act(UI.no[lang],'cf:no')});
+}
+/* "undo last credit for Ram" / "delete last daily entry" — most recent row (optionally filtered), with confirm */
+const UNDO_TABLES={
+  credit:{key:'credits',del:'deleteCredit',label:x=>esc(x.customer)+' · '+money(x.amount)+(x.items?' ('+esc(x.items)+')':'')},
+  daily:{key:'dailySales',del:'deleteDaily',label:x=>esc(x.date)+' · '+money(dailyTotal(x))},
+  sale:{key:'sales',del:'deleteSale',label:x=>esc(x.party)+' · '+money(x.amount)},
+  partyPayment:{key:'partyPayments',del:'deletePartyPayment',label:x=>esc(x.party)+' · '+money(x.amount)},
+  cheque:{key:'cheques',del:'deleteCheque',label:x=>esc(x.party)+' · '+esc(x.chequeNo)+' · '+money(x.amount)}
+};
+function undoLast(kind,q){
+  const table=UNDO_TABLES[kind];let rows=data()[table.key]||[];
+  if(q){
+    const nq=translit(norm(q));
+    const filtered=rows.filter(x=>translit(norm((kind==='sale'||kind==='partyPayment'||kind==='cheque'?x.party:x.customer)||'')).includes(nq));
+    if(filtered.length)rows=filtered;
+  }
+  if(!rows.length){botSay(t('undoNone'));return}
+  const rec=rows[0];
+  flow={type:'undo',step:'confirm',data:{kind,id:rec.id}};
+  botSay(fmt(t('cfUndo'),{label:table.label(rec)}),{acts:act(UI.yes[lang],'cf:yes')+act(UI.no[lang],'cf:no')});
+}
 function storeSwitchCard(){
   const stores=M().getStores();
   if(stores.length<=1){botSay(t('oneStore'));return}
@@ -716,7 +884,8 @@ function storeSwitchCard(){
   botSay(t('pickStore'),{acts:stores.slice(0,4).map(s=>act((s.id===cur?'✔ ':'🏪 ')+esc(s.name),'store:'+s.id)).join('')});
 }
 function lastBackupCard(){
-  const ts=localStorage.getItem('martai_last_backup_ts');
+  let scope='default';try{scope=typeof window.backupScopeId==='function'?window.backupScopeId():(M().getActiveStoreId?.()||'default')}catch(e){}
+  const ts=localStorage.getItem('martai_last_backup_ts_'+scope);
   let d='';
   if(ts){try{d=new Date(ts).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'})}catch(e){d=ts}}
   botSay(ts?fmt(t('lastBackupAt'),{d:esc(d)}):t('lastBackupNever'),{acts:act('💾 Backup','send:backup')});
@@ -736,16 +905,23 @@ function menuCard(){
     L('✅ Record payment','✅ भुक्तानी लेख्ने','✅ भुगतान दर्ज करें'),
     L('🛒 Add sale','🛒 बिक्री थप्ने','🛒 बिक्री जोड़ें'),
     L('💵 Daily entry','💵 दैनिक बिक्री लेख्ने','💵 दैनिक बिक्री दर्ज'),
+    L('💸 Add party payment','💸 पार्टी भुक्तानी थप्ने','💸 पार्टी भुगतान जोड़ें'),
+    L('🏢 Add party account','🏢 पार्टी खाता थप्ने','🏢 पार्टी खाता जोड़ें'),
     L('🏦 Add cheque','🏦 चेक थप्ने','🏦 चेक जोड़ें'),
+    L('📝 Add cheque to queue','📝 चेक सूचीमा थप्ने','📝 चेक सूची में जोड़ें'),
     L('🏦 Cheques due','🏦 आउने चेक','🏦 आने वाले चेक'),
     L('📄 New estimate','📄 नयाँ इस्टिमेट','📄 नया एस्टीमेट'),
+    L('🏠 Room summary','🏠 कोठाको हिसाब','🏠 कमरों का हिसाब'),
+    L('🏠 Add room charge','🏠 कोठा शुल्क थप्ने','🏠 कमरे का शुल्क जोड़ें'),
+    L('✅ Room payment','✅ कोठा भुक्तानी','✅ कमरे का भुगतान'),
+    L('👤 Create room account','👤 कोठा खाता बनाउने','👤 कमरे का खाता बनाएँ'),
     L('🔔 Payment requests','🔔 पेन्डिङ रिपोर्ट','🔔 पेंडिंग रिपोर्ट'),
     L('💬 Send reminder','💬 रिमाइन्डर पठाऊ','💬 रिमाइंडर भेजो'),
-    L('💾 Backup','💾 ब्याकअप','💾 बैकअप'),
     L('📄 Export CSV','📄 CSV','📄 CSV'),
     L('🔄 Sync','🔄 सिंक','🔄 सिंक'),
     L('🧮 Calculator: 250*4+100','🧮 हिसाब: 250*4+100','🧮 हिसाब: 250*4+100')
   ];
+  if(isMainAdminNow())items.splice(items.length-3,0,L('💾 Backup','💾 ब्याकअप','💾 बैकअप'));
   botSay(t('menuHead'),{acts:items.map(x=>act(esc(x[lang]),'send:'+x[lang])).join(''),speak:t('greetBack')});
 }
 /* Safe arithmetic — digits and + - * / % ( ) only, no eval */
@@ -755,7 +931,7 @@ function calcExpr(raw){
   let i=0;
   function expr(){let v=term();while(s[i]==='+'||s[i]==='-'){const op=s[i++];const r=term();if(r===null)return null;v=op==='+'?v+r:v-r}return v}
   function term(){let v=factor();while(s[i]==='*'||s[i]==='/'||s[i]==='%'){const op=s[i++];const r=factor();if(r===null||v===null)return null;v=op==='*'?v*r:op==='/'?v/r:v%r}return v}
-  function factor(){if(s[i]==='('){i++;const v=expr();if(s[i]===')')i++;return v}let j=i;while(j<s.length&&/[\d.]/.test(s[j]))j++;if(j===i)return null;const v=Number(s.slice(i,j));i=j;return Number.isFinite(v)?v:null}
+  function factor(){if(s[i]==='('){i++;const v=expr();if(s[i]!==')')return null;i++;return v}let j=i;while(j<s.length&&/[\d.]/.test(s[j]))j++;if(j===i)return null;const v=Number(s.slice(i,j));i=j;return Number.isFinite(v)?v:null}
   try{const v=expr();return(i>=s.length&&v!==null&&Number.isFinite(v))?Math.round(v*100)/100:null}catch(e){return null}
 }
 /* "cash 5000 pos 2000 fonepay 300" (also नगद/पोस/फोनपे…) -> daily sales fields */
@@ -784,7 +960,11 @@ const FLOWS={
   estimate:{fields:['party','amount','items']},
   daily:{fields:['combo']},
   limit:{fields:['customer','amount']},
-  custpay:{fields:['amount','method','reference']}
+  custpay:{fields:['amount','method','reference']},
+  partyPay:{fields:['party2','amount','method','reference']},
+  addParty:{fields:['party2']},
+  chequeQueue:{fields:['party2']},
+  resetPin:{fields:['customer','pin']}
 };
 const PROMPTS={name:'askName',phone:'askPhone',pin:'askPin',customer:'askCustomer',amount:'askAmount',items:'askItems',party:'askParty',party2:'askParty2',chequeNo:'askChequeNo',bank:'askBank',combo:'askDaily',method:'askMethod',reference:'askReference'};
 const CANCEL_WORDS=['cancel','stop','band','chhod','chod','quit','exit','रद्द','बन्द','बंद','रोक','छोड'];
@@ -811,6 +991,10 @@ function flowNext(){
   }
   if(flow.type==='limit')msg=fmt(t('cfLimit'),{amt:money(d.amount),name:esc(d.customerName)});
   if(flow.type==='custpay')msg=fmt(t('cfCustPay'),{amt:money(d.amount),method:esc(d.method||'Cash'),ref:d.reference?' · '+esc(d.reference):''});
+  if(flow.type==='partyPay')msg=fmt(t('cfPartyPay'),{amt:money(d.amount),party:esc(d.party2),method:esc(d.method||'Cash'),ref:d.reference?' · '+esc(d.reference):''});
+  if(flow.type==='addParty')msg=fmt(t('cfAddParty'),{name:esc(d.party2)});
+  if(flow.type==='chequeQueue')msg=fmt(t('cfChequeQueue'),{party:esc(d.party2)});
+  if(flow.type==='resetPin')msg=fmt(t('cfResetPin'),{name:esc(d.customerName),pin:esc(d.pin)});
   botSay(msg,{acts:act(UI.yes[lang],'cf:yes')+act(UI.no[lang],'cf:no')});
 }
 function flowCancel(){flow=null;botSay(t('cancelled'))}
@@ -851,6 +1035,27 @@ function flowExec(){
       M().customerRequestPayment({amount:f.data.amount,method:f.data.method||'Cash',reference:f.data.reference||''})
         .then(()=>{rerender();botSay(fmt(t('custPayDone'),{amt:money(f.data.amount)}))})
         .catch(e=>botSay(t('custPayNeedOnline')+'<br><small>'+esc(e.message||'')+'</small>'));
+    }else if(f.type==='partyPay'){
+      M().addPartyPayment(d,{party:f.data.party2,amount:f.data.amount,method:f.data.method||'Cash',reference:f.data.reference||''});
+      rerender();botSay(fmt(t('donePartyPay'),{amt:money(f.data.amount),party:esc(f.data.party2)}));
+    }else if(f.type==='addParty'){
+      const p=M().addParty(d,{name:f.data.party2});
+      rerender();botSay(fmt(t('doneAddParty'),{name:esc(p.name)}));
+    }else if(f.type==='chequeQueue'){
+      M().addChequeQueue(d,{party:f.data.party2,amount:f.data.amount||0});
+      rerender();botSay(fmt(t('doneChequeQueue'),{party:esc(f.data.party2)}));
+    }else if(f.type==='resetPin'){
+      M().updateCustomer(d,f.data.customerId,{pin:f.data.pin});
+      rerender();botSay(fmt(t('doneResetPin'),{name:esc(f.data.customerName)}));
+    }else if(f.type==='postponeCheque'){
+      const ch=d.cheques.find(x=>x.id===f.data.chequeId);if(!ch)throw new Error('Cheque not found');
+      const oldBs=typeof window.npDate==='function'?window.npDate(ch.chequeDate):ch.chequeDate;
+      const newBs=typeof window.npDate==='function'?window.npDate(f.data.newDate):f.data.newDate;
+      M().postponeCheque(d,f.data.chequeId,f.data.newDate,'Postponed '+oldBs+' → '+newBs);
+      rerender();botSay(fmt(t('donePostpone'),{no:esc(ch.chequeNo),d:esc(newBs)}));
+    }else if(f.type==='undo'){
+      M()[UNDO_TABLES[f.data.kind].del](d,f.data.id);
+      rerender();botSay(t('doneUndo'));
     }
   }catch(e){botSay(t('error')+esc(e.message))}
 }
@@ -973,7 +1178,11 @@ const KW={
   loginHow:['login','log in','लगइन','लॉगिन','लग इन','कसरी छिर','कैसे घुस'],
   about:['what is','k ho','के हो','क्या है','about','बारेमा','बारे में'],
   forgot:['forgot','birse','बिर्स','भूल'],
-  search:['search','find','khoj','खोज','ढूँढ','ढूंढ']
+  search:['search','find','khoj','खोज','ढूँढ','ढूंढ'],
+  resetPin:['reset pin','change pin','new pin for','pin reset','pin badal','pin change','पिन रिसेट','पिन फेर','पिन बदल'],
+  undo:['undo last','delete last','remove last','delete recent','undo the last','last entry delete','पछिल्लो मेटाउ','अन्तिम मेटाउ','हालको मेटाउ','पिछला हटाओ','आखिरी हटाओ'],
+  addParty:['add party','new party','create party','party account','पार्टी थप','पार्टी खाता','नयाँ पार्टी','नया पार्टी'],
+  partyPay:['party payment','pay party','party pay','party ko payment','पार्टी भुक्तानी','पार्टी भुगतान']
 };
 
 function handleText(raw){
@@ -1014,7 +1223,7 @@ function handleText(raw){
   if(has(txt,['where','कहाँ','कहां','kaha','location','ठेगाना','पता','address'])&&has(txt,['mart','store','पसल','दुकान','shop'])){botSay(t('storeLoc'));return}
   /* calculator — "250*4+100" or "calculate 1500/3" (never a phone number) */
   if(!findPhoneIn(txt)){
-    const mathTxt=txt.replace(/,/g,'');
+    const mathTxt=digitsAscii(raw).toLowerCase().replace(/,/g,'');
     if(/^[\d+\-*/%(). ]+$/.test(mathTxt)&&/[+\-*/%]/.test(mathTxt)&&/\d/.test(mathTxt)){
       const ans=calcExpr(mathTxt);
       if(ans!==null){botSay(fmt(t('calcAns'),{expr:esc(raw.trim()),ans:esc(ans.toLocaleString('en-IN'))}));return}
@@ -1103,8 +1312,13 @@ function dashIntents(txt,raw,words){
     pre=resolveCustomerPre(pre,q);
     startFlow('limit',pre);return true;
   }
-  /* cheques: add / mark clear-bounce / due soon */
+  /* cheques: postpone / queue reminder / add / mark clear-bounce / due soon */
   if(has(txt,['cheque','चेक'])){
+    if(has(txt,['postpone','delay','push back','later date','पर्सर्नुहोस्','पछि सार्नुहोस्','पछि सार्ने','स्थगित','टालना','टाल दो','आगे बढ़ाओ'])){postponeChequeFlow(txt);return true}
+    if(has(txt,['remind','queue','to write','write later','लेख्न बाँकी','सम्झाऊ','सम्झाउनुहोस्','याद दिला','याद दिलाओ','लिखना बाकी','बाद में लिखना'])){
+      const q=leftoverQuery(txt.split(' ').filter(x=>!['remind','me','to','write','later','queue','cheque','चेक','लेख्न','बाँकी','सम्झाऊ','सम्झाउनुहोस्','याद','दिला','दिलाओ','लिखना','बाकी','बाद','में','for'].includes(x)).join(' '));
+      startFlow('chequeQueue',q?{party2:q}:{});return true;
+    }
     if(has(txt,['add','new','received','आयो','थप','जोड','naya','नयाँ','नया'])){startFlow('cheque',amt>0?{amount:amt}:{});return true}
     if(has(txt,['clear','pass','bounce','बाउन्स','बाउंस','return','फिर्ता','वापस','क्लियर','पास'])){markCheque(txt);return true}
     if(has(txt,['due','soon','आउने','आने','week','हप्ता','हफ्ते'])){chequesSoonCard();return true}
@@ -1153,6 +1367,39 @@ function dashIntents(txt,raw,words){
   if(has(txt,KW.addSale)){
     let pre={};if(amt>0)pre.amount=amt;
     startFlow('sale',pre);return true;
+  }
+  /* add party account */
+  if(has(txt,KW.addParty)){
+    const q=leftoverQuery(txt.split(' ').filter(x=>!['add','new','create','party','account','थप','खाता','नयाँ','नया','पार्टी'].includes(x)).join(' '));
+    startFlow('addParty',q?{party2:q}:{});return true;
+  }
+  /* party payment — pay a supplier/party */
+  if(has(txt,KW.partyPay)){
+    let pre={};if(amt>0)pre.amount=amt;
+    const q=leftoverQuery(txt.split(' ').filter(x=>!['pay','party','payment','tirnu','tiryo','थप','जोड','पार्टी','भुक्तानी','भुगतान','लाई','tir','ko'].includes(x)).join(' '));
+    if(q)pre.party2=q;
+    startFlow('partyPay',pre);return true;
+  }
+  /* reset a customer's PIN */
+  if(has(txt,KW.resetPin)){
+    let pre={};const pinMatch=txt.match(/\b\d{4}\b/);if(pinMatch)pre.pin=pinMatch[0];
+    const q=leftoverQuery(txt.split(' ').filter(x=>!['reset','change','new','pin','for','to','पिन','रिसेट','फेर','बदल','को'].includes(x)).join(' '));
+    pre=resolveCustomerPre(pre,q);
+    startFlow('resetPin',pre);return true;
+  }
+  /* undo / delete the last entry — credit, daily sales, sale, party payment or cheque */
+  if(has(txt,KW.undo)){
+    let kind='';
+    if(has(txt,['daily','दैनिक']))kind='daily';
+    else if(has(txt,['party payment','pay party','पार्टी भुक्तानी','पार्टी भुगतान']))kind='partyPayment';
+    else if(has(txt,['cheque','चेक']))kind='cheque';
+    else if(has(txt,['sale','बिक्री']))kind='sale';
+    else if(has(txt,['credit','उधार','उधारो','udhaar','udharo']))kind='credit';
+    if(kind){
+      const skip=['undo','delete','remove','last','entry','recent','the','पछिल्लो','अन्तिम','हालको','मेटाउ','मेटाउनुहोस्','हटाउ','हटाउनुहोस्','हटाओ','पिछला','आखिरी','daily','दैनिक','party','payment','pay','पार्टी','भुक्तानी','भुगतान','cheque','चेक','credit','उधार','उधारो','sale','बिक्री','for','को','का','की'];
+      const q=leftoverQuery(txt.split(' ').filter(x=>!skip.includes(x)).join(' '));
+      undoLast(kind,q);return true;
+    }
   }
   /* today's summary */
   if((has(txt,KW.today)&&(has(txt,KW.sales)||has(txt,KW.summary)))||txt==='summary'||txt==='हिसाब'){todaySummary();return true}
@@ -1271,6 +1518,7 @@ panel.addEventListener('click',e=>{
         .catch(e2=>botSay(t('error')+esc(e2.message)));
     }
     else if(k==='chq'){const p=v.split('|');doMarkCheque(p[0],p[1]==='bounce'?'bounce':'clear')}
+    else if(k==='pchq'){const p=v.split('|');startPostpone(p[0],Number(p[1])||7)}
     else if(k==='prof'){const c=M().customerById(data(),v);if(c)showProfile(c)}
     else if(k==='srch'){if(typeof window.openCommand==='function')window.openCommand(v);else doNav('customers')}
     else if(k==='store'){
