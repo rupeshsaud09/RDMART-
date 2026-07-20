@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KHATA PANA Dashboard</title>
-<meta name="theme-color" content="#f4f6fa">
+<meta name="theme-color" content="#F6F8FC">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=13">
+<link rel="stylesheet" href="assets/martai.css?v=14">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -26,7 +26,6 @@
     </div>
     <div class="nav-group">Overview</div>
     <button class="nav-btn active" data-page="dashboard" data-tip="Dashboard"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="nav-txt">Dashboard</span></button>
-    <div class="nav-group">Team</div>
     <button class="nav-btn" data-page="tasks" data-tip="Tasks"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span class="nav-txt">Tasks</span><span class="badge badge-red nav-count" id="taskNavBadge" style="display:none">0</span></button>
     <div class="nav-group">Sales</div>
     <button class="nav-btn" data-page="daily" data-tip="Daily Sales"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg></span><span class="nav-txt">Daily Sales</span></button>
@@ -34,13 +33,14 @@
     <button class="nav-btn" data-page="payments" data-tip="Party Payments"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.2"/><path d="M6 12h.01M18 12h.01"/></svg></span><span class="nav-txt">Party Payments</span></button>
     <div class="nav-group">Customers</div>
     <button class="nav-btn" data-page="customers" data-tip="Customers"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="nav-txt">Customers</span></button>
-    <button class="nav-btn" data-page="followup" data-tip="Follow-Up"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span><span class="nav-txt">Follow-Up</span></button>
     <button class="nav-btn" data-page="credits" data-tip="Credit Book"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span><span class="nav-txt">Credit Book</span></button>
+    <button class="nav-btn" data-page="followup" data-tip="Follow-Ups"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span><span class="nav-txt">Follow-Ups</span><span class="badge badge-amber nav-count" id="followupNavBadge" hidden>0</span></button>
     <div class="nav-group">Payments</div>
-    <button class="nav-btn" data-page="cheques" data-tip="Cheques"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span><span class="nav-txt">Cheques</span></button>
+    <button class="nav-btn" data-page="cheques" data-tip="Cheques"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span><span class="nav-txt">Cheques</span><span class="badge badge-red nav-count" id="chequeNavBadge" hidden>0</span></button>
     <button class="nav-btn" data-page="rooms" data-tip="Room Rent"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span><span class="nav-txt">Room Rent</span></button>
     <div class="nav-group">Insights</div>
     <button class="nav-btn" data-page="reports" data-tip="Reports"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><span class="nav-txt">Reports</span></button>
+    <button class="nav-btn" data-page="ai" data-tip="Smart Insights"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"/></svg></span><span class="nav-txt">Smart Insights</span><span class="badge badge-blue nav-count">Local</span></button>
     <div class="nav-group">System</div>
     <button class="nav-btn" data-page="settings" data-tip="Settings"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></span><span class="nav-txt">Settings</span></button>
     <div class="side-footer"><div class="role-chip">Logged in as Admin</div><div class="small" id="syncStatus">Loading database...</div></div>
@@ -60,10 +60,20 @@
           <div class="menu-pop" id="quickAddMenu" hidden role="menu" aria-label="Quick add">
             <button class="menu-item" role="menuitem" data-page="daily" data-focusform="dailyForm"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg></span>Record daily sale</button>
             <button class="menu-item" role="menuitem" data-page="credits" data-focusform="creditForm"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>Add credit</button>
+            <button class="menu-item" role="menuitem" data-page="credits" data-focusform="paymentFormInline"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V6H4v12h8"/><path d="M4 9h16"/><path d="m16 17 2 2 4-4"/></svg></span>Record customer payment</button>
             <button class="menu-item" role="menuitem" data-page="customers" data-focusform="customerForm"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></span>Add customer</button>
             <button class="menu-item" role="menuitem" data-page="cheques" data-focusform="chequeForm"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>Write cheque</button>
             <button class="menu-item" role="menuitem" data-page="estimates" data-focusform="estimateForm"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>Create estimate</button>
             <button class="menu-item" role="menuitem" data-page="payments" data-focusform="partyPaymentForm"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.2"/><path d="M6 12h.01M18 12h.01"/></svg></span>Record party payment</button>
+            <button class="menu-item" role="menuitem" data-page="tasks" data-focusform="taskForm"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Add task</button>
+            <button class="menu-item" role="menuitem" data-page="followup"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>Schedule follow-up</button>
+          </div>
+        </div>
+        <div class="menu-wrap">
+          <button class="icon-btn notification-btn" id="notificationBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Notifications"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg><span class="notification-count" id="notificationCount" hidden>0</span></button>
+          <div class="menu-pop notification-menu" id="notificationMenu" hidden role="menu" aria-label="Notifications">
+            <div class="notification-head"><div><b>Needs attention</b><span id="notificationSummary">Checking your records…</span></div><button class="btn btn-ghost btn-sm" type="button" data-page="followup">View all</button></div>
+            <div id="notificationList" class="notification-list" aria-live="polite"></div>
           </div>
         </div>
         <div class="theme-switch" id="themeSwitch" role="group" aria-label="Theme">
@@ -84,35 +94,49 @@
     </header>
 
     <div class="content">
-      <div id="backupReminderBanner" style="display:none"><div style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.28);border-radius:10px;padding:11px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:1.15em">&#9888;</span><span id="backupReminderText" style="flex:1;min-width:160px;font-size:.88em"></span><button class="btn btn-primary btn-sm" id="backupNowBtn">Backup now</button><button class="btn btn-ghost btn-sm" id="dismissReminderBtn">Remind later</button></div></div>
+      <div id="backupReminderBanner" style="display:none"><div style="background:var(--brand-soft);border:1px solid var(--brand);border-radius:10px;padding:11px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:1.15em">&#9888;</span><span id="backupReminderText" style="flex:1;min-width:160px;font-size:.88em"></span><button class="btn btn-primary btn-sm" id="backupNowBtn">Backup now</button><button class="btn btn-ghost btn-sm" id="dismissReminderBtn">Remind later</button></div></div>
       <section class="page active" id="page-dashboard">
-        <div class="page-hello">
-          <div>
-            <div class="hero-kicker" id="greeting">Good day</div>
-            <div class="hero-heading">Here's how the business looks right now</div>
+        <div class="page-hello dashboard-hero">
+          <div class="dashboard-hero-copy">
+            <div class="hero-kicker"><span class="hero-status-dot"></span><span id="greeting">Good day</span></div>
+            <div class="hero-heading">Your business, at a glance.</div>
             <div class="hero-note" id="dashboardBrief">Your business summary is ready.</div>
+            <div class="hero-actions" aria-label="Common dashboard actions">
+              <button class="btn btn-primary" type="button" data-page="daily"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Record sale</button>
+              <button class="btn btn-soft" type="button" data-page="cheques"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Write cheque</button>
+              <button class="btn btn-ghost" type="button" data-page="followup">Open follow-ups <span aria-hidden="true">&rarr;</span></button>
+            </div>
           </div>
           <div class="hero-side">
             <div class="live-clock"><span class="clock-day" id="clockDay">Today</span><span class="clock-date" id="clockDate">2083-03-15 BS</span><span class="clock-time" id="clockTime">00:00:00</span></div>
           </div>
         </div>
-        <div class="grid grid-4" id="metricCards">
+        <div class="dashboard-section-label"><span>Live overview</span><small>Updated from your saved records</small></div>
+        <div class="grid grid-4 dashboard-kpi-grid" id="metricCards">
           <div class="card skeleton-card"><div class="skeleton skeleton-line" style="width:45%"></div><div class="skeleton skeleton-line" style="width:70%;height:22px"></div><div class="skeleton skeleton-line" style="width:55%"></div></div>
           <div class="card skeleton-card"><div class="skeleton skeleton-line" style="width:45%"></div><div class="skeleton skeleton-line" style="width:70%;height:22px"></div><div class="skeleton skeleton-line" style="width:55%"></div></div>
           <div class="card skeleton-card"><div class="skeleton skeleton-line" style="width:45%"></div><div class="skeleton skeleton-line" style="width:70%;height:22px"></div><div class="skeleton skeleton-line" style="width:55%"></div></div>
           <div class="card skeleton-card"><div class="skeleton skeleton-line" style="width:45%"></div><div class="skeleton skeleton-line" style="width:70%;height:22px"></div><div class="skeleton skeleton-line" style="width:55%"></div></div>
         </div>
-        <div class="grid grid-3 premium-grid" id="dashboardInsights">
-          <div class="card skeleton-card"><div class="skeleton skeleton-line" style="width:40%"></div><div class="skeleton skeleton-line" style="width:60%;height:22px"></div></div>
-          <div class="card skeleton-card"><div class="skeleton skeleton-line" style="width:40%"></div><div class="skeleton skeleton-line" style="width:60%;height:22px"></div></div>
-          <div class="card skeleton-card"><div class="skeleton skeleton-line" style="width:40%"></div><div class="skeleton skeleton-line" style="width:60%;height:22px"></div></div>
+        <div class="dashboard-section-label dashboard-section-spaced"><span>Financial health</span><small>Sales, collections, exposure and expected cash</small></div>
+        <div class="dashboard-operating-grid">
+          <article class="card financial-health-card" aria-labelledby="financialHealthTitle">
+            <div class="section-head financial-health-head">
+              <div><h2 class="section-title" id="financialHealthTitle">Business performance</h2><div class="section-sub" id="salesChartComparison">Loading comparison…</div></div>
+              <div class="chart-controls" aria-label="Sales chart controls">
+                <label><span>Period</span><select class="select" id="dashboardPeriod"><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="current-bs">Current Nepali month</option><option value="previous-bs">Previous Nepali month</option></select></label>
+                <label><span>Group</span><select class="select" id="dashboardGroup"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label>
+              </div>
+            </div>
+            <div class="financial-summary-grid" id="financialHealthStats" aria-live="polite"></div>
+            <div class="sales-chart-shell" id="salesChart" aria-live="polite"><div class="chart-skeleton" aria-label="Loading sales chart"><span></span><span></span><span></span><span></span><span></span></div></div>
+          </article>
+          <aside class="card action-centre-card" aria-labelledby="actionCentreTitle">
+            <div class="section-head compact-head"><div><h2 class="section-title" id="actionCentreTitle">Action centre</h2><div class="section-sub" id="actionCentreSummary">Prioritised by urgency and amount</div></div><button class="btn btn-soft btn-sm" type="button" data-page="followup">View all</button></div>
+            <div class="action-centre-list" id="actionCentreList" aria-live="polite"></div>
+          </aside>
         </div>
-        <div class="grid grid-3 dashboard-grid" style="margin-top:16px">
-          <div class="card dash-card"><div class="section-head compact-head"><div><div class="section-title">Sales — last 7 days</div><div class="section-sub">Daily sales by date</div></div></div><div class="bar-list dash-scroll" id="weeklyBars"></div></div>
-          <div class="card dash-card"><div class="section-head compact-head"><div><div class="section-title">Follow-ups needed</div><div class="section-sub">Customers with pending credit</div></div><button class="btn btn-soft btn-sm" data-page="credits">View all</button></div><div class="dash-scroll" id="followList"></div></div>
-          <div class="card dash-card"><div class="section-head compact-head"><div><div class="section-title">Cheques needing action</div><div class="section-sub">To write, due today or on hold</div></div><button class="btn btn-soft btn-sm" data-page="cheques">View all</button></div><div class="dash-scroll" id="todayChequeList"></div></div>
-        </div>
-        <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Recent activity</div><div class="section-sub">Latest saved actions</div></div></div><div class="activity-scroll" id="activityList"></div></div>
+        <div class="card activity-timeline-card"><div class="section-head"><div><h2 class="section-title">Recent activity</h2><div class="section-sub">Latest recorded business actions</div></div><button class="btn btn-soft btn-sm" type="button" data-page="reports">Open reports</button></div><div class="activity-scroll activity-timeline" id="activityList"></div></div>
       </section>
 
       <section class="page" id="page-tasks">
@@ -318,39 +342,64 @@
       </section>
 
       <section class="page" id="page-cheques">
-        <div class="section-head"><div><div class="page-title">Cheque Tracker</div><div class="page-sub">Write, plan and track party cheques</div></div><button class="btn btn-soft btn-sm" id="downloadChequesBtn">Download CSV</button></div>
-        <div class="grid grid-4" id="chequeMetrics"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">
-          <button class="btn btn-primary btn-sm" data-chq-tab="write">&#9998; Write cheque</button>
-          <button class="btn btn-soft btn-sm" data-chq-tab="records">&#128203; Records</button>
-          <button class="btn btn-soft btn-sm" data-chq-tab="planner">&#128197; Month planner</button>
-          <button class="btn btn-soft btn-sm" data-chq-tab="queue">&#128221; To write <span id="chqQueueTabCount"></span></button>
+        <div class="section-head cheque-page-head">
+          <div><div class="hero-kicker">Payments workspace</div><div class="page-title">Cheque command center</div><div class="page-sub">Write cheques, track bank dates, and clear pending payments from one place.</div></div>
+          <div class="section-head-actions">
+            <button class="btn btn-soft" id="downloadChequesBtn" type="button"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg>Export CSV</button>
+            <button class="btn btn-primary" type="button" data-chq-tab="write"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New cheque</button>
+          </div>
         </div>
-        <div id="chq-queue" style="display:none">
-        <div class="card" style="margin-top:16px" id="chequeQueueCard">
+        <div class="bank-calendar-note"><span class="bank-calendar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="m9 15 2 2 4-4"/></svg></span><div><b>Nepal bank calendar is on</b><span>Closed-day cheques roll to the next configured banking day while the original cheque date remains unchanged.</span></div><span class="bank-calendar-state">Configurable</span></div>
+        <div class="grid grid-4 cheque-metric-grid" id="chequeMetrics"></div>
+        <div class="cheque-tabs" role="tablist" aria-label="Cheque tracker views">
+          <button class="btn btn-primary" type="button" role="tab" aria-selected="true" data-chq-tab="write"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg><span>Write cheque</span></button>
+          <button class="btn btn-soft" type="button" role="tab" aria-selected="false" data-chq-tab="records"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 5h10M9 12h10M9 19h10"/><circle cx="4" cy="5" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="19" r="1"/></svg><span>All records</span></button>
+          <button class="btn btn-soft" type="button" role="tab" aria-selected="false" data-chq-tab="planner"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>30-day planner</span></button>
+          <button class="btn btn-soft" type="button" role="tab" aria-selected="false" data-chq-tab="queue"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 5h11M9 12h11M9 19h11"/><path d="m3 5 1 1 2-2M3 12l1 1 2-2M3 19l1 1 2-2"/></svg><span>To write</span><span class="cheque-tab-count" id="chqQueueTabCount"></span></button>
+        </div>
+        <div id="chq-queue" role="tabpanel" style="display:none">
+        <div class="card cheque-panel-card" id="chequeQueueCard">
           <div class="section-head compact-head" style="margin-bottom:12px"><div><div class="section-title">Cheques to write <span class="badge badge-amber" id="chequeQueueCount" style="display:none">0</span></div><div class="section-sub">Party sent their ledger on WhatsApp? Add the name here instantly so the cheque is never forgotten</div></div></div>
-          <form id="chequeQueueForm" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <form id="chequeQueueForm" class="cheque-queue-form">
             <input class="input" name="party" list="partyList" autocomplete="off" required placeholder="Party name" style="flex:2;min-width:160px">
             <input class="input" name="amount" inputmode="decimal" placeholder="Amount (optional)" style="flex:1;min-width:120px">
             <input class="input" name="note" placeholder="Note (optional)" style="flex:2;min-width:140px">
-            <button class="btn btn-primary" type="submit">+ Add to queue</button>
+            <button class="btn btn-primary" type="submit"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add to queue</button>
           </form>
           <div id="chequeQueueList"></div>
         </div>
         </div>
-        <div id="chq-write">
-        <form class="card" style="margin-top:16px" id="chequeForm"><div class="form-grid"><div class="field"><label>Party</label><input class="input" name="party" list="partyList" autocomplete="off" required placeholder="Type to search or create a party"></div><div class="field"><label>Cheque No.</label><input class="input" name="chequeNo" required placeholder="000123"><span id="chequeNoHint" class="small" style="display:block;margin-top:4px;opacity:.8"></span></div><div class="field"><label>Amount</label><input class="input" name="amount" required inputmode="decimal" placeholder="10000"></div><div class="field"><label>Bank</label><input class="input" name="bank" placeholder="Bank name"></div><div class="field"><label>Cheque Date BS</label><input class="input" name="chequeDate" data-bs-date-input readonly placeholder="2083-03-15"><span id="chequeDateHint" class="small" style="display:block;margin-top:4px;opacity:.8"></span></div><div class="field"><label>Status</label><select class="select" name="status"><option value="hold">Hold</option><option value="clear">Clear</option><option value="bounce">Bounced</option></select></div></div><button class="btn btn-primary full" type="submit">Save cheque</button></form>
+        <div id="chq-write" role="tabpanel">
+        <div class="cheque-compose-layout">
+          <aside class="cheque-compose-guide">
+            <span class="cheque-guide-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></span>
+            <div><span class="eyebrow">New payment</span><h3>Write a cheque</h3><p>Enter the cheque once. The tracker will place it on the correct banking day and keep it visible until it is cleared.</p></div>
+            <div class="cheque-guide-steps"><span><b>1</b> Add payment details</span><span><b>2</b> Pick the cheque date</span><span><b>3</b> Save as hold until cleared</span></div>
+          </aside>
+          <form class="card cheque-form-card" id="chequeForm">
+            <div class="cheque-form-heading"><div><div class="section-title">Cheque details</div><div class="section-sub">Fields marked required must be completed before saving.</div></div><span class="badge badge-amber">Draft</span></div>
+            <div class="form-grid">
+              <div class="field"><label>Party <span>Required</span></label><input class="input" name="party" list="partyList" autocomplete="off" required placeholder="Search or enter party name"></div>
+              <div class="field"><label>Cheque number <span>Required</span></label><input class="input" name="chequeNo" required inputmode="numeric" placeholder="e.g. 000123"><span id="chequeNoHint" class="small cheque-field-hint"></span></div>
+              <div class="field"><label>Amount <span>Required</span></label><div class="amount-input-wrap"><span>Rs</span><input class="input" name="amount" required inputmode="decimal" placeholder="0.00"></div></div>
+              <div class="field"><label>Bank</label><input class="input" name="bank" placeholder="Select or enter bank name"></div>
+              <div class="field"><label>Cheque date (BS) <span>Required</span></label><input class="input" name="chequeDate" data-bs-date-input readonly required placeholder="Select Nepali date"><span id="chequeDateHint" class="small cheque-field-hint"></span></div>
+              <div class="field"><label>Starting status</label><select class="select" name="status"><option value="hold">On hold &mdash; not cleared yet</option><option value="clear">Cleared</option><option value="bounce">Bounced</option></select><span class="small cheque-field-hint">Most new cheques should start on hold.</span></div>
+            </div>
+            <div class="cheque-form-footer"><span><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 16v-4M12 8h.01"/></svg>You can update the status from Records later.</span><button class="btn btn-primary cheque-save-btn" type="submit"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Save cheque</button></div>
+          </form>
         </div>
-        <div id="chq-planner" style="display:none">
-        <div class="card" style="margin-top:16px">
-          <div class="section-head compact-head" style="margin-bottom:10px"><div><div class="section-title">Cheque load — next 1 month</div><div class="section-sub">Day-by-day cheque totals — pick a green (free) day before writing a new cheque</div></div></div>
+        </div>
+        <div id="chq-planner" role="tabpanel" style="display:none">
+        <div class="card cheque-panel-card">
+          <div class="section-head compact-head" style="margin-bottom:10px"><div><div class="section-title">Banking load &mdash; next 30 days</div><div class="section-sub">Closed-day amounts roll to the next configured banking day so the workload stays accurate</div></div></div>
           <div id="chequePlannerSummary"></div>
           <div class="dash-scroll" id="chequePlanner" style="max-height:420px;overflow-y:auto"></div>
         </div>
         </div>
-        <div id="chq-records" style="display:none">
-        <div class="card" style="margin-top:16px">
-          <div class="section-head" style="margin-bottom:14px"><div><div class="section-title">Cheque records</div><div class="section-sub">Shows today's cheques + every pending hold (on top, nearest first). Change "Show" for full history.</div></div></div>
+        <div id="chq-records" role="tabpanel" style="display:none">
+        <div class="card cheque-panel-card">
+          <div class="section-head" style="margin-bottom:14px"><div><div class="section-title">Cheque records</div><div class="section-sub">Banking today and pending holds appear first. Closed-day cheques show their effective banking date without changing the original date.</div></div></div>
           <div class="filter-strip">
             <div class="filter-search-wrap">
               <span class="filter-field-label">Search</span>
@@ -358,7 +407,7 @@
             </div>
             <div class="filter-field-wrap">
               <span class="filter-field-label">Show</span>
-              <select class="select" id="chequePeriodFilter"><option value="today">Today + pending</option><option value="week">7 days + pending</option><option value="all">All records</option></select>
+              <select class="select" id="chequePeriodFilter"><option value="today">Banking today + pending</option><option value="week">Next 7 days + pending</option><option value="all">All records</option></select>
             </div>
             <div class="filter-field-wrap">
               <span class="filter-field-label">Status</span>
@@ -380,7 +429,8 @@
               <button class="btn btn-soft btn-sm" id="clearChequeDateFilter" type="button">Clear filter</button>
             </div>
           </div>
-          <div class="table-wrap"><table><thead><tr><th>Party</th><th>Cheque No.</th><th>Amount</th><th>Bank</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="chequeRows"></tbody></table></div><div id="chequesPagination" style="padding:4px 8px 2px"></div>
+          <div class="cheque-record-summary" id="chequeRecordTotals" aria-live="polite"></div>
+          <div class="table-wrap"><table><thead><tr><th>Party</th><th>Cheque No.</th><th>Amount</th><th>Bank</th><th>Cheque date / bank day</th><th>Status</th><th>Actions</th></tr></thead><tbody id="chequeRows"></tbody></table></div><div id="chequesPagination" style="padding:4px 8px 2px"></div>
         </div>
         </div>
       </section>
@@ -440,7 +490,7 @@
         <div class="grid grid-3" style="margin-top:16px"><div class="card"><div class="section-title" style="margin-bottom:12px">Revenue bars</div><div class="bar-list" id="reportBars"></div></div><div class="card"><div class="section-title" style="margin-bottom:12px">Daily sales chart</div><div class="bar-list" id="dailySalesBars"></div></div><div class="card"><div class="section-title" style="margin-bottom:12px">Credit collection</div><div id="reportCreditBox"></div></div></div>
         <div class="grid grid-2" style="margin-top:16px"><div class="card"><div class="section-title" style="margin-bottom:12px">Monthly trend (6 months)</div><div class="bar-list" id="monthlyTrendBars"></div></div><div class="card"><div class="section-title" style="margin-bottom:12px">Top customers by credit</div><div class="bar-list" id="topCreditBars"></div></div></div>
         <div class="grid grid-2" style="margin-top:16px">
-          <div class="card"><div class="section-head"><div><div class="section-title">This week's cheques</div><div class="section-sub">Supplier-wise cheques dated today to 7 days ahead (✓ = already cleared)</div></div><button class="btn btn-soft btn-sm" data-page="cheques">Cheques</button></div><div class="bar-list" id="weekChequeBars"></div></div>
+          <div class="card"><div class="section-head"><div><div class="section-title">This week's banking cheques</div><div class="section-sub">Supplier-wise workload for the next seven effective banking days</div></div><button class="btn btn-soft btn-sm" data-page="cheques">Cheques</button></div><div class="bar-list" id="weekChequeBars"></div></div>
           <div class="card"><div class="section-head"><div><div class="section-title">Top suppliers by cheques</div><div class="section-sub">This BS month's cheque total, party-wise</div></div></div><div class="bar-list" id="monthPartyBars"></div></div>
         </div>
       </section>
@@ -546,11 +596,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
 <script src="assets/martai-supabase-config.js"></script>
+<script src="assets/martai-date.js?v=1"></script>
+<script src="assets/martai-ui.js?v=1"></script>
 <script src="assets/martai-store.js?v=27"></script>
 <script src="assets/khata-backup.js?v=5"></script>
 <script src="assets/martai-qr.js?v=1"></script>
 <script>
-let pendingCreditDeleteId='';let pendingCreditDeleteTimer=null;const A=MartAI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));
+let pendingCreditDeleteId='';let pendingCreditDeleteTimer=null;const A=MartAI,UI=window.MartAIUI,DateTools=window.MartAIDate;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));
 const PER_PAGE=10;const pgState={customers:1,credits:1,creditHistory:1,daily:1,estimates:1,payments:1,cheques:1,roomLedger:1,parties:1,stores:1,staff:1,logins:1,payreq:1};
 function paginationHTML(key,pg,total,per){if(!total)return'';const pages=Math.ceil(total/per);const from=(pg-1)*per+1;const to=Math.min(pg*per,total);let h='<div style="display:flex;align-items:center;gap:8px;padding:10px 0 2px;border-top:1px solid var(--line);margin-top:8px"><span class="small" style="margin-right:auto">'+from+'–'+to+' of '+total+'</span>';if(pages>1){h+='<button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="-1"'+(pg===1?' disabled':'')+'>&#8249; Prev</button><span class="small" style="min-width:3em;text-align:center">'+pg+' / '+pages+'</span><button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="1"'+(pg>=pages?' disabled':'')+'>Next &#8250;</button>'}return h+'</div>'}
 function session(){return A.getSession()||{}}
@@ -563,10 +615,10 @@ const titles={dashboard:['Dashboard','Your mart summary'],tasks:['Tasks','Assign
 function requireAdmin(){const s=A.getSession();if(s?.role==='staff'){location.replace('staff.html');return false}if(!s||!['admin','store_admin'].includes(s.role)){A.clearSession().finally(()=>location.replace('index.html'));return false}return true}
 function db(){return A.getDB()}
 function sdb(){const d=A.getDB();const sid=A.getActiveStoreId?.();if(!sid)return d;const isDefault=sid==='default';function sf(arr){if(!arr)return[];return arr.filter(x=>x.storeId===sid||(isDefault&&!x.storeId))}return{...d,customers:sf(d.customers),credits:sf(d.credits),dailySales:sf(d.dailySales),partyPayments:sf(d.partyPayments),cheques:sf(d.cheques),chequeQueue:sf(d.chequeQueue),parties:sf(d.parties),estimateBills:sf(d.estimateBills),sales:sf(d.sales),paymentRequests:sf(d.paymentRequests),tasks:sf(d.tasks)}}
-function save(x){A.saveDB(x)}function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>el.remove(),240)},2600)}
+function save(x){A.saveDB(x)}function toast(msg,type='ok'){if(UI)return UI.toast(msg,{type:type==='err'?'error':type,container:'#toasts',duration:3000});const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;el.setAttribute('role',type==='err'?'alert':'status');$('toasts').appendChild(el);setTimeout(()=>el.remove(),3000)}
 const THEME_KEY='martai_dashboard_theme';
 function preferredTheme(){const saved=localStorage.getItem(THEME_KEY);if(saved==='light'||saved==='dark')return saved;return 'light'}
-function applyTheme(theme,saveChoice=true){theme=theme==='light'?'light':'dark';document.body.dataset.theme=theme;document.documentElement.style.colorScheme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',theme==='light'?'#f4f6fa':'#0b1220');$$('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===theme));if(saveChoice)localStorage.setItem(THEME_KEY,theme)}
+function applyTheme(theme,saveChoice=true){theme=theme==='light'?'light':'dark';document.body.dataset.theme=theme;document.documentElement.style.colorScheme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',theme==='light'?'#F6F8FC':'#08111F');$$('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===theme));if(saveChoice)localStorage.setItem(THEME_KEY,theme)}
 function logoInitial(name){return String(name||'M').trim().split(/\s+/).filter(Boolean).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'M'}
 function safeBgUrl(data){return String(data||'').replace(/"/g,'%22')}
 function applyBrandLogo(logo,name){logo=A.safeImageDataUrl(logo);$$('.brand-logo').forEach(el=>{if(!el.dataset.defaultLogo)el.dataset.defaultLogo=(el.textContent||'').trim()||(el.classList.contains('brand-logo-rd')?'RD':'M');if(logo){el.classList.add('logo-uploaded');el.style.backgroundImage=`url("${safeBgUrl(logo)}")`;el.textContent=''}else{el.classList.remove('logo-uploaded');el.style.backgroundImage='';el.textContent=el.dataset.defaultLogo}})}
@@ -579,24 +631,24 @@ function polishStaticText(){$$('[data-page="settings"]').forEach(el=>el.style.di
 function polishEmptyStates(){const copy={'No pending credit. Great work.':'No pending credit. Customers with dues will appear here.','No activity saved yet.':'No activity yet. Add a customer, credit, sale, payment, or cheque to start the log.','No customers found. Add the first customer above.':'No customers yet. Add your first customer to enable customer portal login.','No customers yet.':'No credit balances yet. Add a customer, then save a credit entry.','No credit records saved yet.':'No credit history yet. Save a credit entry to start tracking dues.','No sales saved yet.':'No sales saved yet. Add the first sale from the form above.','No cheques saved yet.':'No cheques saved yet. Add a cheque to track hold, clear, or bounced status.'};$$('.empty').forEach(el=>{if(copy[el.textContent])el.textContent=copy[el.textContent]})}
 function formData(form){const data=Object.fromEntries(new FormData(form).entries());form.querySelectorAll('[data-bs-date-input][name]').forEach(i=>{data[i.name]=(i.hasAttribute('data-bs-optional')&&!i.value)?'':adFromBsKey(i.value)});return data}
 function metricAccent(c){c=String(c||'');if(c.indexOf('239,68,68')>-1)return 'var(--red)';if(c.indexOf('34,197,94')>-1)return 'var(--green)';if(c.indexOf('245,158,11')>-1)return 'var(--amber)';if(c.indexOf('124,58,237')>-1)return 'var(--purple)';if(c.indexOf('6,182,212')>-1||c.indexOf('59,130,246')>-1)return 'var(--blue)';return c||'var(--brand)'}
-function metric(label,value,sub,color,page){const inner=`<div class="metric-label">${label}</div><div class="metric-value">${value}</div><div class="metric-sub">${sub||''}</div>`;return page?`<button type="button" class="card metric" style="--m:${metricAccent(color)}" data-page="${page}">${inner}</button>`:`<div class="card metric" style="--m:${metricAccent(color)}">${inner}</div>`}
+function metric(label,value,sub,color,page,trend){const change=trend?`<div class="kpi-change ${trend.tone||'neutral'}"><span aria-hidden="true">${trend.arrow||'→'}</span>${A.esc(trend.label||'Current snapshot')}</div>`:'';const inner=`<div class="metric-topline"><div class="metric-label">${label}</div>${page?'<span class="metric-open" aria-hidden="true">&nearr;</span>':''}</div><div class="metric-value">${value}</div>${change}<div class="metric-sub">${sub||''}</div>`;return page?`<button type="button" class="card metric" style="--m:${metricAccent(color)}" data-page="${page}" aria-label="Open ${A.esc(label)}. ${trend?A.esc(trend.label||''):''}">${inner}</button>`:`<div class="card metric" style="--m:${metricAccent(color)}">${inner}</div>`}
 const BS_MONTH_NAMES=['Baisakh','Jestha','Asar','Shrawan','Bhadra','Aswin','Kartik','Mangsir','Poush','Magh','Falgun','Chaitra'];
 const BS_MONTHS={2070:[31,31,31,32,31,31,29,30,30,29,30,30],2071:[31,31,32,31,31,31,30,29,30,29,30,30],2072:[31,32,31,32,31,30,30,29,30,29,30,30],2073:[31,32,31,32,31,30,30,30,29,29,30,31],2074:[31,31,31,32,31,31,30,29,30,29,30,30],2075:[31,31,32,31,31,31,30,29,30,29,30,30],2076:[31,32,31,32,31,30,30,30,29,29,30,30],2077:[31,32,31,32,31,30,30,30,29,30,29,31],2078:[31,31,31,32,31,31,30,29,30,29,30,30],2079:[31,31,32,31,31,31,30,29,30,29,30,30],2080:[31,32,31,32,31,30,30,30,29,29,30,30],2081:[31,32,31,32,31,30,30,30,29,30,29,31],2082:[31,31,32,31,31,31,30,29,30,29,30,30],2083:[31,31,32,31,31,31,30,29,30,29,30,30],2084:[31,32,31,32,31,30,30,30,29,29,30,31],2085:[30,32,31,32,31,30,30,30,29,30,29,31],2086:[31,31,32,31,31,31,30,29,30,29,30,30],2087:[31,31,32,31,31,31,30,30,29,30,30,30],2088:[30,31,32,32,30,31,30,30,29,30,30,30],2089:[30,32,31,32,31,30,30,30,29,30,30,30],2090:[30,32,31,32,31,30,30,30,29,30,30,30]};
 const BS_ANCHOR={bsYear:2070,ad:'2013-04-14'};
 function pad2(n){return String(n).padStart(2,'0')}
-function localIsoDate(d=new Date()){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
+function localIsoDate(d=new Date()){return DateTools?DateTools.kathmanduDayKey(d):d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
 function isoParts(iso){const m=String(iso||'').slice(0,10).match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?[Number(m[1]),Number(m[2]),Number(m[3])]:null}
 function isoUtcMs(iso){const p=isoParts(iso);return p?Date.UTC(p[0],p[1]-1,p[2]):Date.UTC(1970,0,1)}
 function addDaysIso(iso,days){const ms=isoUtcMs(iso)+Number(days||0)*86400000;const d=new Date(ms);return d.getUTCFullYear()+'-'+pad2(d.getUTCMonth()+1)+'-'+pad2(d.getUTCDate())}
 function daysBetween(a,b){return Math.round((isoUtcMs(b)-isoUtcMs(a))/86400000)}
 function isoDay(iso){const p=isoParts(iso);return p?new Date(Date.UTC(p[0],p[1]-1,p[2])).getUTCDay():0}
-function bsParts(date){const iso=String(date||'').slice(0,10);let diff=daysBetween(BS_ANCHOR.ad,iso);let year=BS_ANCHOR.bsYear;if(diff<0)return{year:String(BS_ANCHOR.bsYear),month:'01',day:'01'};while(BS_MONTHS[year]){const yearDays=BS_MONTHS[year].reduce((s,x)=>s+x,0);if(diff<yearDays)break;diff-=yearDays;year++}if(!BS_MONTHS[year])year=Number(Object.keys(BS_MONTHS).at(-1));const months=BS_MONTHS[year];let month=1;for(const len of months){if(diff<len)break;diff-=len;month++}return{year:String(year),month:pad2(month),day:pad2(Math.max(1,diff+1))}}
-function bsToAd(year,month,day){year=Number(year);month=Number(month);day=Number(day);const years=Object.keys(BS_MONTHS).map(Number);year=Math.min(Math.max(year,years[0]),years[years.length-1]);month=Math.min(Math.max(month,1),12);day=Math.min(Math.max(day,1),BS_MONTHS[year][month-1]);let days=0;for(let y=BS_ANCHOR.bsYear;y<year;y++)days+=(BS_MONTHS[y]||[]).reduce((s,x)=>s+x,0);for(let m=1;m<month;m++)days+=BS_MONTHS[year][m-1];days+=day-1;return addDaysIso(BS_ANCHOR.ad,days)}
+function bsParts(date){if(!DateTools)throw new Error('Nepal date service is unavailable');const p=DateTools.adToBs(date);return{year:String(p.year),month:pad2(p.month),day:pad2(p.day)}}
+function bsToAd(year,month,day){if(!DateTools)throw new Error('Nepal date service is unavailable');return DateTools.bsToAd({year:Number(year),month:Number(month),day:Number(day)})}
 function bsKey(date){if(!date)return'';try{const p=bsParts(date);return `${p.year}-${p.month}-${p.day}`}catch(e){return String(date)}}
-function npDate(date){if(!date)return'-';try{const p=bsParts(date);return p.year+' '+BS_MONTH_NAMES[Number(p.month)-1]+' '+Number(p.day)+' BS'}catch(e){return String(date)}}
-function npNum(v){return String(v)}
-function npDateTime(value){if(!value)return'-';try{const d=new Date(value);return npDate(localIsoDate(d))+' '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}catch(e){return String(value)}}
-function cleanBsDate(v){return String(v||'').trim().replace(/[/.]/g,'-').replace(/[०-९]/g,d=>'०१२३४५६७८९'.indexOf(d))}
+function npDate(date){if(!date)return'-';try{return DateTools.formatBs(date,{style:'medium'})}catch(e){return String(date)+' AD'}}
+function npNum(v){return DateTools?DateTools.formatNepaliNumber(v,{locale:'en-NP'}):String(v)}
+function npDateTime(value){if(!value)return'-';try{const d=new Date(value);return npDate(DateTools.kathmanduDayKey(d))+' '+d.toLocaleTimeString('en-US',{timeZone:DateTools.KATHMANDU_TIME_ZONE,hour:'2-digit',minute:'2-digit'})}catch(e){return String(value)}}
+function cleanBsDate(v){const raw=DateTools?DateTools.normalizeNepaliDigits(v):String(v||'');return raw.trim().replace(/[/.]/g,'-')}
 function adFromBsKey(key){const k=cleanBsDate(key);const m=k.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);return m?bsToAd(m[1],m[2],m[3]):A.today()}
 function bsKeyToDisplay(key){if(!key)return'';const m=key.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);if(!m)return key;return m[1]+' '+BS_MONTH_NAMES[Number(m[2])-1]+' '+Number(m[3])}
 const BSP=(()=>{
@@ -648,11 +700,19 @@ function totalDaily(x){return A.num(x.pos)+A.num(x.fonepay)+A.num(x.cash)+A.num(
 function allCustomerBalances(d){return d.customers.map(c=>({customer:c,...A.customerBalance(d,c.id)})).sort((a,b)=>b.balance-a.balance)}
 function updateNepaliDateHints(){}
 function setTodayInputs(){document.querySelectorAll('[data-bs-date-input]').forEach(i=>{if(!i.value&&!i.hasAttribute('data-bs-optional'))i.value=bsKey(A.today())})}
-function openModal(id){$(id).classList.add('active')}function closeModal(id){$(id).classList.remove('active')}
+const dialogControllers=new Map();
+function dialogController(id){const root=$(id);if(!root||!UI)return null;if(!dialogControllers.has(id))dialogControllers.set(id,UI.createDialog(root,{hideOnClose:true}));return dialogControllers.get(id)}
+function openModal(id){const controller=dialogController(id);if(controller)return controller.open(document.activeElement);const el=$(id);if(el)el.classList.add('active')}
+function closeModal(id){const controller=dialogControllers.get(id);if(controller)return controller.close('programmatic');const el=$(id);if(el)el.classList.remove('active')}
+function enhanceAccessibility(){
+  let fieldNo=0;$$('.field').forEach(field=>{const label=Array.from(field.children).find(x=>x.tagName==='LABEL'),control=field.querySelector('input:not([type="hidden"]),select,textarea');if(!label||!control)return;if(!control.id)control.id='field-'+(++fieldNo);if(!label.htmlFor)label.htmlFor=control.id});
+  $$('table').forEach((table,index)=>{if(!table.getAttribute('aria-label')){const title=table.closest('.card,.page')?.querySelector('.section-title,.page-title');table.setAttribute('aria-label',title?.textContent?.trim()||`Business records table ${index+1}`)}table.querySelectorAll('thead th').forEach(th=>th.setAttribute('scope','col'))});
+  const sidebar=$('sidebar');if(sidebar)sidebar.setAttribute('aria-label','Primary navigation');const toasts=$('toasts');if(toasts){toasts.setAttribute('aria-label','Notifications');toasts.setAttribute('aria-live','polite')}
+}
 function statusBadge(status){if(status==='clear')return '<span class="badge badge-green">Clear</span>';if(status==='bounce')return '<span class="badge badge-red">Bounced</span>';return '<span class="badge badge-amber">Hold</span>'}
 function estimateBadge(status){const s=String(status||'draft');if(s==='approved')return '<span class="badge badge-green">Approved</span>';if(s==='rejected')return '<span class="badge badge-red">Rejected</span>';if(s==='expired')return '<span class="badge badge-red">Expired</span>';if(s==='sent')return '<span class="badge badge-blue">Sent</span>';return '<span class="badge badge-amber">Draft</span>'}
 function estimateOpen(x){return !['approved','rejected','expired'].includes(String(x.status||'draft'))}
-function nav(page){if(!isMainAdmin()&&page==='settings')page='dashboard';currentPage=page;$$('.page').forEach(p=>p.classList.remove('active'));$('page-'+page).classList.add('active');$$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('topTitle').textContent=titles[page][0];$('topSub').textContent=titles[page][1];$('sidebar').classList.remove('open');$('overlay').classList.remove('open');renderAll()}
+function nav(page){if(!isMainAdmin()&&page==='settings')page='dashboard';const target=$('page-'+page);if(!target)return toast('This module is not available yet','err');currentPage=page;$$('.page').forEach(p=>p.classList.remove('active'));target.classList.add('active');$$('.nav-btn').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});$('topTitle').textContent=titles[page][0];$('topSub').textContent=titles[page][1];$('sidebar').classList.remove('open');$('overlay').classList.remove('open');renderAll();target.querySelector('h1,h2,.page-title,.section-title')?.focus?.({preventScroll:true})}
 function renderStoreSelector(){const stores=A.getStores?A.getStores():[];const el=$('storeSelect');if(!el)return;const active=A.getActiveStoreId?A.getActiveStoreId():'';el.innerHTML=stores.length?stores.map(s=>`<option value="${A.esc(s.id)}">${A.esc(s.name)}</option>`).join(''):'<option value="default">RD MART</option>';if([...el.options].some(o=>o.value===active))el.value=active}
 function renderPartyOptions(){const dl=$('partyList');if(!dl)return;const d=sdb();const seen=new Map();const add=n=>{n=String(n||'').trim();if(!n)return;const k=n.toLowerCase();if(!seen.has(k))seen.set(k,n)};(d.parties||[]).forEach(p=>add(p.name));d.cheques.forEach(x=>add(x.party));(d.partyPayments||[]).forEach(x=>add(x.party));(d.estimateBills||[]).forEach(x=>add(x.customer));(d.chequeQueue||[]).forEach(x=>add(x.party));dl.innerHTML=[...seen.values()].sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${A.esc(n)}">`).join('')}
 function renderParties(d){const el=$('partyRows');if(!el)return;const all=(d.parties||[]).slice().sort((a,b)=>String(a.name).localeCompare(String(b.name)));const tp=Math.ceil(all.length/PER_PAGE)||1;const pg=pgState.parties=Math.max(1,Math.min(pgState.parties,tp));el.innerHTML=all.length?all.slice((pg-1)*PER_PAGE,pg*PER_PAGE).map(p=>`<tr><td><b>${A.esc(p.name)}</b></td><td>${A.esc(p.phone||'-')}</td><td>${A.esc(p.notes||'-')}</td><td><button class="btn btn-red btn-sm" data-delete-party="${A.esc(p.id)}">Delete</button></td></tr>`).join(''):'<tr><td colspan="4"><div class="empty">No party accounts yet. Save the first one above — names from old records still appear in the dropdown.</div></td></tr>';if($('partiesPagination'))$('partiesPagination').innerHTML=paginationHTML('parties',pg,all.length,PER_PAGE)}
@@ -679,6 +739,75 @@ function taskItem(title,sub,amount,badge,actions){return `<div class="history-ca
 function renderFollowup(){const d=sdb(),f=followupData(d);const totalTasks=f.paymentReports.length+f.overdueCredits.length+f.limitWarnings.length+f.chequesDue.length+f.chequeQueue.length;const overdueAmount=f.overdueCredits.reduce((s,x)=>s+x.balance,0);const reportAmount=f.paymentReports.reduce((s,x)=>s+A.num(x.amount),0);$('followupMetrics').innerHTML=[metric('Open tasks',totalTasks,'Auto detected follow-ups','rgba(6,182,212,.20)'),metric('Overdue credit',A.money(overdueAmount),`${f.overdueCredits.length} credit entries`,'rgba(239,68,68,.18)'),metric('Payment reports',A.money(reportAmount),`${f.paymentReports.length} waiting approval`,'rgba(34,197,94,.18)'),metric('Cheques',f.chequesDue.length+f.chequeQueue.length,`${f.chequeQueue.length} to write &middot; ${f.chequesDue.length} due soon`,'rgba(245,158,11,.20)')].join('');$('followPayReports').innerHTML=f.paymentReports.length?f.paymentReports.slice(0,8).map(x=>taskItem(A.esc(x.customer),`${A.esc(x.phone)} &middot; ${npDateTime(x.createdAt)}${x.method?' &middot; '+A.esc(x.method):''}${x.reference?' &middot; Ref: '+A.esc(x.reference):''}`,A.money(x.amount),'<span class="badge badge-amber">Waiting</span>',`<button class="btn btn-green btn-sm" data-approve-pay="${x.id}">Approve</button> <button class="btn btn-red btn-sm" data-reject-pay="${x.id}">Reject</button>`)).join(''):'<div class="empty">No payment reports waiting.</div>';$('followOverdueCredits').innerHTML=f.overdueCredits.length?f.overdueCredits.slice(0,10).map(x=>{const c=x.customerObj;const label=x.dueBased?`Overdue ${x.ageDays}d`:`${x.ageDays}d old`;const badge=`<span class="badge ${x.ageDays>=60?'badge-red':'badge-amber'}">${label}</span>`;return taskItem(A.esc(c.name),`${A.esc(c.phone||x.phone||'')} &middot; ${x.dueBased?'Due '+npDate(x.dueDate):'Credit '+npDate(x.date)} &middot; ${A.esc(x.items||'Credit entry')}`,A.money(x.balance),badge,`<button class="btn btn-green btn-sm" data-pay="${c.id}">Paid</button> <button class="btn btn-soft btn-sm" data-wa="${c.id}">WhatsApp</button> <button class="btn btn-soft btn-sm" data-sms="${c.id}">SMS</button> <button class="btn btn-soft btn-sm" data-statement="${c.id}">Statement</button>`) }).join(''):'<div class="empty">No overdue credit detected.</div>';$('followLimitWarnings').innerHTML=f.limitWarnings.length?f.limitWarnings.slice(0,8).map(x=>{const pct=Math.round((x.balance/A.num(x.customer.creditLimit))*100);return taskItem(A.esc(x.customer.name),`${A.esc(x.customer.phone)} &middot; limit ${A.money(x.customer.creditLimit)} &middot; ${pct}% used`,A.money(x.balance),`<span class="badge ${pct>=100?'badge-red':'badge-amber'}">${pct>=100?'Over limit':'Near limit'}</span>`,`<button class="btn btn-green btn-sm" data-pay="${x.customer.id}">Paid</button> <button class="btn btn-soft btn-sm" data-wa="${x.customer.id}">WhatsApp</button> <button class="btn btn-soft btn-sm" data-statement="${x.customer.id}">Statement</button>`) }).join(''):'<div class="empty">No customers near their credit limit.</div>';$('followCheques').innerHTML=(f.chequeQueue.length||f.chequesDue.length)?f.chequeQueue.slice(0,10).map(x=>taskItem(A.esc(x.party),`Cheque to write${x.note?' &middot; '+A.esc(x.note):''} &middot; ${npDateTime(x.createdAt)}`,A.num(x.amount)>0?A.money(x.amount):'',queueAgeBadge(x.createdAt),`<button class="btn btn-primary btn-sm" data-queue-write="${A.esc(x.id)}">Write</button> <button class="btn btn-green btn-sm" data-queue-done="${A.esc(x.id)}">Done</button>`)).join('')+f.chequesDue.slice(0,10).map(x=>{const age=daysBetween(String(x.chequeDate).slice(0,10),A.today());const badge=age>0?`<span class="badge badge-red">Overdue ${age}d</span>`:age===0?'<span class="badge badge-amber">Due today</span>':`<span class="badge badge-blue">In ${-age}d</span>`;return taskItem(A.esc(x.party),`Cheque ${A.esc(x.chequeNo)}${x.bank?' &middot; '+A.esc(x.bank):''} &middot; ${npDate(x.chequeDate)}`,A.money(x.amount),badge,`<button class="btn btn-green btn-sm" data-cheque-status="clear" data-id="${x.id}">Clear</button> <button class="btn btn-red btn-sm" data-cheque-status="bounce" data-id="${x.id}">Bounce</button>`) }).join(''):'<div class="empty">No cheques to write and no held cheques due in the next 7 days.</div>';const checklist=[['Write queued cheques',f.chequeQueue.length,'cheques'],['Approve portal payment reports',f.paymentReports.length,'credits'],['Collect overdue credit',f.overdueCredits.length,'credits'],['Review near-limit customers',f.limitWarnings.length,'customers'],['Update due cheques',f.chequesDue.length,'cheques']];$('followChecklist').innerHTML=checklist.map(([title,count,page])=>`<div class="history-card"><div><b>${title}</b><div class="small">${count?count+' item'+(count!==1?'s':'')+' need action':'Clear right now'}</div></div><div style="text-align:right"><span class="badge ${count?'badge-amber':'badge-green'}">${count||'OK'}</span><div style="margin-top:8px"><button class="btn btn-soft btn-sm" data-page="${page}">Open</button></div></div></div>`).join('')}
 function premiumInsight(title,value,sub,meta,tone='blue'){return `<div class="card dashboard-insight insight-${tone}"><div><div class="metric-label">${title}</div><div class="metric-value">${value}</div><div class="metric-sub">${sub}</div></div><span class="insight-chip">${meta}</span></div>`}
 function renderDashboardPremium(){const el=$('dashboardInsights');if(!el)return;const d=sdb(),balances=allCustomerBalances(d),pending=balances.reduce((s,x)=>s+x.balance,0),paid=balances.reduce((s,x)=>s+x.paid,0),rate=paid+pending>0?Math.round((paid/(paid+pending))*100):100,f=followupData(d);const week=last7();const weekSales=week.reduce((sum,date)=>sum+d.dailySales.filter(x=>x.date===date).reduce((s,x)=>s+totalDaily(x),0),0);const todayRows=d.dailySales.filter(x=>x.date===A.today());const methods=[['Cash','cash'],['FonePay','fonepay'],['POS','pos'],['Finance','finance'],['Other','other']].map(([label,key])=>({label,value:todayRows.reduce((s,x)=>s+A.num(x[key]),0)})).sort((a,b)=>b.value-a.value);const topMethod=methods[0]&&methods[0].value>0?methods[0].label:'Not entered';const openTasks=f.paymentReports.length+f.overdueCredits.length+f.limitWarnings.length+f.chequesDue.length+f.chequeQueue.length;el.innerHTML=[premiumInsight('Collection health',rate+'%',`${A.money(paid)} collected from customer credit`,pending>0?A.money(pending)+' pending':'Settled',rate>=80?'green':rate>=55?'amber':'red'),premiumInsight('7 day sales',A.money(weekSales),`${d.dailySales.filter(x=>week.includes(x.date)).length} daily sales entries`,weekSales>0?'Live':'No entries','blue'),premiumInsight('Priority queue',openTasks,`${f.overdueCredits.length} overdue, ${f.chequeQueue.length+f.chequesDue.length} cheque, ${f.paymentReports.length} report`,topMethod+' today',openTasks?'amber':'green')].join('')}
+function dashboardIsoRange(start,end,maxDays=370){const out=[];if(!start||!end||start>end)return out;for(let d=start,i=0;d<=end&&i<maxDays;d=addDaysIso(d,1),i++)out.push(d);return out}
+function shiftedBsMonth(year,month,offset){let y=Number(year),m=Number(month)+Number(offset||0);while(m<1){m+=12;y--}while(m>12){m-=12;y++}return{year:y,month:m}}
+function bsMonthDates(year,month,limitDay){const lengths=BS_MONTHS[year];if(!lengths||!lengths[month-1])return[];const endDay=Math.min(Number(limitDay||lengths[month-1]),lengths[month-1]);return dashboardIsoRange(bsToAd(year,month,1),bsToAd(year,month,endDay),40)}
+function dashboardPeriodWindow(mode){
+  const today=A.today(),bp=bsParts(today);
+  if(mode==='current-bs'||mode==='previous-bs'){
+    const offset=mode==='previous-bs'?-1:0,current=shiftedBsMonth(bp.year,bp.month,offset),previous=shiftedBsMonth(current.year,current.month,-1);
+    const limit=mode==='current-bs'?Number(bp.day):undefined,dates=bsMonthDates(current.year,current.month,limit),previousDates=bsMonthDates(previous.year,previous.month,limit||undefined);
+    return{dates,previousDates,label:`${BS_MONTH_NAMES[current.month-1]} ${current.year} BS`,previousLabel:`${BS_MONTH_NAMES[previous.month-1]} ${previous.year} BS`};
+  }
+  const days=Math.max(1,Math.min(90,Number(mode)||7)),start=addDaysIso(today,-days+1),previousEnd=addDaysIso(start,-1),previousStart=addDaysIso(previousEnd,-days+1);
+  return{dates:dashboardIsoRange(start,today,days),previousDates:dashboardIsoRange(previousStart,previousEnd,days),label:`Last ${days} days`,previousLabel:`Previous ${days} days`};
+}
+function salesForDates(d,dates){const allowed=new Set(dates);return(d.dailySales||[]).filter(x=>allowed.has(String(x.date||'').slice(0,10))).reduce((sum,x)=>sum+totalDaily(x),0)}
+function groupDashboardSales(d,dates,group){
+  const dayValue=date=>(d.dailySales||[]).filter(x=>String(x.date||'').slice(0,10)===date).reduce((sum,x)=>sum+totalDaily(x),0);
+  if(group==='monthly'){
+    const map=new Map();dates.forEach(date=>{const p=bsParts(date),key=p.year+'-'+p.month,old=map.get(key)||{label:`${BS_MONTH_NAMES[Number(p.month)-1]} ${p.year}`,value:0};old.value+=dayValue(date);map.set(key,old)});return[...map.values()];
+  }
+  if(group==='weekly'){
+    const out=[];for(let i=0;i<dates.length;i+=7){const part=dates.slice(i,i+7);out.push({label:part.length===1?shortDate(part[0]):`${shortDate(part[0])}–${shortDate(part.at(-1))}`,value:part.reduce((sum,date)=>sum+dayValue(date),0)})}return out;
+  }
+  return dates.map(date=>({label:shortDate(date),value:dayValue(date)}));
+}
+function comparisonTrend(current,previous,{lowerIsBetter=false,period='previous period'}={}){
+  current=A.num(current);previous=A.num(previous);if(current===previous)return{arrow:'→',tone:'neutral',label:`No change vs ${period}`};
+  const rose=current>previous,good=lowerIsBetter?!rose:rose,pct=previous>0?Math.round(Math.abs((current-previous)/previous)*100):null;
+  return{arrow:rose?'↑':'↓',tone:good?'good':'bad',label:pct===null?`${rose?'New activity':'Lower'} vs ${period}`:`${pct}% ${rose?'higher':'lower'} vs ${period}`};
+}
+function chequeLifecycle(x){const s=String(x.lifecycleStatus||x.lifecycle_status||x.status||'hold').toLowerCase();return({clear:'cleared',bounce:'bounced',hold:'on_hold'}[s]||s)}
+function renderDashboardChart(d){
+  const shell=$('salesChart');if(!shell)return;const mode=$('dashboardPeriod')?.value||'7',group=$('dashboardGroup')?.value||'daily',win=dashboardPeriodWindow(mode),points=groupDashboardSales(d,win.dates,group),total=points.reduce((s,x)=>s+x.value,0),previous=salesForDates(d,win.previousDates),trend=comparisonTrend(total,previous,{period:win.previousLabel});
+  const comparison=$('salesChartComparison');if(comparison)comparison.innerHTML=`${A.esc(win.label)} · <span class="kpi-change ${trend.tone}"><span aria-hidden="true">${trend.arrow}</span>${A.esc(trend.label)}</span>`;
+  if(!points.length||!points.some(x=>x.value>0)){shell.innerHTML=`<div class="chart-empty"><span class="chart-empty-icon" aria-hidden="true">↗</span><b>No sales entries for ${A.esc(win.label)}</b><p>Record a daily sale to start this trend. The chart will compare it with ${A.esc(win.previousLabel)}.</p><button class="btn btn-primary btn-sm" type="button" data-page="daily">Record daily sale</button></div>`;return}
+  const w=760,h=270,left=58,right=20,top=24,bottom=46,iw=w-left-right,ih=h-top-bottom,max=Math.max(1,...points.map(x=>x.value)),xAt=i=>points.length===1?left+iw/2:left+(i/(points.length-1))*iw,yAt=v=>top+ih-(v/max)*ih;
+  const coords=points.map((p,i)=>[xAt(i),yAt(p.value)]),line=coords.map(p=>p.join(',')).join(' '),area=`M ${left} ${top+ih} L ${coords.map(p=>p.join(' ')).join(' L ')} L ${left+iw} ${top+ih} Z`;
+  const grid=[0,.5,1].map(r=>{const y=top+ih-r*ih,v=max*r;return `<g><line x1="${left}" y1="${y}" x2="${left+iw}" y2="${y}" class="chart-grid-line"/><text x="${left-9}" y="${y+4}" text-anchor="end" class="chart-axis-label">${A.esc(compactMoney(v))}</text></g>`}).join('');
+  const step=Math.max(1,Math.ceil(points.length/7)),labels=points.map((p,i)=>i%step===0||i===points.length-1?`<text x="${xAt(i)}" y="${h-16}" text-anchor="middle" class="chart-axis-label">${A.esc(p.label)}</text>`:'').join('');
+  const dots=points.map((p,i)=>`<g tabindex="0" role="img" aria-label="${A.esc(p.label+': '+A.money(p.value))}" class="chart-point"><circle cx="${xAt(i)}" cy="${yAt(p.value)}" r="5"><title>${A.esc(p.label+': '+A.money(p.value))}</title></circle></g>`).join('');
+  shell.innerHTML=`<svg class="sales-chart" viewBox="0 0 ${w} ${h}" role="img" aria-labelledby="salesChartTitle salesChartDesc"><title id="salesChartTitle">Sales trend for ${A.esc(win.label)}</title><desc id="salesChartDesc">Total ${A.esc(A.money(total))}. ${A.esc(trend.label)}. Focus a point for its exact value.</desc><defs><linearGradient id="salesAreaGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--brand)" stop-opacity=".23"/><stop offset="1" stop-color="var(--brand)" stop-opacity=".02"/></linearGradient></defs>${grid}<path d="${area}" class="chart-area"/><polyline points="${line}" class="chart-line"/>${dots}${labels}</svg>`;
+}
+function compactMoney(value){value=A.num(value);if(value>=10000000)return'Rs '+(value/10000000).toFixed(value>=100000000?0:1)+'Cr';if(value>=100000)return'Rs '+(value/100000).toFixed(value>=1000000?0:1)+'L';if(value>=1000)return'Rs '+(value/1000).toFixed(value>=10000?0:1)+'K';return'Rs '+Math.round(value)}
+function financialStat(label,value,note,tone='info'){return `<div class="financial-stat state-${tone}"><span>${A.esc(label)}</span><b>${value}</b><small>${A.esc(note)}</small></div>`}
+function renderFinancialHealth(d){
+  const balances=allCustomerBalances(d),outstanding=balances.reduce((s,x)=>s+x.balance,0),collected=balances.reduce((s,x)=>s+x.paid,0),rate=collected+outstanding>0?Math.round(collected/(collected+outstanding)*100):100,weekSales=salesForDates(d,last7()),f=followupData(d),overdue=f.overdueCredits.reduce((s,x)=>s+x.balance,0),monthEnd=addDaysIso(A.today(),30);
+  const incoming=(d.cheques||[]).filter(x=>String(x.direction||'unknown')==='incoming'&&!['cleared','bounced','cancelled'].includes(chequeLifecycle(x))&&String(x.dueDate||x.chequeDate||'').slice(0,10)<=monthEnd),incomingTotal=incoming.reduce((s,x)=>s+A.num(x.amount),0),unknownDirection=(d.cheques||[]).filter(x=>!x.direction||x.direction==='unknown').length;
+  const el=$('financialHealthStats');if(el)el.innerHTML=[financialStat('7-day sales',A.money(weekSales),`${(d.dailySales||[]).filter(x=>last7().includes(x.date)).length} saved entries`,'info'),financialStat('Recorded collected',A.money(collected),'All-time aggregate; dated history unavailable','success'),financialStat('Outstanding credit',A.money(outstanding),`${balances.filter(x=>x.balance>0).length} customers`,'danger'),financialStat('Collection rate',rate+'%',rate>=80?'Healthy':rate>=55?'Needs attention':'Collection risk',rate>=80?'success':rate>=55?'warning':'danger'),financialStat('Expected cheque inflow',incoming.length?A.money(incomingTotal):'Not available',incoming.length?`${incoming.length} incoming in 30 days`:unknownDirection?'Set cheque direction first':'No incoming cheques','info'),financialStat('Overdue amount',A.money(overdue),`${f.overdueCredits.length} overdue credit entries`,overdue?'danger':'success')].join('');
+  renderDashboardChart(d);
+}
+function actionItem(label,detail,amount,page,tone,priority){return{label,detail,amount:A.num(amount),page,tone,priority:Number(priority)||0}}
+function renderActionCentre(d){
+  const today=A.today(),f=followupData(d),items=[];
+  (d.cheques||[]).filter(x=>chequeLifecycle(x)==='bounced').forEach(x=>items.push(actionItem(`Bounced cheque · ${x.party||'Unknown party'}`,`Cheque ${x.chequeNo||'number missing'} · review immediately`,x.amount,'cheques','danger',220+A.num(x.amount)/10000)));
+  (d.cheques||[]).filter(x=>chequeLifecycle(x)==='on_hold'&&x.chequeDate&&String(x.chequeDate).slice(0,10)<today).forEach(x=>{const days=daysBetween(String(x.chequeDate).slice(0,10),today);items.push(actionItem(`Cheque overdue ${days} day${days!==1?'s':''}`,`${x.party||'Unknown party'} · ${x.chequeNo||'number missing'}`,x.amount,'cheques','danger',180+days*4+A.num(x.amount)/10000))});
+  (d.cheques||[]).filter(x=>chequeLifecycle(x)==='on_hold'&&String(x.chequeDate||'').slice(0,10)===today).forEach(x=>items.push(actionItem('Cheque due today',`${x.party||'Unknown party'} · ${x.chequeNo||'number missing'}`,x.amount,'cheques','warning',160+A.num(x.amount)/10000)));
+  f.overdueCredits.slice(0,8).forEach(x=>items.push(actionItem(`Collect from ${x.customerObj.name}`,`${x.ageDays} day${x.ageDays!==1?'s':''} overdue · ${x.customerObj.phone||'phone missing'}`,x.balance,'followup',x.ageDays>=60?'danger':'warning',120+x.ageDays*2+x.balance/10000)));
+  f.paymentReports.forEach(x=>items.push(actionItem('Confirm reported payment',`${x.customer||'Customer'} · ${x.method||'method not set'}`,x.amount,'credits','warning',145+A.num(x.amount)/10000)));
+  const openTasks=(d.tasks||[]).filter(x=>x.status!=='done');if(openTasks.length)items.push(actionItem(`${openTasks.length} pending task${openTasks.length!==1?'s':''}`,'Review ownership and due dates',0,'tasks','info',85+openTasks.filter(x=>x.priority==='high').length*12));
+  if(!(d.dailySales||[]).some(x=>String(x.date).slice(0,10)===today))items.push(actionItem('Daily sales not entered','Add today’s payment-method totals',0,'daily','warning',110));
+  (d.chequeQueue||[]).forEach(x=>items.push(actionItem('Cheque waiting to be written',x.party||'Party not set',x.amount,'cheques','info',95+A.num(x.amount)/10000)));
+  items.sort((a,b)=>b.priority-a.priority||b.amount-a.amount||a.label.localeCompare(b.label));const visible=items.slice(0,9),el=$('actionCentreList'),summary=$('actionCentreSummary');if(summary)summary.textContent=items.length?`${items.length} prioritised item${items.length!==1?'s':''} · highest impact first`:'No urgent action detected';if(el)el.innerHTML=visible.length?visible.map((x,i)=>`<button type="button" class="action-centre-item state-${x.tone}" data-page="${x.page}"><span class="action-rank">${i+1}</span><span class="action-copy"><b>${A.esc(x.label)}</b><small>${A.esc(x.detail)}</small></span>${x.amount?`<strong>${A.money(x.amount)}</strong>`:'<span class="badge badge-blue">Open</span>'}</button>`).join(''):'<div class="empty action-empty"><b>All caught up</b><span>No overdue, bounced, missing, or unconfirmed items were detected.</span></div>';
+}
+function renderDashboardModern(){
+  const d=sdb(),today=A.today(),yesterday=addDaysIso(today,-1),balances=allCustomerBalances(d),outstanding=balances.reduce((s,x)=>s+x.balance,0),todaySales=(d.dailySales||[]).filter(x=>x.date===today).reduce((s,x)=>s+totalDaily(x),0),yesterdaySales=(d.dailySales||[]).filter(x=>x.date===yesterday).reduce((s,x)=>s+totalDaily(x),0),todayCheques=(d.cheques||[]).filter(x=>String(x.dueDate||x.chequeDate||'').slice(0,10)===today&&!['cleared','bounced','cancelled'].includes(chequeLifecycle(x))),yesterdayCheques=(d.cheques||[]).filter(x=>String(x.dueDate||x.chequeDate||'').slice(0,10)===yesterday&&!['cleared','bounced','cancelled'].includes(chequeLifecycle(x))),todayChequeTotal=todayCheques.reduce((s,x)=>s+A.num(x.amount),0),yesterdayChequeTotal=yesterdayCheques.reduce((s,x)=>s+A.num(x.amount),0);
+  const beforeTodayCredits=(d.credits||[]).filter(x=>String(x.date||'').slice(0,10)<today),priorOutstanding=beforeTodayCredits.reduce((s,x)=>s+Math.max(0,A.num(x.amount)-A.num(x.paid)),0),priorCustomerIds=new Set(beforeTodayCredits.filter(x=>A.num(x.amount)-A.num(x.paid)>0).map(x=>x.customerId)),followCount=balances.filter(x=>x.balance>0).length;
+  $('sideMartName').textContent=d.settings.martName||'RD MART';const hour=new Date().getHours();$('greeting').textContent=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';$('dashboardBrief').textContent=`${d.customers.length} customers · ${A.money(outstanding)} outstanding · ${todayCheques.length} cheque${todayCheques.length!==1?'s':''} due today.`;
+  $('metricCards').innerHTML=[metric("Today's sales",A.money(todaySales),`${(d.dailySales||[]).filter(x=>x.date===today).length} entries saved today`,'var(--accent)','daily',comparisonTrend(todaySales,yesterdaySales,{period:'yesterday'})),metric('Outstanding credit',A.money(outstanding),`Across ${followCount} customer${followCount!==1?'s':''}`,'var(--red)','credits',comparisonTrend(outstanding,priorOutstanding,{lowerIsBetter:true,period:'before today’s entries'})),metric('Cheques due today',todayCheques.length?A.money(todayChequeTotal):'Rs 0',`${todayCheques.length} active cheque${todayCheques.length!==1?'s':''}`,'var(--amber)','cheques',comparisonTrend(todayChequeTotal,yesterdayChequeTotal,{lowerIsBetter:true,period:'yesterday'})),metric('Customers to follow up',followCount,'With a pending credit balance','var(--green)','followup',comparisonTrend(followCount,priorCustomerIds.size,{lowerIsBetter:true,period:'before today’s entries'}))].join('');
+  renderFinancialHealth(d);renderActionCentre(d);const activity=$('activityList');if(activity)activity.innerHTML=(d.activity||[]).length?d.activity.slice(0,12).map((a,i)=>`<div class="timeline-event"><span class="timeline-marker" aria-hidden="true"></span><div><b>${A.esc(a.message)}</b><span>${npDateTime(a.time)}</span></div><span class="badge badge-blue">${A.esc(a.type||'Activity')}</span></div>`).join(''):'<div class="empty"><b>No activity recorded yet</b><span>Saved sales, payments, credits and cheque updates will appear here.</span></div>';
+}
 function shortDate(date){if(!date)return'-';try{const p=bsParts(date);return BS_MONTH_NAMES[Number(p.month)-1]+' '+Number(p.day)}catch(e){return String(date)}}function last7(){const arr=[];for(let i=6;i>=0;i--)arr.push(addDaysIso(A.today(),-i));return arr}
 function renderBars(id,items){const max=Math.max(1,...items.map(x=>x.value));$(id).innerHTML=items.map(x=>`<div class="bar-row"><div>${A.esc(x.label)}</div><div class="bar-bg"><div class="bar-fill" style="width:${x.value>0?Math.max(4,(x.value/max)*100):0}%"></div></div><div>${A.money(x.value)}</div></div>`).join('')}
 function updateDailyPartyHint(){const d=sdb();const dateInp=document.querySelector('#dailyForm [name="date"]');if(!dateInp)return;const adDate=adFromBsKey(dateInp.value);const payments=d.partyPayments.filter(x=>x.date===adDate);const sum=payments.reduce((s,x)=>s+A.num(x.amount),0);const hint=$('dailyPartyHint');if(!hint)return;if(payments.length>0){const partyInp=$('dailyPartyInput');if(partyInp&&(!partyInp.value||A.num(partyInp.value)===0))partyInp.value=sum;hint.innerHTML=payments.length+' party payment'+(payments.length!==1?'s':'')+' on this date = <b>'+A.money(sum)+'</b>'}else hint.textContent=''}
@@ -689,7 +818,7 @@ function renderAging(d){const el=$('agingCards');if(!el)return;const b={cur:0,d3
 function renderDaily(){const d=sdb();const from=cleanBsDate($('dailyDateFrom')?.value);const to=cleanBsDate($('dailyDateTo')?.value);const allDaily=A.byDate(d.dailySales).filter(x=>{const bs=bsKey(x.date);return(!from||bs>=from)&&(!to||bs<=to)});const tpD=Math.ceil(allDaily.length/PER_PAGE)||1;const pgD=pgState.daily=Math.max(1,Math.min(pgState.daily,tpD));const rows=allDaily.slice((pgD-1)*PER_PAGE,pgD*PER_PAGE);$('dailyRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${npDate(x.date)}</td><td>${A.money(x.pos)}</td><td>${A.money(x.fonepay)}</td><td>${A.money(x.cash)}</td><td>${A.money(x.finance)}</td><td>${A.money(x.partyPayment)}</td><td>${A.money(x.other)}</td><td><b>${A.money(totalDaily(x))}</b></td><td><button class="btn btn-soft btn-sm" data-edit-daily="${x.id}">Edit</button> <button class="btn btn-red btn-sm" data-delete-daily="${x.id}">Delete</button></td></tr>`).join(''):`<tr><td colspan="9"><div class="empty">${from||to?'No daily sales records found for this BS date filter.':'No daily sales records yet.'}</div></td></tr>`;if($('dailyPagination'))$('dailyPagination').innerHTML=paginationHTML('daily',pgD,allDaily.length,PER_PAGE);updateDailyPartyHint()}
 function renderPayments(){const d=sdb();const q=($('paymentSearch')?.value||'').toLowerCase();const allPay=A.byDate(d.partyPayments).filter(x=>(x.party+' '+x.reference+' '+x.method).toLowerCase().includes(q));const tpP=Math.ceil(allPay.length/PER_PAGE)||1;const pgP=pgState.payments=Math.max(1,Math.min(pgState.payments,tpP));const rows=allPay.slice((pgP-1)*PER_PAGE,pgP*PER_PAGE);$('paymentRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${npDate(x.date)}</td><td>${A.esc(x.party)}</td><td><b>${A.money(x.amount)}</b></td><td>${A.esc(x.method)}</td><td>${A.esc(x.reference||'-')}</td><td><button class="btn btn-red btn-sm" data-delete-payment="${x.id}">Delete</button></td></tr>`).join(''):'<tr><td colspan="6"><div class="empty">No party payments saved yet.</div></td></tr>';if($('paymentsPagination'))$('paymentsPagination').innerHTML=paginationHTML('payments',pgP,allPay.length,PER_PAGE)}
 /* Cheque page sub-tabs: only one section visible at a time keeps the page clean */
-function chqTab(t){['write','records','planner','queue'].forEach(k=>{const el=$('chq-'+k);if(el)el.style.display=k===t?'':'none'});document.querySelectorAll('[data-chq-tab]').forEach(b=>{b.classList.toggle('btn-primary',b.dataset.chqTab===t);b.classList.toggle('btn-soft',b.dataset.chqTab!==t)})}
+function chqTab(t){['write','records','planner','queue'].forEach(k=>{const el=$('chq-'+k);if(el){el.style.display=k===t?'':'none';el.setAttribute('aria-hidden',k===t?'false':'true')}});document.querySelectorAll('[data-chq-tab]').forEach(b=>{const active=b.dataset.chqTab===t;if(b.getAttribute('role')==='tab'){b.classList.toggle('btn-primary',active);b.classList.toggle('btn-soft',!active);b.setAttribute('aria-selected',active?'true':'false')}})}
 function renderChequeMetrics(d){const el=$('chequeMetrics');if(!el)return;const t=A.today();const todayC=d.cheques.filter(x=>String(x.chequeDate||'').slice(0,10)===t);const tSum=todayC.reduce((s,x)=>s+A.num(x.amount),0);const holds=d.cheques.filter(x=>x.status==='hold');const hSum=holds.reduce((s,x)=>s+A.num(x.amount),0);const lim=addDaysIso(t,7);const wk=holds.filter(x=>x.chequeDate&&String(x.chequeDate).slice(0,10)<=lim);const wSum=wk.reduce((s,x)=>s+A.num(x.amount),0);const qn=(d.chequeQueue||[]).length;el.innerHTML=[metric('Today',todayC.length?A.money(tSum):0,`${todayC.length} cheque${todayC.length!==1?'s':''} dated today`,'rgba(6,182,212,.20)'),metric('Pending on hold',holds.length?A.money(hSum):0,`${holds.length} cheque${holds.length!==1?'s':''} till cleared${holds.filter(isPostponed).length?` &middot; ${holds.filter(isPostponed).length} postponed`:''}`,'rgba(245,158,11,.20)'),metric('Need in 7 days',wk.length?A.money(wSum):0,`${wk.length} hold cheque${wk.length!==1?'s':''} due or overdue`,'rgba(239,68,68,.18)'),metric('To write',qn,qn?'waiting in the queue':'queue is empty','rgba(124,58,237,.19)')].join('');const tc=$('chqQueueTabCount');if(tc)tc.textContent=qn?`(${qn})`:''}
 function isPostponed(x){return /postponed/i.test(String(x.note||''))}
 function postponedBadge(x){return isPostponed(x)?` <span class="badge badge-purple" title="${A.esc(x.note)}">Postponed</span>`:''}
@@ -727,6 +856,108 @@ function renderCheques(){const d=sdb();renderChequeMetrics(d);renderChequeQueue(
   const ad=String(a.chequeDate||a.createdAt||''),bd=String(b.chequeDate||b.createdAt||'');
   return ah?ad.localeCompare(bd):bd.localeCompare(ad);
 });const tpCh=Math.ceil(allCheq.length/PER_PAGE)||1;const pgCh=pgState.cheques=Math.max(1,Math.min(pgState.cheques,tpCh));const rows=allCheq.slice((pgCh-1)*PER_PAGE,pgCh*PER_PAGE);$('chequeRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${A.esc(x.party)}</td><td>${A.esc(x.chequeNo)}</td><td><b>${A.money(x.amount)}</b></td><td>${A.esc(x.bank||'-')}</td><td>${npDate(x.chequeDate)}</td><td>${statusBadge(x.status)}${postponedBadge(x)}</td><td><div class="row-actions">${x.status!=='clear'?`<button class="btn btn-green btn-sm" data-cheque-status="clear" data-id="${x.id}">Clear</button>`:''}${x.status==='hold'?`<button class="btn btn-soft btn-sm" data-postpone="${x.id}">Postpone</button>`:''}<details class="row-menu"><summary aria-label="More actions for cheque ${A.esc(x.chequeNo)}" title="More actions">&#8943;</summary><div class="row-menu-pop">${x.status!=='hold'?`<button class="btn btn-amber btn-sm" data-cheque-status="hold" data-id="${x.id}">Mark hold</button>`:''}${x.status!=='bounce'?`<button class="btn btn-red btn-sm" data-cheque-status="bounce" data-id="${x.id}">Mark bounced</button>`:''}<button class="btn btn-red btn-sm" data-delete-cheque="${x.id}">Delete</button></div></details></div></td></tr>`).join(''):`<tr><td colspan="7"><div class="empty">${q||from||to?'No cheques found for this search or BS date filter.':'No cheques saved yet.'}</div></td></tr>`;if($('chequesPagination'))$('chequesPagination').innerHTML=paginationHTML('cheques',pgCh,allCheq.length,PER_PAGE)}
+/* Nepal banking calendar: closed weekdays and holidays are configurable.
+   The written date is preserved while a separate action date is calculated. */
+function chequeDateIso(x){return String(typeof x==='string'?x:(x?.chequeDate||'')).slice(0,10)}
+function bankCalendarOptions(){const settings=(sdb().settings||{}),weekends=Array.isArray(settings.bankWeekendDays)?settings.bankWeekendDays:[6],holidays=Array.isArray(settings.bankHolidays)?settings.bankHolidays:[];return{weekendDays:weekends,holidays}}
+function isBankClosedDate(value){const iso=chequeDateIso(value);if(!isoParts(iso))return false;return DateTools?!DateTools.isBankingDay(iso,bankCalendarOptions()):isoDay(iso)===6}
+function chequeBankDate(value){const iso=chequeDateIso(value);if(!isoParts(iso))return iso;return DateTools?DateTools.bankEffectiveDate(iso,bankCalendarOptions()):(isoDay(iso)===6?addDaysIso(iso,1):iso)}
+function bankFocusDate(value=A.today()){return chequeBankDate(value)}
+function weekdayName(value){const iso=chequeDateIso(value);if(!isoParts(iso))return'';return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][isoDay(iso)]}
+function isWeekendCarry(x){return chequeBankDate(x)!==chequeDateIso(x)}
+function bankingChequesOnDate(d,ad){return d.cheques.filter(x=>chequeBankDate(x)===ad&&x.status!=='bounce')}
+function sumCheques(rows){return rows.reduce((sum,x)=>sum+A.num(x.amount),0)}
+function bankCarryBadge(x){const effective=chequeBankDate(x);return isWeekendCarry(x)?` <span class="badge badge-blue" title="${weekdayName(x)} is closed; track on ${weekdayName(effective)}">${weekdayName(x)} &rarr; ${weekdayName(effective)}</span>`:''}
+function bankTimingBadge(x){
+  if(x.status!=='hold')return'';
+  const bd=chequeBankDate(x),delta=daysBetween(bd,A.today());
+  if(delta>0)return ` <span class="badge badge-red">Overdue ${delta}d</span>`;
+  if(delta===0)return ' <span class="badge badge-amber">Banking today</span>';
+  return ` <span class="badge badge-blue">Banking in ${-delta}d</span>`;
+}
+function chequeDateCell(x){
+  const original=chequeDateIso(x),bankDate=chequeBankDate(x),shifted=bankDate!==original;
+  return `<div class="cheque-date-main">${npDate(original)}</div><div class="small">${weekdayName(original)}</div>${shifted?`<div class="cheque-bank-date"><b>Bank ${weekdayName(bankDate)}:</b> ${npDate(bankDate)}</div>`:''}`;
+}
+function renderChequeMetrics(d){
+  const el=$('chequeMetrics');if(!el)return;
+  const today=A.today(),focus=bankFocusDate(today),focusRows=bankingChequesOnDate(d,focus),focusTotal=sumCheques(focusRows);
+  const carried=focusRows.filter(isWeekendCarry),holds=d.cheques.filter(x=>x.status==='hold'),hSum=sumCheques(holds);
+  const lim=addDaysIso(focus,7),week=holds.filter(x=>{const bd=chequeBankDate(x);return bd>=focus&&bd<=lim}),weekSum=sumCheques(week);
+  const allTotal=sumCheques(d.cheques),closed=isBankClosedDate(today);
+  el.innerHTML=[
+    metric(closed?`Next banking day · ${weekdayName(focus)}`:'Banking today',focusRows.length?A.money(focusTotal):A.money(0),`${focusRows.length} cheque${focusRows.length!==1?'s':''}${carried.length?` &middot; ${carried.length} carried from closed days`:''}`,'var(--brand)'),
+    metric('Pending on hold',holds.length?A.money(hSum):A.money(0),`${holds.length} cheque${holds.length!==1?'s':''}${holds.filter(isPostponed).length?` &middot; ${holds.filter(isPostponed).length} postponed`:''}`,'var(--muted)'),
+    metric('Next 7 days',week.length?A.money(weekSum):A.money(0),`${week.length} pending bank cheque${week.length!==1?'s':''}`,'var(--blue)'),
+    metric('Total recorded',d.cheques.length?A.money(allTotal):A.money(0),`${d.cheques.length} cheque record${d.cheques.length!==1?'s':''}`,'var(--text-2)')
+  ].join('');
+  const qn=(d.chequeQueue||[]).length,tc=$('chqQueueTabCount');if(tc)tc.textContent=qn?`(${qn})`:'';
+}
+function renderChequePlanner(d){
+  const el=$('chequePlanner');if(!el)return;
+  const days=[];
+  for(let i=0;i<30;i++){
+    const ad=addDaysIso(A.today(),i),closed=isBankClosedDate(ad),direct=chequesOnDate(d,ad),rows=closed?direct:bankingChequesOnDate(d,ad);
+    days.push({ad,closed,direct,rows,total:closed?0:sumCheques(rows),i});
+  }
+  const openDays=days.filter(x=>!x.closed),monthTotal=openDays.reduce((s,x)=>s+x.total,0),chequeCount=openDays.reduce((s,x)=>s+x.rows.length,0);
+  const freeDays=openDays.filter(x=>!x.rows.length).length,max=Math.max(1,...openDays.map(x=>x.total));
+  const heavy=openDays.reduce((a,b)=>b.total>a.total?b:a,openDays[0]);
+  const sum=$('chequePlannerSummary');
+  if(sum)sum.innerHTML=`<div class="banking-summary-line"><b>30-day bank total: ${A.money(monthTotal)}</b><span>${chequeCount} cheque${chequeCount!==1?'s':''}</span><span>${freeDays} open days free</span>${heavy?.total>0?`<span>Heaviest: ${npDate(heavy.ad)} &middot; ${A.money(heavy.total)}</span>`:''}</div>`;
+  el.innerHTML=`<div class="table-wrap"><table class="cheque-planner-table"><thead><tr><th>Bank day</th><th>Cheques</th><th>Bank total</th><th>Parties</th><th></th></tr></thead><tbody>`+days.map(({ad,closed,direct,rows,total,i})=>{
+    if(closed){const nextBankDay=chequeBankDate(ad),moved=sumCheques(direct);return `<tr class="bank-closed-row"><td><b>${npDate(ad)}</b><div class="small">${weekdayName(ad)}</div></td><td colspan="2"><span class="badge badge-amber">Bank closed</span>${direct.length?`<div class="small">${direct.length} cheque${direct.length!==1?'s':''} &middot; ${A.money(moved)} moves to ${weekdayName(nextBankDay)}</div>`:''}</td><td><span class="small">${direct.map(x=>A.esc(x.party)).slice(0,2).join(', ')||'No bank processing'}</span></td><td><button class="btn btn-soft btn-sm" data-plan-date="${nextBankDay}">Use ${weekdayName(nextBankDay)}</button></td></tr>`}
+    const cls=total>0&&total>=max*.66?'amount-red':total===0?'amount-green':'';
+    const carried=rows.filter(isWeekendCarry),parties=rows.slice(0,2).map(x=>A.esc(x.party)).join(', ')+(rows.length>2?' +'+(rows.length-2)+' more':'');
+    return `<tr><td><b>${npDate(ad)}</b><div class="small">${weekdayName(ad)}</div>${i===0?'<div><span class="badge badge-amber">Today</span></div>':''}</td><td>${rows.length||''}${carried.length?`<div><span class="badge badge-blue">+${carried.length} carried</span></div>`:''}</td><td>${total?`<b class="${cls}">${A.money(total)}</b>`:'<span class="badge badge-green">Free</span>'}</td><td><span class="small">${parties||'&mdash;'}</span></td><td><button class="btn btn-soft btn-sm" data-plan-date="${ad}">Write</button></td></tr>`;
+  }).join('')+'</tbody></table></div>';
+}
+function updateChequeDateHint(){
+  const el=$('chequeDateHint');if(!el)return;const inp=document.querySelector('#chequeForm [name="chequeDate"]'),ad=adFromBsKey(inp?.value);if(!ad){el.textContent='';return}
+  const d=sdb(),bankDate=chequeBankDate(ad);
+  if(bankDate!==ad){const bankRows=bankingChequesOnDate(d,bankDate),bankTotal=sumCheques(bankRows);el.innerHTML=`Bank closed on ${weekdayName(ad)}. This cheque will be tracked on <b>${weekdayName(bankDate)}, ${npDate(bankDate)}</b>${bankRows.length?` with ${bankRows.length} existing cheque${bankRows.length!==1?'s':''} (${A.money(bankTotal)})`:''}.`;el.className='small cheque-date-hint weekend';return}
+  const rows=bankingChequesOnDate(d,ad),total=sumCheques(rows);el.className='small cheque-date-hint';el.innerHTML=rows.length?`${rows.length} bank cheque${rows.length!==1?'s':''} already scheduled = <b>${A.money(total)}</b> (${rows.slice(0,3).map(x=>A.esc(x.party)).join(', ')}${rows.length>3?' +'+(rows.length-3):''})`:'Open banking day with no other cheques scheduled.';
+}
+function renderChequeRecordTotals(rows){
+  const el=$('chequeRecordTotals');if(!el)return;
+  const holds=rows.filter(x=>x.status==='hold'),cleared=rows.filter(x=>x.status==='clear'),carried=rows.filter(isWeekendCarry);
+  el.innerHTML=`<div><span>Filtered total</span><b>${A.money(sumCheques(rows))}</b><small>${rows.length} record${rows.length!==1?'s':''}</small></div><div><span>Pending amount</span><b>${A.money(sumCheques(holds))}</b><small>${holds.length} on hold</small></div><div><span>Cleared amount</span><b>${A.money(sumCheques(cleared))}</b><small>${cleared.length} cleared</small></div><div><span>Closed-day carry</span><b>${A.money(sumCheques(carried))}</b><small>${carried.length} carried</small></div>`;
+}
+function renderCheques(){
+  const d=sdb();renderChequeMetrics(d);renderChequeQueue(d);renderChequePlanner(d);updateChequeDateHint();
+  const q=($('chequeSearch')?.value||'').toLowerCase(),from=cleanBsDate($('chequeDateFrom')?.value),to=cleanBsDate($('chequeDateTo')?.value);
+  const stF=$('chequeStatusFilter')?.value||'',pf=$('chequePeriodFilter')?.value||'today',pfBypass=!!(q||from||to),focus=bankFocusDate(),weekEnd=addDaysIso(focus,7);
+  const allCheq=d.cheques.filter(x=>(x.party+' '+x.chequeNo+' '+x.bank+' '+weekdayName(x)).toLowerCase().includes(q)).filter(x=>{const bs=bsKey(x.chequeDate);return(!from||bs>=from)&&(!to||bs<=to)}).filter(x=>{
+    if(pfBypass||pf==='all')return true;if(x.status==='hold')return true;const bd=chequeBankDate(x);return pf==='today'?bd===focus:(bd>=focus&&bd<=weekEnd);
+  }).filter(x=>{if(!stF)return true;if(stF==='postponed')return isPostponed(x);return String(x.status||'hold')===stF}).sort((a,b)=>{
+    const ah=a.status==='hold',bh=b.status==='hold';if(ah!==bh)return ah?-1:1;const abd=chequeBankDate(a),bbd=chequeBankDate(b);if(abd!==bbd)return ah?abd.localeCompare(bbd):bbd.localeCompare(abd);return chequeDateIso(a).localeCompare(chequeDateIso(b));
+  });
+  renderChequeRecordTotals(allCheq);
+  const tpCh=Math.ceil(allCheq.length/PER_PAGE)||1,pgCh=pgState.cheques=Math.max(1,Math.min(pgState.cheques,tpCh)),rows=allCheq.slice((pgCh-1)*PER_PAGE,pgCh*PER_PAGE);
+  $('chequeRows').innerHTML=rows.length?rows.map(x=>`<tr class="${isWeekendCarry(x)?'cheque-weekend-row':''}"><td><b>${A.esc(x.party)}</b>${x.note?`<div class="small cheque-note" title="${A.esc(x.note)}">${A.esc(x.note)}</div>`:''}</td><td>${A.esc(x.chequeNo)}</td><td><b>${A.money(x.amount)}</b></td><td>${A.esc(x.bank||'-')}</td><td>${chequeDateCell(x)}</td><td>${statusBadge(x.status)}${postponedBadge(x)}${bankCarryBadge(x)}${bankTimingBadge(x)}</td><td><div class="row-actions">${x.status!=='clear'?`<button class="btn btn-green btn-sm" data-cheque-status="clear" data-id="${x.id}">Clear</button>`:''}${x.status==='hold'?`<button class="btn btn-soft btn-sm" data-postpone="${x.id}">Postpone</button>`:''}<details class="row-menu"><summary aria-label="More actions for cheque ${A.esc(x.chequeNo)}" title="More actions">&#8943;</summary><div class="row-menu-pop">${x.status!=='hold'?`<button class="btn btn-amber btn-sm" data-cheque-status="hold" data-id="${x.id}">Mark hold</button>`:''}${x.status!=='bounce'?`<button class="btn btn-red btn-sm" data-cheque-status="bounce" data-id="${x.id}">Mark bounced</button>`:''}<button class="btn btn-red btn-sm" data-delete-cheque="${x.id}">Delete</button></div></details></div></td></tr>`).join(''):`<tr><td colspan="7"><div class="empty">${q||from||to?'No cheques found for this search or BS date filter.':'No cheque records match this view.'}</div></td></tr>`;
+  if($('chequesPagination'))$('chequesPagination').innerHTML=paginationHTML('cheques',pgCh,allCheq.length,PER_PAGE);
+}
+function renderDashboardBankingCheques(d){
+  const today=A.today(),focus=bankFocusDate(today),closed=isBankClosedDate(today),focusRows=bankingChequesOnDate(d,focus),focusTotal=sumCheques(focusRows),carried=focusRows.filter(isWeekendCarry);
+  const metricCard=$('metricCards')?.querySelector('.metric:nth-child(3)');if(metricCard){metricCard.querySelector('.metric-label').textContent=closed?'Monday bank cheques':'Banking today';metricCard.querySelector('.metric-value').textContent=A.money(focusTotal);metricCard.querySelector('.metric-sub').innerHTML=`${focusRows.length} cheque${focusRows.length!==1?'s':''}${carried.length?` &middot; ${carried.length} from weekend`:''}`}
+  const balances=allCustomerBalances(d),creditPending=balances.reduce((s,x)=>s+x.balance,0),dailyToday=d.dailySales.filter(x=>x.date===today).reduce((s,x)=>s+totalDaily(x),0),pendingPR=(d.paymentRequests||[]).filter(x=>x.status==='pending').length;
+  $('dashboardBrief').textContent=`${d.customers.length} customers · ${A.money(creditPending)} credit pending · ${A.money(dailyToday)} sales today.`+(focusRows.length?` ${closed?'Monday banking':'Banking today'}: ${focusRows.length} cheque${focusRows.length!==1?'s':''}, ${A.money(focusTotal)}.`:'')+(pendingPR?` ${pendingPR} payment report${pendingPR!==1?'s':''} waiting.`:'');
+  const queue=(d.chequeQueue||[]).slice().sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt))).slice(0,3);
+  const action=[...new Map(d.cheques.filter(x=>x.status==='hold'||chequeBankDate(x)===focus).map(x=>[x.id,x])).values()].sort((a,b)=>chequeBankDate(a).localeCompare(chequeBankDate(b))).slice(0,6);
+  const summary=`<div class="banking-summary-line"><b>${closed?'Next open day: Monday':'Banking today'} &middot; ${A.money(focusTotal)}</b><span>${focusRows.length} cheque${focusRows.length!==1?'s':''}</span>${carried.length?`<span>${carried.length} carried from weekend</span>`:''}</div>`;
+  $('todayChequeList').innerHTML=summary+queue.map(x=>`<div class="history-card"><div><b>${A.esc(x.party)}</b><div class="small">To write &middot; ${npDateTime(x.createdAt)}</div></div><div class="cheque-list-amount"><b>${A.num(x.amount)>0?A.money(x.amount):''}</b><button class="btn btn-primary btn-sm" data-queue-write="${A.esc(x.id)}">Write</button></div></div>`).join('')+action.map(x=>`<div class="history-card ${isWeekendCarry(x)?'cheque-weekend-row':''}"><div><b>${A.esc(x.party)}</b><div class="small">Cheque ${A.esc(x.chequeNo)} &middot; ${npDate(x.chequeDate)}${isWeekendCarry(x)?` &middot; bank Monday ${npDate(chequeBankDate(x))}`:''}</div></div><div class="cheque-list-amount"><b>${A.money(x.amount)}</b><div>${statusBadge(x.status)}${bankCarryBadge(x)}${bankTimingBadge(x)}</div></div></div>`).join('')+(!queue.length&&!action.length?'<div class="empty">No cheque action is pending.</div>':'');
+}
+function renderBankingWeekReport(d){
+  const start=bankFocusDate(),end=addDaysIso(start,7),rows=d.cheques.filter(x=>{const bd=chequeBankDate(x);return x.status!=='bounce'&&bd>=start&&bd<=end}).sort((a,b)=>chequeBankDate(a).localeCompare(chequeBankDate(b)));
+  renderBars('weekChequeBars',rows.length?rows.slice(0,15).map(x=>({label:`${x.party} · ${shortDate(chequeBankDate(x))}${isWeekendCarry(x)?' · weekend carry':''}${x.status==='clear'?' ✓':''}`,value:A.num(x.amount)})):[{label:'No bank cheques in the next 7 days',value:0}]);
+}
+function renderFollowupBankingCheques(d){
+  const el=$('followCheques');if(!el)return;const focus=bankFocusDate(),soon=addDaysIso(focus,7);
+  const queue=(d.chequeQueue||[]).slice().sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));
+  const due=d.cheques.filter(x=>x.status==='hold'&&x.chequeDate&&chequeBankDate(x)<=soon).sort((a,b)=>chequeBankDate(a).localeCompare(chequeBankDate(b)));
+  el.innerHTML=(queue.length||due.length)?queue.slice(0,10).map(x=>taskItem(A.esc(x.party),`Cheque to write${x.note?' &middot; '+A.esc(x.note):''} &middot; ${npDateTime(x.createdAt)}`,A.num(x.amount)>0?A.money(x.amount):'',queueAgeBadge(x.createdAt),`<button class="btn btn-primary btn-sm" data-queue-write="${x.id}">Write</button> <button class="btn btn-green btn-sm" data-queue-done="${x.id}">Done</button>`)).join('')+due.slice(0,10).map(x=>taskItem(A.esc(x.party),`Cheque ${A.esc(x.chequeNo)}${x.bank?' &middot; '+A.esc(x.bank):''} &middot; written ${npDate(x.chequeDate)}${isWeekendCarry(x)?` &middot; bank Monday ${npDate(chequeBankDate(x))}`:''}`,A.money(x.amount),`${bankTimingBadge(x)}${bankCarryBadge(x)}`,`<button class="btn btn-green btn-sm" data-cheque-status="clear" data-id="${x.id}">Clear</button> <button class="btn btn-red btn-sm" data-cheque-status="bounce" data-id="${x.id}">Bounce</button>`)).join(''):'<div class="empty">No cheques to write and no held bank cheques due in the next 7 days.</div>';
+}
+
 /* Room rent: each room is a customer account named "ROOM N[ - Tenant]".
    Charges are credit entries ("Rent - Asar 2083"), payments use the normal
    credit payment flow — so sync, statements, WhatsApp and the tenant portal
@@ -824,8 +1055,29 @@ function renderTaskAlerts(){
     taskAnnounceReady=true;
   }
 }
+function renderNotifications(){
+  const d=sdb(),f=followupData(d),today=A.today();
+  const overdueCheques=(d.cheques||[]).filter(x=>x.status==='hold'&&x.chequeDate&&String(x.chequeDate).slice(0,10)<today);
+  const dueToday=(d.cheques||[]).filter(x=>x.status==='hold'&&String(x.chequeDate||'').slice(0,10)===today);
+  const openTasks=(d.tasks||[]).filter(x=>x.status!=='done').length;
+  const groups=[
+    {label:'Overdue cheques',count:overdueCheques.length,amount:overdueCheques.reduce((s,x)=>s+A.num(x.amount),0),page:'cheques',tone:'danger'},
+    {label:'Cheques due today',count:dueToday.length,amount:dueToday.reduce((s,x)=>s+A.num(x.amount),0),page:'cheques',tone:'warning'},
+    {label:'Overdue credit entries',count:f.overdueCredits.length,amount:f.overdueCredits.reduce((s,x)=>s+x.balance,0),page:'followup',tone:'danger'},
+    {label:'Payments to confirm',count:f.paymentReports.length,amount:f.paymentReports.reduce((s,x)=>s+A.num(x.amount),0),page:'credits',tone:'warning'},
+    {label:'Pending tasks',count:openTasks,amount:0,page:'tasks',tone:'info'}
+  ].filter(x=>x.count>0);
+  const total=groups.reduce((s,x)=>s+x.count,0),count=$('notificationCount'),summary=$('notificationSummary'),list=$('notificationList');
+  if(count){count.hidden=!total;count.textContent=total>99?'99+':String(total)}
+  if(summary)summary.textContent=total?`${total} item${total!==1?'s':''} across ${groups.length} priorit${groups.length===1?'y':'ies'}`:'Nothing urgent right now';
+  if(list)list.innerHTML=groups.length?groups.map(x=>`<button class="notification-item state-${x.tone}" type="button" data-page="${x.page}" role="menuitem"><span class="notification-mark" aria-hidden="true"></span><span><b>${A.esc(x.label)}</b><small>${x.count} item${x.count!==1?'s':''}${x.amount>0?' · '+A.money(x.amount):''}</small></span><span aria-hidden="true">→</span></button>`).join(''):'<div class="empty compact-empty">You are caught up. New actions will appear here.</div>';
+  const followBadge=$('followupNavBadge'),chequeBadge=$('chequeNavBadge');
+  const followCount=f.overdueCredits.length+f.paymentReports.length+f.limitWarnings.length;
+  const chequeCount=overdueCheques.length+dueToday.length+f.chequeQueue.length;
+  [[followBadge,followCount],[chequeBadge,chequeCount]].forEach(([el,n])=>{if(!el)return;el.hidden=!n;el.textContent=n>99?'99+':String(n)});
+}
 function applyStaffRestrictions(){if(!isStaff()&&!isStoreAdmin())return;['resetBtn','backupJsonBtn','backupBtn','downloadAllBtn','restoreJsonLabel','autoBackupCard'].forEach(id=>{const el=$(id);if(el)el.style.display='none'});if(isStaff()){document.querySelectorAll('[data-delete-customer],[data-delete-credit],[data-delete-sale],[data-delete-daily],[data-delete-payment],[data-delete-cheque],[data-delete-estimate],[data-delete-party]').forEach(el=>el.style.display='none');const tc=$('taskAssignCard');if(tc)tc.style.display='none'}}
-function renderAll(){updateSyncStatus();checkBackupReminder();polishStaticText();renderStoreSelector();const brandDB=sdb();applyBrandLogo((brandDB.settings||{}).storeLogo||'',(brandDB.settings||{}).martName||'MartAI');renderCustomerOptions();renderPartyOptions();setTodayInputs();syncDateButtons();renderTaskAlerts();if(currentPage==='dashboard'){renderDashboard();renderDashboardPremium()}if(currentPage==='tasks')renderTasks();if(currentPage==='followup')renderFollowup();if(currentPage==='customers')renderCustomers();if(currentPage==='credits')renderCredits();if(currentPage==='daily')renderDaily();if(currentPage==='estimates')renderEstimates();if(currentPage==='payments')renderPayments();if(currentPage==='cheques')renderCheques();if(currentPage==='rooms')renderRooms();if(currentPage==='reports')renderReports();if(currentPage==='settings'){renderSettings();renderBrandSettings();refreshAutoBackupStatus()}applyStaffRestrictions();polishEmptyStates()}
+function renderAll(){updateSyncStatus();checkBackupReminder();polishStaticText();renderStoreSelector();const brandDB=sdb();applyBrandLogo((brandDB.settings||{}).storeLogo||'',(brandDB.settings||{}).martName||'MartAI');renderCustomerOptions();renderPartyOptions();setTodayInputs();syncDateButtons();renderTaskAlerts();renderNotifications();if(currentPage==='dashboard')renderDashboardModern();if(currentPage==='tasks')renderTasks();if(currentPage==='followup'){renderFollowup();renderFollowupBankingCheques(brandDB)}if(currentPage==='customers')renderCustomers();if(currentPage==='credits')renderCredits();if(currentPage==='daily')renderDaily();if(currentPage==='estimates')renderEstimates();if(currentPage==='payments')renderPayments();if(currentPage==='cheques')renderCheques();if(currentPage==='rooms')renderRooms();if(currentPage==='reports'){renderReports();renderBankingWeekReport(brandDB)}if(currentPage==='settings'){renderSettings();renderBrandSettings();refreshAutoBackupStatus()}applyStaffRestrictions();polishEmptyStates()}
 let backupScheduleTimer=0;
 function scheduleAutoBackup(delay=15000){if(!isMainAdmin()&&!isStoreAdmin())return;clearTimeout(backupScheduleTimer);backupScheduleTimer=setTimeout(()=>runAutoBackupCheck({quiet:true}),delay)}
 function submitWrap(fn){try{fn();renderAll();setTimeout(updateSyncStatus,400);scheduleAutoBackup()}catch(e){toast(e.message,'err')}}
@@ -834,7 +1086,7 @@ function downloadCustomersCSV(){const d=sdb();let csv='Name,Phone,Email,Address,
 function downloadBalanceCSV(){const d=sdb();let csv='Customer,Phone,Total Taken,Total Paid,Balance\n';allCustomerBalances(d).forEach(x=>{csv+=[x.customer.name,x.customer.phone,x.taken,x.paid,x.balance].map(A.csvEscape).join(',')+'\n'});A.download('balance_sheet.csv',csv)}
 function downloadDailyCSV(){const d=sdb();let csv='Date,POS,FonePay,Cash,Finance,Party Payment,Other,Total,Note\n';A.byDate(d.dailySales).forEach(x=>{csv+=[x.date,x.pos,x.fonepay,x.cash,x.finance,x.partyPayment,x.other,totalDaily(x),x.note].map(A.csvEscape).join(',')+'\n'});A.download('daily_sales.csv',csv)}
 function downloadPaymentsCSV(){const d=sdb();let csv='Date,Party,Amount,Method,Reference,Note\n';A.byDate(d.partyPayments).forEach(x=>{csv+=[x.date,x.party,x.amount,x.method,x.reference,x.note].map(A.csvEscape).join(',')+'\n'});A.download('party_payments.csv',csv)}
-function downloadChequesCSV(){const d=sdb();let csv='Party,Cheque No,Amount,Bank,Date BS,Date AD,Status,Note\n';A.byDate(d.cheques,'chequeDate').forEach(x=>{csv+=[x.party,x.chequeNo,x.amount,x.bank,npDate(x.chequeDate),x.chequeDate,x.status,x.note].map(A.csvEscape).join(',')+'\n'});A.download('cheques.csv',csv)}
+function downloadChequesCSV(){const d=sdb();let csv='Party,Cheque No,Amount,Bank,Cheque Date BS,Cheque Date AD,Cheque Day,Banking Date BS,Banking Date AD,Weekend Carry,Status,Note\n';A.byDate(d.cheques,'chequeDate').forEach(x=>{const bd=chequeBankDate(x);csv+=[x.party,x.chequeNo,x.amount,x.bank,npDate(x.chequeDate),chequeDateIso(x),weekdayName(x),npDate(bd),bd,isWeekendCarry(x)?'Yes - Monday':'No',x.status,x.note].map(A.csvEscape).join(',')+'\n'});A.download('cheques.csv',csv)}
 function downloadEstimatesCSV(){const d=sdb();let csv='Date AD,Date BS,Customer,Phone,Items,Amount,Valid Until AD,Valid Until BS,Status,Note,Created At\n';A.byDate(d.estimateBills||[],'date').forEach(x=>{csv+=[x.date,bsKey(x.date),x.customer,x.phone,x.items,x.amount,x.validUntil||'',x.validUntil?bsKey(x.validUntil):'',x.status,x.note,x.createdAt||''].map(A.csvEscape).join(',')+'\n'});A.download('estimate_bills.csv',csv)}
 function downloadAll(){downloadBalanceCSV();setTimeout(downloadDailyCSV,150);setTimeout(downloadEstimatesCSV,300);setTimeout(downloadPaymentsCSV,450);setTimeout(downloadChequesCSV,600)}
 const BACKUP_DISMISS_KEY='martai_backup_dismissed_',BACKUP_DONE_KEY='martai_last_backup_ts_';
@@ -892,7 +1144,7 @@ function getPortalUrl(){
   return window.location.href.replace(/dashboard\.html.*/,'index.html');
 }
 function qrApiUrl(url,size){if(window.MartQR){try{return MartQR.dataUrl(url,size)}catch(e){console.warn('Local QR failed:',e)}}return'https://api.qrserver.com/v1/create-qr-code/?size='+size+'x'+size+'&data='+encodeURIComponent(url)+'&color=1e1b4b&bgcolor=ffffff&margin=10'}
-function openQrModal(url,title){if(isLocalUrl(url))toast('⚠ This link only works on this computer. Save your public portal link in Settings so the QR works everywhere.','err');$('qrModalTitle').textContent=title||'Customer Portal QR';$('qrModalUrl').textContent=url;const img=$('qrImg');if(img){img.src=qrApiUrl(url,220);img.onerror=()=>{img.alt='QR failed to load. Check internet connection.';img.style.background='rgba(239,68,68,.12)'}}openModal('qrModal')}
+function openQrModal(url,title){if(isLocalUrl(url))toast('⚠ This link only works on this computer. Save your public portal link in Settings so the QR works everywhere.','err');$('qrModalTitle').textContent=title||'Customer Portal QR';$('qrModalUrl').textContent=url;const img=$('qrImg');if(img){img.src=qrApiUrl(url,220);img.onerror=()=>{img.alt='QR failed to load. Check internet connection.';img.style.background='var(--surface-3)'}}openModal('qrModal')}
 function backupJson(){if(!isMainAdmin())return toast('Only the main admin can export backups','err');const data=window.KhataBackup?.createEnvelope?KhataBackup.createEnvelope(db()):db(),name=String(data.storeName||db().settings?.martName||'RD MART').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase()||'store';A.download(`KHATA-PANA__${name}__manual__${A.today()}.json`,JSON.stringify(data,null,2));markBackupDone()}
 function commandBtn(label,attrs,cls='btn-soft'){return `<button class="btn ${cls} btn-sm" type="button" ${attrs}>${label}</button>`}
 function commandRow(type,title,sub,badge,actions){return `<div class="command-result"><div><div class="small command-type">${type}</div><b>${title}</b><div class="small">${sub||''}</div>${badge?`<div style="margin-top:6px">${badge}</div>`:''}</div><div class="command-actions">${actions||''}</div></div>`}
@@ -992,6 +1244,8 @@ $('storeForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async
 $('editStoreForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{const data=formData(e.target);await A.updateStore(db(),data.id,data);closeModal('editStoreModal');toast('Store updated')})});
 $('staffForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{await A.addStaff(db(),formData(e.target));e.target.reset();toast('Staff access saved')})});
 $('commandInput')?.addEventListener('input',renderCommandResults);
+$('dashboardPeriod')?.addEventListener('change',()=>renderDashboardChart(sdb()));
+$('dashboardGroup')?.addEventListener('change',()=>renderDashboardChart(sdb()));
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='k'){e.preventDefault();openCommand();return}if(e.key==='Escape'&&$('commandModal')?.classList.contains('active'))closeModal('commandModal')});
 $('restoreJsonInput')?.addEventListener('change',e=>{
   if(!isMainAdmin()){e.target.value='';toast('Only the main admin can restore backups','err');return}
@@ -1075,7 +1329,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 $('waAgeFilter')?.addEventListener('change',applyWaFilter);
 ['repBsYear','repBsMonth'].forEach(id=>$(id)?.addEventListener('change',renderMonthlyReport));
 $('downloadMonthlyBtn')?.addEventListener('click',downloadMonthlyCSV);
-$$('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('active')}));
+enhanceAccessibility();
 A.tilt3d(document.querySelector('.hero-panel'),3);
 A.onDataChange(()=>{renderAll();toast('Updated from another device');scheduleAutoBackup(2500)});
 MartAI.ready.then(async()=>{
@@ -1115,6 +1369,7 @@ MartAI.ready.then(async()=>{
     return{setOpen};
   }
   dropdown('quickAddBtn','quickAddMenu');
+  dropdown('notificationBtn','notificationMenu');
   dropdown('userMenuBtn','userMenu');
 
   /* Table row overflow menus: only one open, close on outside click or after an action */

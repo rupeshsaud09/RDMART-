@@ -22,7 +22,7 @@
   function markDirty(coll,idv){if(dirty[coll]&&idv){dirty[coll].add(idv);persistPending()}}
   function clearDirty(){Object.values(dirty).forEach(s=>s.clear());settingsDirty=false;persistPending()}
   function id(){return 'id_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8)}
-  function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  function today(){if(window.MartAIDate)return window.MartAIDate.kathmanduDayKey();const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kathmandu',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).reduce((o,p)=>(o[p.type]=p.value,o),{});return parts.year+'-'+parts.month+'-'+parts.day}
   function now(){return new Date().toISOString()}
   function num(v){const n=Number(String(v??'').replace(/,/g,''));return Number.isFinite(n)?n:0}
   function money(v){return 'Rs '+num(v).toLocaleString('en-IN')}
@@ -32,14 +32,14 @@
   function defaultStore(){return{id:'default',name:'RD MART',phone:'',logoData:'',createdAt:now(),isActive:true}}
   function getActiveStoreId(){return localStorage.getItem(ACTIVE_STORE)||'default'}
   function setActiveStoreId(storeId){localStorage.setItem(ACTIVE_STORE,storeId||'default');currentDB=null}
-  function makeDB(){return{version:1,createdAt:now(),settings:{martName:'RD MART',adminUser:'admin',adminPass:'',martPhone:'',storeLogo:'',storePaymentQr:'',storePaymentQrLabel:''},stores:[defaultStore()],customers:[],credits:[],sales:[],dailySales:[],partyPayments:[],cheques:[],chequeQueue:[],parties:[],estimateBills:[],activity:[],staffAccounts:[],tasks:[]}}
+  function makeDB(){return{version:1,createdAt:now(),settings:{martName:'RD MART',adminUser:'admin',adminPass:'',martPhone:'',storeLogo:'',storePaymentQr:'',storePaymentQrLabel:'',bankWeekendDays:[6],bankHolidays:[]},stores:[defaultStore()],customers:[],credits:[],sales:[],dailySales:[],partyPayments:[],cheques:[],chequeQueue:[],parties:[],estimateBills:[],activity:[],staffAccounts:[],tasks:[]}}
   function normalizeDB(db){
     if(!db||typeof db!=='object')db=makeDB();
     ['settings','stores','customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','activity','loginEvents','staffAccounts','paymentRequests','tasks'].forEach(k=>{if(k==='settings'){db[k]=db[k]||makeDB().settings}else if(!Array.isArray(db[k]))db[k]=[]});
     if(!db.stores.length)db.stores=[defaultStore()];
     if(db.settings.martName==='KHATA PANA'||db.settings.martName==='MartAI'||!db.settings.martName)db.settings.martName='RD MART';
     db.stores.forEach(s=>{if(s.name==='KHATA PANA'||s.name==='MartAI'||!s.name)s.name='RD MART'});
-    db.settings.storeLogo=safeImageDataUrl(db.settings.storeLogo);db.settings.storePaymentQr=safeImageDataUrl(db.settings.storePaymentQr);if(!db.settings.adminUser)db.settings.adminUser='admin';if(!('adminPass' in db.settings))db.settings.adminPass='';
+    db.settings.storeLogo=safeImageDataUrl(db.settings.storeLogo);db.settings.storePaymentQr=safeImageDataUrl(db.settings.storePaymentQr);if(!db.settings.adminUser)db.settings.adminUser='admin';if(!('adminPass' in db.settings))db.settings.adminPass='';if(!Array.isArray(db.settings.bankWeekendDays))db.settings.bankWeekendDays=[6];if(!Array.isArray(db.settings.bankHolidays))db.settings.bankHolidays=[];
     db.stores.forEach(s=>{s.logoData=safeImageDataUrl(s.logoData);s.qrData=safeImageDataUrl(s.qrData)});db.customers.forEach(c=>{c.avatarData=safeImageDataUrl(c.avatarData,700000)});
     if(tableMode()){const sid=getActiveStoreId();db.sales.forEach(s=>{if(!s.storeId)s.storeId=sid})}
     return db;

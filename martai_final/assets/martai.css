@@ -17,72 +17,76 @@
   --font:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
 }
 
-/* Light theme (default) */
+/* Light theme (default): calm indigo with explicit semantic states. */
 body{
-  --bg:#f4f6fa;
+  --bg:#F6F8FC;
+  --sidebar:#FFFFFF;
   --surface:#ffffff;
-  --surface-2:#f8fafc;
-  --surface-3:#f1f5f9;
-  --line:#e4e9f0;
-  --line-strong:#cdd6e1;
-  --text:#0f172a;
-  --text-2:#334155;
-  --muted:#64748b;
-  --soft:#334155;
-  --faint:#94a3b8;
+  --surface-2:#F8FAFC;
+  --surface-3:#EEF2F7;
+  --line:#E2E8F0;
+  --line-strong:#CBD5E1;
+  --text:#0F172A;
+  --text-2:#475569;
+  --muted:#64748B;
+  --soft:#475569;
+  --faint:#94A3B8;
 
-  --brand:#4f46e5;
-  --brand-strong:#4338ca;
-  --brand-soft:#eef2ff;
-  --brand-soft-text:#4338ca;
-  --brand-ring:rgba(79,70,229,.16);
+  --brand:#4F46E5;
+  --brand-strong:#4338CA;
+  --brand-soft:#EEF2FF;
+  --brand-soft-text:#3730A3;
+  --brand-ring:rgba(79,70,229,.18);
 
-  --green:#16a34a;--green-strong:#15803d;--green-soft:#e7f6ec;--green-soft-text:#15803d;
-  --red:#dc2626;--red-strong:#b91c1c;--red-soft:#fdecec;--red-soft-text:#b91c1c;
-  --amber:#d97706;--amber-strong:#a16207;--amber-soft:#fdf3d9;--amber-soft-text:#92400e;
-  --blue:#2563eb;--blue-strong:#1d4ed8;--blue-soft:#e8f0fe;--blue-soft-text:#1d4ed8;
-  --purple:#7c3aed;--purple-soft:#f1ecfd;--purple-soft-text:#6d28d9;
+  --accent:#0EA5E9;
+  --green:#16A34A;--green-strong:#15803D;--green-soft:#F0FDF4;--green-soft-text:#166534;
+  --red:#DC2626;--red-strong:#B91C1C;--red-soft:#FEF2F2;--red-soft-text:#991B1B;
+  --amber:#D97706;--amber-strong:#B45309;--amber-soft:#FFFBEB;--amber-soft-text:#92400E;
+  --blue:#0EA5E9;--blue-strong:#0284C7;--blue-soft:#F0F9FF;--blue-soft-text:#075985;
+  --purple:#7C3AED;--purple-soft:#F5F3FF;--purple-soft-text:#5B21B6;
 
   --shadow-sm:0 1px 2px rgba(15,23,42,.05);
-  --shadow-md:0 6px 18px rgba(15,23,42,.07);
-  --shadow-lg:0 16px 44px rgba(15,23,42,.14);
-  --scrim:rgba(15,23,42,.42);
+  --shadow-md:0 8px 24px rgba(15,23,42,.08);
+  --shadow-lg:0 22px 56px rgba(15,23,42,.16);
+  --scrim:rgba(15,23,42,.52);
 
   /* legacy aliases used by older markup/JS */
   --panel:var(--surface);--panel2:var(--surface-2);--card:var(--surface);--card2:var(--surface-2);
   --brand2:var(--blue);--pink:var(--purple);--shadow:var(--shadow-md);
 }
 
-/* Dark theme */
+/* Dark theme follows the same hierarchy with brighter semantic colors. */
 body[data-theme="dark"]{
-  --bg:#0b1220;
-  --surface:#121a2b;
-  --surface-2:#0f1626;
-  --surface-3:#1b2436;
-  --line:#243044;
-  --line-strong:#33415a;
-  --text:#e8eef8;
-  --text-2:#c4cfe0;
-  --muted:#93a3bb;
-  --soft:#c4cfe0;
-  --faint:#64748b;
+  --bg:#08111F;
+  --sidebar:#0D1728;
+  --surface:#111C2E;
+  --surface-2:#172337;
+  --surface-3:#1B2940;
+  --line:#263449;
+  --line-strong:#3A4A63;
+  --text:#F8FAFC;
+  --text-2:#CBD5E1;
+  --muted:#94A3B8;
+  --soft:#CBD5E1;
+  --faint:#64748B;
 
-  --brand:#6d6af8;
-  --brand-strong:#8583fa;
-  --brand-soft:rgba(109,106,248,.14);
-  --brand-soft-text:#a5b4fc;
-  --brand-ring:rgba(109,106,248,.28);
+  --brand:#7C83FF;
+  --brand-strong:#9297FF;
+  --brand-soft:rgba(124,131,255,.14);
+  --brand-soft-text:#B7BBFF;
+  --brand-ring:rgba(124,131,255,.28);
 
-  --green:#22c55e;--green-strong:#4ade80;--green-soft:rgba(34,197,94,.13);--green-soft-text:#86efac;
-  --red:#ef4444;--red-strong:#f87171;--red-soft:rgba(239,68,68,.13);--red-soft-text:#fca5a5;
-  --amber:#f59e0b;--amber-strong:#fbbf24;--amber-soft:rgba(245,158,11,.13);--amber-soft-text:#fcd34d;
-  --blue:#3b82f6;--blue-strong:#60a5fa;--blue-soft:rgba(59,130,246,.13);--blue-soft-text:#93c5fd;
-  --purple:#8b5cf6;--purple-soft:rgba(139,92,246,.15);--purple-soft-text:#c4b5fd;
+  --accent:#38BDF8;
+  --green:#22C55E;--green-strong:#4ADE80;--green-soft:rgba(34,197,94,.14);--green-soft-text:#86EFAC;
+  --red:#F87171;--red-strong:#FCA5A5;--red-soft:rgba(248,113,113,.14);--red-soft-text:#FCA5A5;
+  --amber:#F59E0B;--amber-strong:#FBBF24;--amber-soft:rgba(245,158,11,.14);--amber-soft-text:#FCD34D;
+  --blue:#38BDF8;--blue-strong:#7DD3FC;--blue-soft:rgba(56,189,248,.14);--blue-soft-text:#7DD3FC;
+  --purple:#A78BFA;--purple-soft:rgba(167,139,250,.14);--purple-soft-text:#C4B5FD;
 
   --shadow-sm:0 1px 2px rgba(0,0,0,.25);
   --shadow-md:0 6px 18px rgba(0,0,0,.28);
   --shadow-lg:0 18px 48px rgba(0,0,0,.45);
-  --scrim:rgba(2,6,16,.6);
+  --scrim:rgba(0,0,0,.68);
 }
 
 /* ---------- 2. BASE ---------- */
@@ -102,8 +106,9 @@ body{
 a{color:inherit;text-decoration:none}
 button,input,select,textarea{font:inherit;color:inherit}
 .hidden{display:none!important}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 ::selection{background:var(--brand-soft);color:var(--brand-soft-text)}
-body[data-theme="dark"] ::selection{background:rgba(109,106,248,.35);color:#fff}
+body[data-theme="dark"] ::selection{background:rgba(124,131,255,.34);color:#fff}
 
 :focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:var(--radius-xs)}
 .input:focus-visible,.select:focus-visible,.textarea:focus-visible{outline:none}
@@ -141,18 +146,18 @@ kbd,.kbd{font-family:var(--font);font-size:11px;font-weight:600;color:var(--mute
 .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
 .btn-primary{background:var(--brand);color:#fff;box-shadow:var(--shadow-sm)}
 .btn-primary:hover{background:var(--brand-strong)}
-body[data-theme="dark"] .btn-primary{color:#fff;background:#5b58f0}
-body[data-theme="dark"] .btn-primary:hover{background:#6d6af8}
+body[data-theme="dark"] .btn-primary{color:#08111F;background:var(--brand)}
+body[data-theme="dark"] .btn-primary:hover{background:var(--brand-strong)}
 .btn-green{background:var(--green);color:#fff;box-shadow:var(--shadow-sm)}
-.btn-green:hover{background:#15803d}
-body[data-theme="dark"] .btn-green{background:#1a9e50}
-body[data-theme="dark"] .btn-green:hover{background:#22c55e}
+.btn-green:hover{background:var(--green-strong)}
+body[data-theme="dark"] .btn-green{background:var(--green);color:#08111F}
+body[data-theme="dark"] .btn-green:hover{background:var(--green-strong)}
 .btn-red{background:var(--red);color:#fff;box-shadow:var(--shadow-sm)}
-.btn-red:hover{background:#b91c1c}
-body[data-theme="dark"] .btn-red{background:#dc3535}
-body[data-theme="dark"] .btn-red:hover{background:#ef4444}
+.btn-red:hover{background:var(--red-strong)}
+body[data-theme="dark"] .btn-red{background:var(--red);color:#08111F}
+body[data-theme="dark"] .btn-red:hover{background:var(--red-strong)}
 .btn-amber{background:var(--amber);color:#fff;box-shadow:var(--shadow-sm)}
-.btn-amber:hover{background:#b45309}
+.btn-amber:hover{background:var(--amber-strong)}
 .btn-soft{background:var(--surface);border-color:var(--line);color:var(--text-2);box-shadow:var(--shadow-sm)}
 .btn-soft:hover{background:var(--surface-2);border-color:var(--line-strong);color:var(--text)}
 .btn-ghost{background:transparent;border-color:transparent;color:var(--muted)}
@@ -207,7 +212,7 @@ input[type="checkbox"]{accent-color:var(--brand)}
 
 .sidebar{
   position:sticky;top:0;height:100vh;padding:var(--sp-3);display:flex;flex-direction:column;
-  border-right:1px solid var(--line);background:var(--surface);overflow-y:auto;overflow-x:hidden;
+  border-right:1px solid var(--line);background:var(--sidebar);overflow-y:auto;overflow-x:hidden;
   transition:width .2s ease;z-index:60;
 }
 .side-brand{display:flex;align-items:center;gap:10px;padding:6px 6px 14px;min-width:0}
@@ -318,6 +323,22 @@ body[data-theme="dark"] .theme-switch button.active{background:var(--surface-3)}
 .menu-item.danger:hover{background:var(--red-soft)}
 .menu-sep{height:1px;background:var(--line);margin:5px 4px}
 .menu-note{padding:8px 10px 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--faint)}
+
+.notification-btn{position:relative}
+.notification-count{position:absolute;right:-4px;top:-5px;display:grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border:2px solid var(--surface);border-radius:999px;background:var(--red);color:#fff;font-size:9px;font-weight:800;line-height:1}
+.notification-menu{width:min(380px,calc(100vw - 24px));padding:0;overflow:hidden}
+.notification-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 16px 12px;border-bottom:1px solid var(--line)}
+.notification-head>div{display:grid;gap:2px}
+.notification-head b{font-size:13.5px}
+.notification-head span{color:var(--muted);font-size:11.5px}
+.notification-list{display:grid;gap:1px;padding:6px;max-height:380px;overflow:auto}
+.notification-item{width:100%;display:grid;grid-template-columns:9px minmax(0,1fr) auto;align-items:center;gap:10px;border:1px solid transparent;border-radius:10px;padding:10px 11px;text-align:left;cursor:pointer}
+.notification-item:hover{filter:brightness(.985);border-color:currentColor}
+.notification-item b,.notification-item small{display:block}
+.notification-item b{font-size:12.5px;color:var(--text)}
+.notification-item small{margin-top:2px;color:var(--muted);font-size:11px}
+.notification-mark{width:8px;height:8px;border-radius:50%;background:currentColor}
+.compact-empty{padding:22px 14px}
 
 /* ---------- 8. CONTENT + CARDS ---------- */
 .content{padding:var(--sp-6);width:100%;max-width:1440px;margin:0 auto}
@@ -511,7 +532,9 @@ tr:hover td{background:var(--surface-2)}
   transition:opacity .2s ease,transform .2s ease;
 }
 .toast.ok{border-left-color:var(--green)}
-.toast.err{border-left-color:var(--red)}
+.toast.err,.toast.error,.toast.danger{border-left-color:var(--red)}
+.toast.info{border-left-color:var(--accent)}
+.toast.is-leaving{opacity:0;transform:translateX(20px)}
 @keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
 
 /* ---------- 13. BS DATE PICKER ---------- */
@@ -765,4 +788,348 @@ tr:hover td{background:var(--surface-2)}
   .modal-actions{grid-template-columns:1fr}
   .quick-row{grid-template-columns:1fr}
   .store-switcher{width:104px}
+}
+
+/* ---------- 18. SEMANTIC PALETTE ---------- */
+/* Generated cards may set --m inline. Fallback colors retain meaning instead
+   of flattening warning, danger, success, and informational states. */
+.metric:nth-child(4n+1){--m:var(--brand)}
+.metric:nth-child(4n+2){--m:var(--red)}
+.metric:nth-child(4n+3){--m:var(--amber)}
+.metric:nth-child(4n+4){--m:var(--green)}
+.dashboard-insight{--accent:var(--brand)}
+.dashboard-insight.is-success{--accent:var(--green)}
+.dashboard-insight.is-warning{--accent:var(--amber)}
+.dashboard-insight.is-danger{--accent:var(--red)}
+.dashboard-insight.is-info{--accent:var(--accent)}
+
+.state-success{color:var(--green-soft-text);background:var(--green-soft);border-color:color-mix(in srgb,var(--green) 34%,var(--line))}
+.state-warning{color:var(--amber-soft-text);background:var(--amber-soft);border-color:color-mix(in srgb,var(--amber) 34%,var(--line))}
+.state-danger{color:var(--red-soft-text);background:var(--red-soft);border-color:color-mix(in srgb,var(--red) 34%,var(--line))}
+.state-info{color:var(--blue-soft-text);background:var(--blue-soft);border-color:color-mix(in srgb,var(--accent) 34%,var(--line))}
+
+/* ---------- 19. CHEQUE BANKING WORKFLOW ---------- */
+.bank-calendar-note{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;margin-top:2px;
+  border:1px solid color-mix(in srgb,var(--brand) 34%,var(--line));border-radius:var(--radius);
+  background:linear-gradient(110deg,var(--brand-soft),var(--surface));color:var(--text-2);
+}
+.bank-calendar-icon{
+  width:34px;height:34px;display:grid;place-items:center;flex:none;border-radius:10px;
+  background:var(--brand);color:#fff;font-size:13px;font-weight:800;
+}
+.bank-calendar-note b{display:block;color:var(--text);font-size:13px}
+.bank-calendar-note span:not(.bank-calendar-icon){display:block;margin-top:1px;font-size:12px;line-height:1.5}
+.banking-summary-line{
+  display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;padding:10px 12px;margin-bottom:10px;
+  border:1px solid color-mix(in srgb,var(--brand) 30%,var(--line));border-radius:10px;background:var(--brand-soft);
+  color:var(--brand-soft-text);font-size:12px;
+}
+.banking-summary-line b{color:var(--text);font-size:13px}
+.banking-summary-line span{display:inline-flex;align-items:center;gap:5px}
+.banking-summary-line span::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--brand)}
+.cheque-record-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.cheque-record-summary>div{padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);min-width:0}
+.cheque-record-summary span,.cheque-record-summary small{display:block;color:var(--muted);font-size:10.5px;font-weight:650}
+.cheque-record-summary span{text-transform:uppercase;letter-spacing:.04em}
+.cheque-record-summary b{display:block;margin:3px 0 1px;color:var(--text);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cheque-record-summary>div:first-child{border-color:color-mix(in srgb,var(--brand) 38%,var(--line));background:var(--brand-soft)}
+.cheque-date-main{font-weight:650;color:var(--text);white-space:nowrap}
+.cheque-bank-date{margin-top:5px;padding:4px 7px;border-left:2px solid var(--brand);background:var(--brand-soft);color:var(--brand-soft-text);font-size:10.5px;line-height:1.35}
+.cheque-weekend-row>td{background:color-mix(in srgb,var(--brand-soft) 48%,var(--surface))}
+.cheque-weekend-row:hover>td{background:var(--brand-soft)}
+.bank-closed-row>td{background:var(--surface-3);color:var(--muted)}
+.bank-closed-row:hover>td{background:var(--surface-3)}
+.cheque-date-hint{padding:5px 8px;border-radius:7px;background:var(--surface-2);color:var(--muted)}
+.cheque-date-hint.weekend{background:var(--brand-soft);color:var(--brand-soft-text);border-left:2px solid var(--brand)}
+.cheque-note{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cheque-list-amount{display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right}
+.cheque-planner-table td{vertical-align:middle}
+
+@media(max-width:700px){
+  .bank-calendar-note{align-items:flex-start}
+  .cheque-record-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .banking-summary-line{align-items:flex-start;flex-direction:column;gap:4px}
+}
+
+/* ---------- 21. MODERN DASHBOARD + CHEQUE WORKSPACE ---------- */
+/* Shared polish */
+body{background:
+  radial-gradient(circle at 78% -10%,color-mix(in srgb,var(--brand) 6%,transparent),transparent 28rem),
+  var(--bg)}
+.content{max-width:1540px;padding:28px 30px 40px}
+.card{border-radius:16px;box-shadow:0 1px 2px rgba(15,23,42,.03),0 10px 30px rgba(15,23,42,.04)}
+.btn{border-radius:11px;font-weight:680;letter-spacing:-.08px}
+.btn-primary{box-shadow:0 7px 18px color-mix(in srgb,var(--brand) 20%,transparent)}
+.btn-primary:hover{box-shadow:0 9px 24px color-mix(in srgb,var(--brand) 25%,transparent);transform:translateY(-1px)}
+.btn-soft:hover,.btn-ghost:hover{transform:translateY(-1px)}
+.input,.select,.textarea{border-radius:11px;background-color:color-mix(in srgb,var(--surface) 94%,var(--surface-2));font-weight:500}
+.input:focus,.select:focus,.textarea:focus{box-shadow:0 0 0 4px var(--brand-ring)}
+.topbar{min-height:68px;padding:10px 30px;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px)}
+.sidebar{padding:16px 13px}
+.side-brand{padding:4px 7px 18px}
+.brand-logo{width:42px;height:42px;border-radius:13px;box-shadow:0 8px 18px color-mix(in srgb,var(--brand) 22%,transparent)}
+.nav-btn{min-height:42px;padding:10px 11px;border-radius:11px}
+.nav-btn.active{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--brand) 10%,transparent)}
+
+/* Dashboard hero */
+.dashboard-hero{
+  position:relative;isolation:isolate;overflow:hidden;align-items:stretch;min-height:220px;padding:30px 32px;
+  border-radius:22px;border:1px solid color-mix(in srgb,var(--brand) 34%,transparent);
+  background:linear-gradient(125deg,#312E81 0%,#4F46E5 58%,#2563EB 100%);
+  box-shadow:0 22px 54px rgba(49,46,129,.2);color:#fff;
+}
+.dashboard-hero::before{content:"";position:absolute;z-index:-1;width:330px;height:330px;right:-70px;top:-180px;border:75px solid rgba(255,255,255,.08);border-radius:50%}
+.dashboard-hero::after{content:"";position:absolute;z-index:-1;width:170px;height:170px;right:23%;bottom:-125px;border:42px solid rgba(255,255,255,.055);border-radius:50%}
+.dashboard-hero-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;max-width:800px}
+.dashboard-hero .hero-kicker{display:inline-flex;align-items:center;gap:8px;margin-bottom:11px;color:rgba(255,255,255,.76);font-size:12px;text-transform:uppercase;letter-spacing:.09em}
+.hero-status-dot{width:7px;height:7px;border-radius:50%;background:#86EFAC;box-shadow:0 0 0 5px rgba(134,239,172,.14)}
+.dashboard-hero .hero-heading{color:#fff;font-size:34px;font-weight:780;letter-spacing:-1.15px}
+.dashboard-hero .hero-note{color:rgba(255,255,255,.74);font-size:13.5px;max-width:780px}
+.hero-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:22px}
+.dashboard-hero .hero-actions .btn-primary{background:#fff;color:#3730A3;box-shadow:0 8px 22px rgba(0,0,0,.14)}
+.dashboard-hero .hero-actions .btn-primary:hover{background:#EEF2FF}
+.dashboard-hero .hero-actions .btn-soft{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:#fff;box-shadow:none}
+.dashboard-hero .hero-actions .btn-soft:hover,.dashboard-hero .hero-actions .btn-ghost:hover{background:rgba(255,255,255,.17);color:#fff}
+.dashboard-hero .hero-actions .btn-ghost{color:rgba(255,255,255,.8)}
+.dashboard-hero .hero-side{align-items:flex-start;justify-content:flex-end}
+.dashboard-hero .live-clock{display:grid;grid-template-columns:auto auto;gap:2px 14px;min-width:250px;padding:14px 16px;border-color:rgba(255,255,255,.18);background:rgba(5,30,28,.23);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(8px)}
+.dashboard-hero .clock-day{grid-column:1/-1;color:rgba(255,255,255,.58);text-transform:uppercase;letter-spacing:.08em;font-size:10px}
+.dashboard-hero .clock-date{color:rgba(255,255,255,.82)}
+.dashboard-hero .clock-time{color:#fff}
+.dashboard-section-label{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:26px 2px 11px;color:var(--text)}
+.dashboard-section-label span{font-size:14px;font-weight:750;letter-spacing:-.15px}
+.dashboard-section-label small{font-size:11.5px;color:var(--muted)}
+.dashboard-section-spaced{margin-top:27px}
+
+/* Dashboard cards */
+.dashboard-kpi-grid{gap:14px}
+.dashboard-kpi-grid .metric{min-height:145px;padding:20px 21px;overflow:hidden;isolation:isolate}
+.dashboard-kpi-grid .metric::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--m);opacity:.95}
+.dashboard-kpi-grid .metric::after{content:"";position:absolute;z-index:-1;width:94px;height:94px;border-radius:50%;right:-35px;top:-42px;background:color-mix(in srgb,var(--m) 9%,transparent)}
+.metric-topline{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.metric-open{display:grid;place-items:center;width:27px;height:27px;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:14px;transition:.16s ease}
+button.metric:hover .metric-open{color:var(--brand);border-color:color-mix(in srgb,var(--brand) 35%,var(--line));background:var(--brand-soft);transform:translate(1px,-1px)}
+.dashboard-kpi-grid .metric-label{font-size:12px;text-transform:uppercase;letter-spacing:.055em}
+.dashboard-kpi-grid .metric-label::before{display:none}
+.dashboard-kpi-grid .metric-value{font-size:29px;margin-top:13px;letter-spacing:-1px}
+.dashboard-kpi-grid .metric-sub{margin-top:auto;padding-top:8px}
+.dashboard-health-grid{gap:14px;margin-top:14px}
+.dashboard-health-grid .dashboard-insight{min-height:132px;border-radius:16px;border-color:transparent;background:color-mix(in srgb,var(--surface) 84%,var(--brand-soft));box-shadow:none}
+.dashboard-health-grid .dashboard-insight::before{width:0}
+.dashboard-health-grid .dashboard-insight .metric-label::before{width:7px;height:7px;border-radius:50%}
+.dashboard-health-grid .insight-chip{border:0;background:var(--surface);box-shadow:0 1px 5px rgba(16,20,19,.06)}
+.dashboard-grid{gap:14px}
+.dashboard-grid .dash-card{height:390px;border-radius:17px}
+.dashboard-grid .section-title{font-size:15px}
+.dashboard-grid .history-card{padding:12px 13px;border:1px solid var(--line);background:var(--surface);border-radius:12px}
+.dashboard-grid .history-card:hover{border-color:color-mix(in srgb,var(--brand) 24%,var(--line));box-shadow:0 8px 22px rgba(15,23,42,.06)}
+
+/* Dashboard operating view */
+.kpi-change{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-size:11px;font-weight:700;line-height:1.35}
+.kpi-change.good{color:var(--green-soft-text)}
+.kpi-change.bad{color:var(--red-soft-text)}
+.kpi-change.neutral{color:var(--muted)}
+.dashboard-kpi-grid .metric{display:flex;flex-direction:column}
+.dashboard-kpi-grid .kpi-change+.metric-sub{padding-top:3px;margin-top:auto}
+.dashboard-operating-grid{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(310px,.72fr);gap:14px;align-items:stretch}
+.financial-health-card,.action-centre-card{border-radius:18px;box-shadow:var(--shadow-sm)}
+.financial-health-card{padding:22px;overflow:hidden}
+.financial-health-head{align-items:center;margin-bottom:16px}
+.chart-controls{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.chart-controls label{display:grid;gap:4px;color:var(--muted);font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.055em}
+.chart-controls .select{width:auto;min-width:128px;height:36px;padding-left:10px;font-size:11.5px;text-transform:none;letter-spacing:normal}
+.financial-summary-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:18px}
+.financial-stat{display:flex;flex-direction:column;min-height:91px;padding:11px 12px;border:1px solid var(--line);border-radius:12px}
+.financial-stat>span{font-size:10.5px;font-weight:700;color:var(--muted)}
+.financial-stat>b{margin-top:6px;color:var(--text);font-size:16px;line-height:1.15;font-variant-numeric:tabular-nums;word-break:break-word}
+.financial-stat>small{margin-top:auto;padding-top:5px;color:var(--muted);font-size:9.5px;line-height:1.35}
+.sales-chart-shell{position:relative;min-height:270px;border-top:1px solid var(--line);padding-top:10px}
+.sales-chart{display:block;width:100%;height:auto;min-height:250px;overflow:visible}
+.chart-grid-line{stroke:var(--line);stroke-width:1;stroke-dasharray:3 4}
+.chart-axis-label{fill:var(--muted);font-family:var(--font);font-size:9.5px}
+.chart-area{fill:url(#salesAreaGradient)}
+.chart-line{fill:none;stroke:var(--brand);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.chart-point circle{fill:var(--surface);stroke:var(--brand);stroke-width:3;transition:r .16s ease,fill .16s ease}
+.chart-point:focus{outline:none}
+.chart-point:hover circle,.chart-point:focus circle{r:7;fill:var(--brand)}
+.chart-empty{min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted)}
+.chart-empty-icon{display:grid;place-items:center;width:42px;height:42px;margin-bottom:10px;border-radius:12px;background:var(--brand-soft);color:var(--brand);font-size:20px}
+.chart-empty b{color:var(--text);font-size:13.5px}
+.chart-empty p{max-width:430px;margin:5px 0 14px;font-size:11.5px}
+.chart-skeleton{min-height:250px;display:flex;align-items:flex-end;gap:8%;padding:30px 7%}
+.chart-skeleton span{width:12%;height:var(--h,60%);border-radius:8px 8px 2px 2px;background:var(--surface-3);animation:skel 1.2s ease-in-out infinite}
+.chart-skeleton span:nth-child(2){--h:82%}.chart-skeleton span:nth-child(3){--h:45%}.chart-skeleton span:nth-child(4){--h:68%}.chart-skeleton span:nth-child(5){--h:92%}
+.action-centre-card{display:flex;flex-direction:column;padding:19px;min-height:100%}
+.action-centre-list{display:grid;gap:7px;min-height:0;max-height:512px;overflow:auto;padding-right:2px}
+.action-centre-item{display:grid;grid-template-columns:25px minmax(0,1fr) auto;align-items:center;gap:9px;width:100%;padding:10px;border:1px solid var(--line);border-radius:11px;text-align:left;cursor:pointer;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}
+.action-centre-item:hover{transform:translateY(-1px);border-color:currentColor;box-shadow:var(--shadow-sm)}
+.action-rank{display:grid;place-items:center;width:24px;height:24px;border-radius:8px;background:color-mix(in srgb,currentColor 11%,transparent);font-size:10px;font-weight:800}
+.action-copy{min-width:0}
+.action-copy b,.action-copy small{display:block}
+.action-copy b{overflow:hidden;color:var(--text);font-size:12px;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
+.action-copy small{margin-top:2px;overflow:hidden;color:var(--muted);font-size:10.5px;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
+.action-centre-item strong{color:var(--text);font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.action-empty{display:grid;gap:4px;margin:auto}
+.action-empty span{color:var(--muted);font-size:11.5px}
+.activity-timeline-card{margin-top:14px;border-radius:18px}
+.activity-timeline{position:relative;display:grid;max-height:330px;padding-left:2px}
+.timeline-event{position:relative;display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 4px;border-bottom:1px solid var(--line)}
+.timeline-event:last-child{border-bottom:0}
+.timeline-event::before{content:"";position:absolute;left:11px;top:24px;bottom:-12px;width:1px;background:var(--line)}
+.timeline-event:last-child::before{display:none}
+.timeline-marker{position:relative;z-index:1;width:9px;height:9px;margin:5px auto 0;border:2px solid var(--surface);border-radius:50%;background:var(--brand);box-shadow:0 0 0 2px var(--brand-soft)}
+.timeline-event b,.timeline-event>div>span{display:block}
+.timeline-event b{font-size:12.5px;font-weight:650}
+.timeline-event>div>span{margin-top:2px;color:var(--muted);font-size:10.5px}
+
+/* Cheque command center */
+.cheque-page-head{align-items:center;margin-bottom:16px}
+.cheque-page-head .page-title{font-size:25px;letter-spacing:-.65px;margin-top:2px}
+.cheque-page-head .page-sub{font-size:13px;margin-top:5px}
+.cheque-page-head .section-head-actions{flex-wrap:nowrap}
+.bank-calendar-note{position:relative;padding:14px 16px;border-radius:15px;margin:0;background:color-mix(in srgb,var(--brand-soft) 58%,var(--surface));box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+.bank-calendar-icon{width:40px;height:40px;border-radius:12px;box-shadow:0 7px 17px color-mix(in srgb,var(--brand) 20%,transparent)}
+.bank-calendar-icon svg{width:20px;height:20px}
+.bank-calendar-state{margin:0 0 0 auto!important;padding:5px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--brand-soft-text)!important;font-size:10.5px!important;font-weight:750;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.cheque-metric-grid{gap:14px;margin-top:14px}
+.cheque-metric-grid .metric{min-height:126px;padding:18px 19px;border-radius:15px;box-shadow:none}
+.cheque-metric-grid .metric::before{content:"";position:absolute;left:18px;right:18px;top:0;height:3px;border-radius:0 0 3px 3px;background:var(--m)}
+.cheque-metric-grid .metric-label{padding-top:4px;text-transform:uppercase;letter-spacing:.05em;font-size:11px}
+.cheque-metric-grid .metric-label::before{display:none}
+.cheque-metric-grid .metric-value{font-size:25px;margin-top:9px}
+.cheque-tabs{display:flex;align-items:center;gap:6px;margin-top:18px;padding:5px;width:max-content;max-width:100%;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:var(--shadow-sm);overflow-x:auto}
+.cheque-tabs .btn{position:relative;min-height:40px;padding:8px 14px;border:0;box-shadow:none}
+.cheque-tabs .btn-soft{background:transparent;color:var(--muted)}
+.cheque-tabs .btn-soft:hover{background:var(--surface-2);color:var(--text);transform:none}
+.cheque-tabs .btn-primary:hover{transform:none;box-shadow:none}
+.cheque-tab-count:empty{display:none}
+.cheque-tab-count:not(:empty){display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:rgba(255,255,255,.2);font-size:10px}
+.cheque-tabs .btn-soft .cheque-tab-count{background:var(--surface-3)}
+.cheque-panel-card{margin-top:14px;border-radius:18px}
+
+/* Cheque composer */
+.cheque-compose-layout{display:grid;grid-template-columns:minmax(250px,.72fr) minmax(520px,1.75fr);gap:14px;margin-top:14px;align-items:stretch}
+.cheque-compose-guide{position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:412px;padding:27px;border-radius:18px;background:linear-gradient(145deg,#312E81,#4F46E5);color:#fff;box-shadow:0 18px 42px rgba(49,46,129,.18)}
+.cheque-compose-guide::after{content:"";position:absolute;width:210px;height:210px;right:-100px;bottom:-110px;border:48px solid rgba(255,255,255,.07);border-radius:50%}
+.cheque-guide-icon{display:grid;place-items:center;width:48px;height:48px;margin-bottom:38px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.14)}
+.cheque-guide-icon svg{width:24px;height:24px}
+.eyebrow{display:block;margin-bottom:7px;color:rgba(255,255,255,.56);font-size:10.5px;font-weight:750;text-transform:uppercase;letter-spacing:.1em}
+.cheque-compose-guide h3{font-size:25px;line-height:1.2;letter-spacing:-.65px}
+.cheque-compose-guide p{margin-top:10px;color:rgba(255,255,255,.7);font-size:12.5px;line-height:1.65}
+.cheque-guide-steps{display:grid;gap:10px;margin-top:auto;padding-top:28px;font-size:11.5px;color:rgba(255,255,255,.78)}
+.cheque-guide-steps span{display:flex;align-items:center;gap:9px}
+.cheque-guide-steps b{display:grid;place-items:center;width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.12);color:#fff;font-size:10px}
+.cheque-form-card{display:flex;flex-direction:column;justify-content:space-between;padding:24px 26px;border-radius:18px;box-shadow:none}
+.cheque-form-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:18px;margin-bottom:19px;border-bottom:1px solid var(--line)}
+.cheque-form-card .form-grid{gap:13px 16px}
+.cheque-form-card .field{margin-bottom:5px}
+.cheque-form-card .field label{display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.cheque-form-card .field label span{color:var(--faint);font-size:9px;text-transform:uppercase;letter-spacing:.06em}
+.cheque-form-card .input,.cheque-form-card .select{height:46px}
+.cheque-field-hint{display:block;min-height:18px;margin-top:2px;opacity:.82;font-size:10.5px}
+.amount-input-wrap{position:relative}
+.amount-input-wrap>span{position:absolute;left:13px;top:50%;z-index:1;transform:translateY(-50%);padding-right:10px;border-right:1px solid var(--line);color:var(--muted);font-size:12px;font-weight:750}
+.amount-input-wrap .input{padding-left:54px;font-weight:680;font-variant-numeric:tabular-nums}
+.cheque-form-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px;padding-top:17px;border-top:1px solid var(--line)}
+.cheque-form-footer>span{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11.5px}
+.cheque-save-btn{min-width:166px}
+.cheque-queue-form{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:13px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2)}
+.cheque-queue-form .input{background:var(--surface)}
+#chq-records .filter-strip{border-radius:14px;background:var(--surface-2)}
+#chq-records .table-wrap,#chq-planner .table-wrap{border-radius:13px;border:1px solid var(--line)}
+#chq-records .table-wrap table,#chq-planner .table-wrap table{border-collapse:separate;border-spacing:0}
+#chq-records thead th,#chq-planner thead th{position:sticky;top:0;z-index:1;background:var(--surface-2);font-size:10.5px;text-transform:uppercase;letter-spacing:.045em}
+.cheque-record-summary{gap:10px;margin:14px 0}
+.cheque-record-summary>div{padding:13px 14px;border-radius:12px;background:var(--surface)}
+.cheque-record-summary b{font-size:17px}
+
+body[data-theme="dark"] .dashboard-hero{background:linear-gradient(125deg,#1E1B4B,#3730A3 58%,#1D4ED8)}
+body[data-theme="dark"] .dashboard-health-grid .dashboard-insight{background:color-mix(in srgb,var(--surface) 88%,var(--brand-soft))}
+body[data-theme="dark"] .bank-calendar-note{box-shadow:none}
+
+@media(max-width:1280px){
+  .content{padding:24px}
+  .dashboard-hero{min-height:210px}
+  .cheque-compose-layout{grid-template-columns:260px minmax(0,1fr)}
+}
+
+@media(max-width:1040px){
+  .topbar{padding:9px 18px}
+  .content{padding:20px}
+  .dashboard-hero{padding:26px}
+  .cheque-compose-layout{grid-template-columns:1fr}
+  .cheque-compose-guide{min-height:auto;display:grid;grid-template-columns:auto 1fr;gap:18px;padding:22px}
+  .cheque-guide-icon{margin:0}
+  .cheque-guide-steps{grid-column:1/-1;grid-template-columns:repeat(3,1fr);padding-top:5px}
+}
+
+@media(max-width:760px){
+  .content{padding:13px 13px 28px}
+  .dashboard-hero{min-height:0;padding:23px 20px;border-radius:18px}
+  .dashboard-hero .hero-heading{font-size:27px}
+  .dashboard-hero .hero-side{width:100%;justify-content:flex-start}
+  .dashboard-hero .live-clock{min-width:0;width:100%}
+  .hero-actions{width:100%;margin-top:18px}
+  .hero-actions .btn{flex:1;min-width:132px}
+  .hero-actions .btn-ghost{flex-basis:100%}
+  .dashboard-section-label small{display:none}
+  .dashboard-kpi-grid .metric{min-height:128px;padding:16px}
+  .dashboard-kpi-grid .metric-value{font-size:23px}
+  .dashboard-health-grid .dashboard-insight{min-height:122px}
+  .cheque-page-head{align-items:stretch}
+  .cheque-page-head .section-head-actions{display:grid;grid-template-columns:1fr 1fr}
+  .bank-calendar-state{display:none!important}
+  .cheque-tabs{width:100%;padding:4px}
+  .cheque-tabs .btn{flex:0 0 auto;padding:8px 12px;min-height:42px}
+  .cheque-compose-guide{display:block;padding:20px}
+  .cheque-guide-icon{margin-bottom:20px}
+  .cheque-guide-steps{grid-template-columns:1fr;margin-top:22px;padding:0}
+  .cheque-form-card{padding:19px 17px}
+  .cheque-form-footer{align-items:stretch;flex-direction:column}
+  .cheque-form-footer>span{align-items:flex-start}
+  .cheque-save-btn{width:100%;min-width:0}
+  .cheque-queue-form{display:grid;grid-template-columns:1fr;padding:10px}
+  .cheque-queue-form .input,.cheque-queue-form .btn{min-width:0!important;width:100%}
+}
+
+@media(max-width:480px){
+  .dashboard-hero .hero-heading{font-size:24px}
+  .dashboard-kpi-grid{grid-template-columns:1fr}
+  .dashboard-kpi-grid .metric{min-height:118px}
+  .cheque-metric-grid{grid-template-columns:1fr 1fr}
+  .cheque-metric-grid .metric{min-height:116px;padding:15px}
+  .cheque-metric-grid .metric-value{font-size:20px}
+  .cheque-tabs .btn span:not(.cheque-tab-count){display:none}
+  .cheque-tabs .btn{flex:1;justify-content:center;padding:8px 11px}
+  .cheque-tab-count:not(:empty){position:absolute;margin:0 0 25px 22px}
+  .bank-calendar-note{padding:12px}
+  .bank-calendar-icon{width:36px;height:36px}
+}
+
+@media(max-width:1180px){
+  .dashboard-operating-grid{grid-template-columns:1fr}
+  .action-centre-list{max-height:430px}
+}
+@media(max-width:900px){
+  .financial-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .financial-health-card,.action-centre-card{padding:16px}
+  .financial-health-head{align-items:stretch}
+  .chart-controls{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .chart-controls .select{width:100%;min-width:0;height:44px}
+  .sales-chart-shell{min-height:230px;overflow-x:auto}
+  .sales-chart{min-width:620px;min-height:220px}
+  .action-centre-item{grid-template-columns:24px minmax(0,1fr)}
+  .action-centre-item>strong,.action-centre-item>.badge{grid-column:2;justify-self:start}
+}
+@media(max-width:480px){
+  .financial-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .financial-stat{min-height:98px;padding:10px}
+  .financial-stat>b{font-size:14px}
+  .chart-controls{grid-template-columns:1fr}
+  .activity-timeline-card{padding:15px}
+  .timeline-event{grid-template-columns:14px minmax(0,1fr)}
+  .timeline-event>.badge{grid-column:2;justify-self:start}
 }
