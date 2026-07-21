@@ -574,7 +574,7 @@
           <div id="storeQrPreview"></div>
         </div>
         <div class="card" style="margin-top:16px" id="storeManagerCard"><div class="section-head"><div><div class="section-title">Stores</div><div class="section-sub">Create another store with separate customers, sales, credits, cheques and reports.</div></div></div><form id="storeForm" class="form-grid" style="margin-bottom:14px"><div class="field"><label>Store name</label><input class="input" name="name" required placeholder="Branch / store name"></div><div class="field"><label>Store phone</label><input class="input" name="phone" inputmode="numeric" placeholder="98XXXXXXXX"></div><div class="field"><label>Store admin email</label><input class="input" name="adminEmail" type="email" required placeholder="store@example.com"></div><div class="field" style="align-self:end"><button class="btn btn-primary full" type="submit">Create store</button></div></form><div class="hint" style="margin-bottom:12px">Create this email in Supabase Authentication -> Users first. That email and password will login directly to this store.</div><div class="table-wrap"><table><thead><tr><th>Store</th><th>Phone</th><th>Status</th><th>Action</th></tr></thead><tbody id="storeRows"></tbody></table></div><div id="storesPagination" style="padding:4px 8px 2px"></div></div>
-        <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Staff access</div><div class="section-sub">Staff use the Admin tab, but they cannot delete records or open settings.</div></div></div><form id="staffForm" class="form-grid" style="margin-bottom:14px"><div class="field"><label>Staff email</label><input class="input" name="email" type="email" required placeholder="staff@example.com"></div><div class="field"><label>Staff name</label><input class="input" name="name" placeholder="Counter staff"></div><div class="field"><label>Local password</label><input class="input" name="password" placeholder="Only for local mode"></div><div class="field" style="align-self:end"><button class="btn btn-primary full" type="submit">Allow staff access</button></div></form><div class="hint" style="margin-bottom:12px">For live Supabase mode, first create/invite this email in Supabase Authentication, then allow it here.</div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Action</th></tr></thead><tbody id="staffRows"></tbody></table></div><div id="staffPagination" style="padding:4px 8px 2px"></div></div>
+        <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Staff access</div><div class="section-sub">Staff use the Admin tab, but they cannot delete records or open settings.</div></div></div><form id="staffForm" class="form-grid" style="margin-bottom:14px"><div class="field"><label>Staff email</label><input class="input" name="email" type="email" required placeholder="staff@example.com"></div><div class="field"><label>Staff name</label><input class="input" name="name" placeholder="Counter staff"></div><div class="field"><label>Local password</label><input class="input" name="password" placeholder="Only for local mode"></div><div class="field"><label>WhatsApp phone <span style="opacity:.55;font-weight:400">(for task alerts)</span></label><input class="input" name="phone" inputmode="tel" placeholder="98XXXXXXXX"></div><div class="field" style="align-self:end"><button class="btn btn-primary full" type="submit">Allow staff access</button></div></form><div class="hint" style="margin-bottom:12px">For live Supabase mode, first create/invite this email in Supabase Authentication, then allow it here.</div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Action</th></tr></thead><tbody id="staffRows"></tbody></table></div><div id="staffPagination" style="padding:4px 8px 2px"></div></div>
         <div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Login details</div><div class="section-sub">Latest admin and customer portal logins</div></div></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Type</th><th>Name / Email</th><th>Phone</th></tr></thead><tbody id="loginRows"></tbody></table></div><div id="loginsPagination" style="padding:4px 8px 2px"></div></div>
       </section>
     </div>
@@ -647,7 +647,7 @@
 <script src="assets/martai-supabase-config.js"></script>
 <script src="assets/martai-date.js?v=1"></script>
 <script src="assets/martai-ui.js?v=1"></script>
-<script src="assets/martai-store.js?v=28"></script>
+<script src="assets/martai-store.js?v=29"></script>
 <script src="assets/martai-cheques.js?v=1"></script>
 <script src="assets/martai-intelligence.js?v=1"></script>
 <script src="assets/martai-ai-client.js?v=1"></script>
@@ -1343,7 +1343,7 @@ $('roomFilter')?.addEventListener('change',()=>{pgState.roomLedger=1;renderAll()
 $('downloadRoomsBtn')?.addEventListener('click',downloadRoomsCSV);
 $('estimateForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.addEstimateBill(db(),formData(e.target));e.target.reset();toast('Estimate bill saved')})});
 $('partyForm')?.addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{const p=A.addParty(db(),formData(e.target));e.target.reset();toast('Party account saved: '+p.name)})});
-$('taskForm')?.addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.addTask(db(),formData(e.target));e.target.reset();toast('Task assigned')})});
+$('taskForm')?.addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{const t=A.addTask(db(),formData(e.target));notifyTaskStaff(t);e.target.reset();toast('Task assigned')})});
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.hasAttribute('data-clear-task-due')){const inp=document.querySelector('#taskForm [name="dueDate"]');if(inp)inp.value='';return}
   if(b.dataset.taskComplete){submitWrap(()=>{A.completeTask(db(),b.dataset.taskComplete);toast('Task marked done')});return}
@@ -1358,7 +1358,7 @@ $('savePortalUrlBtn')?.addEventListener('click',()=>{const v=($('portalUrlInput'
 $('storeSelect')?.addEventListener('change',e=>{asyncWrap(async()=>{A.setActiveStoreId(e.target.value);await A.syncNow();toast('Store changed');await runAutoBackupCheck({quiet:true})})});
 $('storeForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{await A.addStore(db(),formData(e.target));e.target.reset();toast('Store created')})});
 $('editStoreForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{const data=formData(e.target);await A.updateStore(db(),data.id,data);closeModal('editStoreModal');toast('Store updated')})});
-$('staffForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{await A.addStaff(db(),formData(e.target));e.target.reset();toast('Staff access saved')})});
+$('staffForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{const data=formData(e.target);try{await A.addStaff(db(),data)}catch(err){if(!/already exists/i.test(err.message||''))throw err}if(data.email)A.setStaffPhone(db(),data.email,data.phone);e.target.reset();toast('Staff access saved')})});
 $('commandInput')?.addEventListener('input',renderCommandResults);
 $('dashboardPeriod')?.addEventListener('change',()=>renderDashboardChart(sdb()));
 $('dashboardGroup')?.addEventListener('change',()=>renderDashboardChart(sdb()));
@@ -1466,6 +1466,29 @@ function applyInsightsFilter(){
 }
 $('smartInsightsRoot')?.addEventListener('submit',e=>{const f=e.target.closest('[data-insights-form="query"]');if(!f)return;e.preventDefault();insightsQuery=(f.querySelector('#insights-query-input')?.value||'').slice(0,240);insightsSelectedId='';renderSmartInsights()});
 $('smartInsightsRoot')?.addEventListener('click',e=>{const b=e.target.closest('button[data-action]');if(!b)return;const act=b.dataset.action;if(act==='select-insight-record'){insightsSelectedId=b.dataset.recordId||'';renderSmartInsights()}else if(act==='apply-insights-filter'){applyInsightsFilter()}});
+/* WhatsApp task alerts: after a task is assigned, notify the staff member on
+   their phone via the same-origin /api/notify-whatsapp endpoint (secrets stay
+   server-side). Best-effort: the task is already saved regardless. Only fires in
+   live Supabase mode, where the caller has an access token to authenticate. */
+async function notifyStaffWhatsApp(phone,staffName,task){
+  if(!phone)return;
+  let token='';try{token=A.accessToken?await A.accessToken():''}catch(_){}
+  if(!token)return;
+  try{
+    const r=await fetch('/api/notify-whatsapp',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({to:phone,staffName:staffName||'Staff',taskTitle:(task&&task.title)||'',dueDate:task&&task.dueDate?npDate(task.dueDate):''})});
+    const data=await r.json().catch(()=>({}));
+    if(data&&data.ok)toast('WhatsApp alert sent to '+(staffName||'staff'));
+    else if(data&&data.state==='NOT_CONFIGURED'){/* not set up yet — stay silent */}
+    else if(data&&data.error)toast('WhatsApp alert failed: '+String(data.error).slice(0,90),'err');
+  }catch(_){/* network issue — task is already saved */}
+}
+function notifyTaskStaff(t){
+  if(!t)return;const d=sdb();
+  const targets=t.assignedToEmail
+    ? [{email:t.assignedToEmail,name:t.assignedToName||t.assignedToEmail}]
+    : (d.staffAccounts||[]).filter(s=>s.active!==false).map(s=>({email:s.email,name:s.name||s.email}));
+  targets.forEach(s=>{const phone=A.staffPhone?A.staffPhone(d,s.email):'';if(phone)notifyStaffWhatsApp(phone,s.name,t);});
+}
 document.querySelector('#chequeForm [name="chequeDate"]')?.addEventListener('input',updateChequeDateHint);
 document.querySelector('#chequeForm [name="chequeNo"]')?.addEventListener('input',updateChequeNoHint);
 document.addEventListener('click',e=>{const input=e.target.closest('[data-bs-date-input]');if(input)BSP.open(input,input);});
