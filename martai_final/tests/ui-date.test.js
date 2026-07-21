@@ -353,6 +353,9 @@ test('bank-effective dates support weekends, holidays, and store-specific rules'
     holidays: ['2026-07-20'],
     roll: 'preceding'
   }), '2026-07-17');
+  // Nepal default: banks close Saturday (6) and Sunday (0), so a Sunday cheque rolls to Monday.
+  assert.equal(DateTools.isBankingDay('2026-07-19'), false);
+  assert.equal(DateTools.bankEffectiveDate('2026-07-19'), '2026-07-20');
   assert.equal(DateTools.isBankingDay('2026-07-20'), true);
   assert.equal(DateTools.isBankingDay('2026-07-20', { isHoliday: function isHoliday(date) { return date === '2026-07-20'; } }), false);
 });

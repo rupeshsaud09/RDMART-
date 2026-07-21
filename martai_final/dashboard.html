@@ -638,7 +638,7 @@
 <script src="assets/martai-supabase-config.js"></script>
 <script src="assets/martai-date.js?v=1"></script>
 <script src="assets/martai-ui.js?v=1"></script>
-<script src="assets/martai-store.js?v=27"></script>
+<script src="assets/martai-store.js?v=28"></script>
 <script src="assets/martai-cheques.js?v=1"></script>
 <script src="assets/khata-backup.js?v=5"></script>
 <script src="assets/martai-qr.js?v=1"></script>
@@ -901,9 +901,9 @@ function renderCheques(){const d=sdb();renderChequeMetrics(d);renderChequeQueue(
 /* Nepal banking calendar: closed weekdays and holidays are configurable.
    The written date is preserved while a separate action date is calculated. */
 function chequeDateIso(x){return String(typeof x==='string'?x:(x?.chequeDate||'')).slice(0,10)}
-function bankCalendarOptions(){const settings=(sdb().settings||{}),weekends=Array.isArray(settings.bankWeekendDays)?settings.bankWeekendDays:[6],holidays=Array.isArray(settings.bankHolidays)?settings.bankHolidays:[];return{weekendDays:weekends,holidays}}
-function isBankClosedDate(value){const iso=chequeDateIso(value);if(!isoParts(iso))return false;return DateTools?!DateTools.isBankingDay(iso,bankCalendarOptions()):isoDay(iso)===6}
-function chequeBankDate(value){const iso=chequeDateIso(value);if(!isoParts(iso))return iso;return DateTools?DateTools.bankEffectiveDate(iso,bankCalendarOptions()):(isoDay(iso)===6?addDaysIso(iso,1):iso)}
+function bankCalendarOptions(){const settings=(sdb().settings||{}),weekends=Array.isArray(settings.bankWeekendDays)?settings.bankWeekendDays:[0,6],holidays=Array.isArray(settings.bankHolidays)?settings.bankHolidays:[];return{weekendDays:weekends,holidays}}
+function isBankClosedDate(value){const iso=chequeDateIso(value);if(!isoParts(iso))return false;return DateTools?!DateTools.isBankingDay(iso,bankCalendarOptions()):(isoDay(iso)===0||isoDay(iso)===6)}
+function chequeBankDate(value){const iso=chequeDateIso(value);if(!isoParts(iso))return iso;if(DateTools)return DateTools.bankEffectiveDate(iso,bankCalendarOptions());let d=iso,guard=0;while((isoDay(d)===0||isoDay(d)===6)&&guard++<14)d=addDaysIso(d,1);return d}
 function bankFocusDate(value=A.today()){return chequeBankDate(value)}
 function weekdayName(value){const iso=chequeDateIso(value);if(!isoParts(iso))return'';return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][isoDay(iso)]}
 function isWeekendCarry(x){return chequeBankDate(x)!==chequeDateIso(x)}
