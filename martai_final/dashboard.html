@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=15">
+<link rel="stylesheet" href="assets/martai.css?v=16">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -370,32 +370,38 @@
         </div>
         </div>
         <div id="chq-write" role="tabpanel">
-        <div class="cheque-compose-layout">
-          <aside class="cheque-compose-guide">
-            <span class="cheque-guide-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></span>
-            <div><span class="eyebrow">New payment</span><h3>Write a cheque</h3><p>Enter the cheque once. The tracker will place it on the correct banking day and keep it visible until it is cleared.</p></div>
-            <div class="cheque-guide-steps"><span><b>1</b> Add payment details</span><span><b>2</b> Pick the cheque date</span><span><b>3</b> Save as hold until cleared</span></div>
-          </aside>
           <form class="card cheque-form-card" id="chequeForm">
-            <div class="cheque-form-heading"><div><div class="section-title">Cheque details</div><div class="section-sub">Save factual details first. No OCR or smart suggestion is applied without your review.</div></div><span class="badge badge-blue">Review before save</span></div>
-            <div class="form-grid">
-              <div class="field"><label>Party <span>Required</span></label><input class="input" name="party" list="partyList" autocomplete="off" required placeholder="Search or enter party name"></div>
-              <div class="field"><label>Cheque number <span>Required</span></label><input class="input" name="chequeNo" required inputmode="numeric" placeholder="e.g. 000123"><span id="chequeNoHint" class="small cheque-field-hint"></span></div>
-              <div class="field"><label>Amount <span>Required</span></label><div class="amount-input-wrap"><span>Rs</span><input class="input" name="amount" required inputmode="decimal" placeholder="0.00"></div></div>
-              <div class="field"><label>Bank</label><input class="input" name="bank" placeholder="Select or enter bank name"></div>
-              <div class="field"><label>Direction <span>Required</span></label><select class="select" name="direction" required><option value="">Choose incoming or outgoing</option><option value="incoming">Incoming &mdash; money to receive</option><option value="outgoing">Outgoing &mdash; money to pay</option><option value="unknown">Unknown &mdash; review later</option></select><span class="small cheque-field-hint">Direction is required for reliable cash-flow estimates.</span></div>
-              <div class="field"><label>Linked customer</label><input class="input" name="linkedCustomer" list="customerList" autocomplete="off" placeholder="Optional customer name or phone"></div>
-              <div class="field"><label>Issue date (BS)</label><input class="input" name="issueDate" data-bs-date-input data-bs-optional readonly placeholder="Optional issue date"></div>
-              <div class="field"><label>Due date (BS) <span>Required</span></label><input class="input" name="chequeDate" data-bs-date-input readonly required placeholder="Select Nepali due date"><span id="chequeDateHint" class="small cheque-field-hint"></span></div>
-              <div class="field"><label>Starting lifecycle</label><select class="select" name="lifecycleStatus"><option value="draft">Draft</option><option value="to_write">To write</option><option value="written" selected>Written</option><option value="issued">Issued</option><option value="received">Received</option><option value="deposited">Deposited</option><option value="on_hold">On hold</option></select><span class="small cheque-field-hint">Cleared, bounced and cancelled require a confirmed status change after saving.</span></div>
-              <div class="field"><label>Assigned to</label><select class="select" name="assignedTo"><option value="">Unassigned</option></select></div>
-              <div class="field"><label>Next action date (BS)</label><input class="input" name="nextActionAt" data-bs-date-input data-bs-optional readonly placeholder="Optional reminder date"></div>
-              <div class="field span-2"><label>Internal note</label><textarea class="textarea" name="note" rows="2" placeholder="Purpose, promise, deposit instruction, or follow-up context"></textarea></div>
-              <div class="field span-2"><label>Cheque image</label><div class="cheque-upload-row"><input class="input" id="chequeImageInput" name="chequeImage" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="chequeImageHelp"><button class="btn btn-soft" id="extractChequeBtn" type="button">Extract for review</button></div><span class="small cheque-field-hint" id="chequeImageHelp">JPG, PNG or WebP, up to 8 MB. Extraction never saves the cheque automatically.</span></div>
-            </div>
+            <div class="cheque-form-heading"><div><div class="section-title">Write a cheque</div><div class="section-sub">Enter the details once &mdash; the tracker places it on the right banking day and keeps it visible until cleared.</div></div><span class="badge badge-blue">Review before save</span></div>
+            <section class="cheque-form-section">
+              <h4 class="cheque-section-label">Payment</h4>
+              <div class="form-grid">
+                <div class="field"><label>Party <span>Required</span></label><input class="input" name="party" list="partyList" autocomplete="off" required placeholder="Search or enter party name"></div>
+                <div class="field"><label>Cheque number <span>Required</span></label><input class="input" name="chequeNo" required inputmode="numeric" placeholder="e.g. 000123"><span id="chequeNoHint" class="small cheque-field-hint"></span></div>
+                <div class="field"><label>Amount <span>Required</span></label><div class="amount-input-wrap"><span>Rs</span><input class="input" name="amount" required inputmode="decimal" placeholder="0.00"></div></div>
+                <div class="field"><label>Bank</label><input class="input" name="bank" placeholder="Select or enter bank name"></div>
+                <div class="field"><label>Direction <span>Required</span></label><select class="select" name="direction" required><option value="">Choose incoming or outgoing</option><option value="incoming">Incoming &mdash; money to receive</option><option value="outgoing">Outgoing &mdash; money to pay</option><option value="unknown">Unknown &mdash; review later</option></select><span class="small cheque-field-hint">Direction is required for reliable cash-flow estimates.</span></div>
+                <div class="field"><label>Linked customer</label><input class="input" name="linkedCustomer" list="customerList" autocomplete="off" placeholder="Optional customer name or phone"></div>
+              </div>
+            </section>
+            <section class="cheque-form-section">
+              <h4 class="cheque-section-label">Dates</h4>
+              <div class="form-grid">
+                <div class="field"><label>Issue date (BS) <span>Optional</span></label><input class="input" name="issueDate" data-bs-date-input data-bs-optional readonly placeholder="Optional issue date"></div>
+                <div class="field"><label>Due date (BS) <span>Required</span></label><input class="input" name="chequeDate" data-bs-date-input readonly required placeholder="Select Nepali due date"><span id="chequeDateHint" class="small cheque-field-hint"></span></div>
+                <div class="field"><label>Next action date (BS) <span>Optional</span></label><input class="input" name="nextActionAt" data-bs-date-input data-bs-optional readonly placeholder="Optional reminder date"></div>
+              </div>
+            </section>
+            <section class="cheque-form-section">
+              <h4 class="cheque-section-label">Tracking</h4>
+              <div class="form-grid">
+                <div class="field"><label>Starting status</label><select class="select" name="lifecycleStatus"><option value="draft">Draft</option><option value="to_write">To write</option><option value="written" selected>Written</option><option value="issued">Issued</option><option value="received">Received</option><option value="deposited">Deposited</option><option value="on_hold">On hold</option></select><span class="small cheque-field-hint">Cleared, bounced and cancelled need a confirmed change after saving.</span></div>
+                <div class="field"><label>Assigned to</label><select class="select" name="assignedTo"><option value="">Unassigned</option></select></div>
+                <div class="field span-2"><label>Internal note <span>Optional</span></label><textarea class="textarea" name="note" rows="2" placeholder="Purpose, promise, deposit instruction, or follow-up context"></textarea></div>
+                <div class="field span-2"><label>Cheque image <span>Optional</span></label><div class="cheque-upload-row"><input class="input" id="chequeImageInput" name="chequeImage" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="chequeImageHelp"><button class="btn btn-soft" id="extractChequeBtn" type="button">Extract for review</button></div><span class="small cheque-field-hint" id="chequeImageHelp">JPG, PNG or WebP, up to 8 MB. Extraction never saves the cheque automatically.</span></div>
+              </div>
+            </section>
             <div class="cheque-form-footer"><span><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 16v-4M12 8h.01"/></svg>Saving creates the record; later financial transitions require confirmation.</span><div class="cheque-save-actions"><label class="save-another"><input type="checkbox" name="saveAnother"> Save &amp; add another</label><button class="btn btn-primary cheque-save-btn" type="submit"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Save cheque</button></div></div>
           </form>
-        </div>
         </div>
         <div id="chq-planner" role="tabpanel" style="display:none">
         <div class="card cheque-panel-card">
