@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KHATA PANA — Secure Login</title>
-<meta name="theme-color" content="#070a09">
+<meta name="theme-color" content="#f4f6fa">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/martai.css?v=13">
-<link rel="stylesheet" href="assets/login-experience.css?v=3">
+<link rel="stylesheet" href="assets/login-experience.css?v=4">
 </head>
 <body class="login-page">
 <div class="login-stage">
@@ -103,7 +103,7 @@
 <script>
 const $=id=>document.getElementById(id);
 const AUTH_TIMEOUT=15000;
-document.documentElement.style.colorScheme='dark';document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#070a09');
+document.documentElement.style.colorScheme='dark';document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#07101f');
 function showError(id,msg){const el=$(id);el.textContent=msg;el.style.display='block'}
 function hideErrors(){['adminError','customerError'].forEach(id=>{$(id).style.display='none';$(id).textContent=''})}
 function setStatus(text,state='ready'){const el=$('authStatus');if(!el)return;el.dataset.state=state;const label=el.querySelector('b');if(label)label.textContent=text}
