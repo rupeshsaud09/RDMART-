@@ -12,7 +12,7 @@ body.staff-page{margin:0;background:var(--bg);font-family:var(--font);color:var(
 .stf-app{max-width:640px;margin:0 auto;min-height:100dvh;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 
 /* ---------- hero header ---------- */
-.stf-hero{position:relative;color:#fff;padding:calc(14px + env(safe-area-inset-top)) 20px 58px;border-radius:0 0 30px 30px;overflow:hidden;background:linear-gradient(120deg,#4338ca,#6d28d9 38%,#9333ea 62%,#4f46e5);background-size:260% 260%;animation:stfHeroShift 18s ease infinite}
+.stf-hero{position:relative;color:#fff;padding:calc(14px + env(safe-area-inset-top)) 20px 58px;border-radius:0 0 30px 30px;overflow:hidden;background:linear-gradient(120deg,#0b3f3b,#0f766e 38%,#0d9488 62%,#115e59);background-size:260% 260%;animation:stfHeroShift 18s ease infinite}
 @keyframes stfHeroShift{0%,100%{background-position:0% 40%}50%{background-position:100% 60%}}
 .stf-hero::before,.stf-hero::after{content:'';position:absolute;border-radius:50%;filter:blur(2px);pointer-events:none}
 .stf-hero::before{width:240px;height:240px;right:-90px;top:-110px;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.28),rgba(255,255,255,0) 68%);animation:stfFloat 9s ease-in-out infinite}
@@ -33,10 +33,10 @@ body.staff-page{margin:0;background:var(--bg);font-family:var(--font);color:var(
 .stf-greet h1{margin:0;font-size:24px;font-weight:850;letter-spacing:-.02em}
 .stf-greet p{margin:5px 0 0;font-size:12.5px;font-weight:600;opacity:.88}
 .stf-sync{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:750;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28)}
-.stf-sync i{width:7px;height:7px;border-radius:50%;background:#4ade80;animation:stfPulse 2.2s ease infinite}
-.stf-sync.warn i{background:#fbbf24}
-.stf-sync.err i{background:#f87171;animation:none}
-@keyframes stfPulse{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.55)}55%{box-shadow:0 0 0 6px rgba(74,222,128,0)}}
+.stf-sync i{width:7px;height:7px;border-radius:50%;background:#5eead4;animation:stfPulse 2.2s ease infinite}
+.stf-sync.warn i{background:#c2cac8}
+.stf-sync.err i{background:#7d8986;animation:none}
+@keyframes stfPulse{0%,100%{box-shadow:0 0 0 0 rgba(45,212,191,.55)}55%{box-shadow:0 0 0 6px rgba(45,212,191,0)}}
 
 /* ---------- content ---------- */
 .stf-main{padding:0 16px;margin-top:-36px;position:relative;z-index:2}
@@ -84,11 +84,11 @@ body.staff-page{margin:0;background:var(--bg);font-family:var(--font);color:var(
 /* celebration overlay */
 .stf-celebrate{position:fixed;inset:0;display:none;place-items:center;pointer-events:none;z-index:90}
 .stf-celebrate.show{display:grid}
-.stf-celebrate .ring{width:96px;height:96px;border-radius:50%;background:var(--green);display:grid;place-items:center;box-shadow:0 18px 50px rgba(22,163,74,.45);animation:stfPop .7s cubic-bezier(.34,1.56,.64,1) both}
+.stf-celebrate .ring{width:96px;height:96px;border-radius:50%;background:var(--green);display:grid;place-items:center;box-shadow:0 18px 50px rgba(15,118,110,.45);animation:stfPop .7s cubic-bezier(.34,1.56,.64,1) both}
 .stf-celebrate svg{width:52px;height:52px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:36;stroke-dashoffset:36;animation:stfDraw .45s .18s ease-out forwards}
 @keyframes stfPop{0%{transform:scale(.3);opacity:0}60%{opacity:1}100%{transform:scale(1)}}
 @keyframes stfDraw{to{stroke-dashoffset:0}}
-.stf-confetti{position:absolute;width:9px;height:9px;border-radius:2px;opacity:0;animation:stfConfetti .9s ease-out forwards;animation-delay:var(--d,0s);background:var(--c,#fbbf24)}
+.stf-confetti{position:absolute;width:9px;height:9px;border-radius:2px;opacity:0;animation:stfConfetti .9s ease-out forwards;animation-delay:var(--d,0s);background:var(--c,#5eead4)}
 @keyframes stfConfetti{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x,60px),var(--y,-90px)) rotate(260deg)}}
 
 /* ---------- customers ---------- */
@@ -100,7 +100,7 @@ body.staff-page{margin:0;background:var(--bg);font-family:var(--font);color:var(
 @media(min-width:860px){#custList{grid-template-columns:1fr 1fr}#custList .empty{grid-column:1/-1}}
 .stf-cust:hover{box-shadow:var(--shadow-md)}
 .stf-cust:active{transform:scale(.985)}
-.stf-ava{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:850;font-size:15px;background:linear-gradient(140deg,hsl(var(--h,230) 62% 55%),hsl(calc(var(--h,230) + 34) 66% 45%))}
+.stf-ava{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:850;font-size:15px;background:linear-gradient(140deg,#0d9488,#115e59)}
 .stf-cust-info{flex:1;min-width:0}
 .stf-cust-info b{display:block;font-size:13.8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
 .stf-cust-info span{font-size:11.5px;color:var(--muted);font-weight:600}
@@ -114,8 +114,8 @@ body.staff-page{margin:0;background:var(--bg);font-family:var(--font);color:var(
 .stf-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .stf-action{border:none;border-radius:18px;padding:18px 16px;text-align:left;cursor:pointer;color:#fff;box-shadow:var(--shadow-md);transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;font:inherit}
 .stf-action:active{transform:scale(.96)}
-.stf-action.red{background:linear-gradient(135deg,#ef4444,#b91c1c)}
-.stf-action.green{background:linear-gradient(135deg,#22c55e,#15803d)}
+.stf-action.red{background:linear-gradient(135deg,#4d5755,#252c2b)}
+.stf-action.green{background:linear-gradient(135deg,#0d9488,#115e59)}
 .stf-action b{display:block;font-size:14.5px;letter-spacing:-.01em}
 .stf-action span{display:block;font-size:11px;font-weight:650;opacity:.9;margin-top:3px}
 .stf-action svg{width:22px;height:22px;margin-bottom:8px}
@@ -190,7 +190,7 @@ body.stf-sheet-open{overflow:hidden}
 .stf-skel{height:64px;border-radius:16px;background:linear-gradient(100deg,var(--surface-2) 40%,var(--surface-3) 50%,var(--surface-2) 60%);background-size:200% 100%;animation:stfShimmer 1.2s linear infinite;border:1px solid var(--line);margin-top:9px}
 @keyframes stfShimmer{to{background-position:-200% 0}}
 
-body[data-theme="dark"] .stf-hero{background:linear-gradient(120deg,#312e81,#5b21b6 38%,#7e22ce 62%,#3730a3);background-size:260% 260%}
+body[data-theme="dark"] .stf-hero{background:linear-gradient(120deg,#071d1b,#0b3f3b 38%,#0f766e 62%,#123b37);background-size:260% 260%}
 body[data-theme="dark"] .stf-nav{background:color-mix(in srgb,var(--surface) 82%,transparent)}
 
 /* ============================================================
@@ -201,16 +201,16 @@ body[data-theme="dark"] .stf-nav{background:color-mix(in srgb,var(--surface) 82%
 .stf-bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
 .stf-app{position:relative;z-index:1}
 .stf-bg i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55}
-.stf-bg i:nth-child(1){width:540px;height:540px;background:#c7d2fe;top:-180px;left:-140px;animation:stfDrift1 26s ease-in-out infinite alternate}
-.stf-bg i:nth-child(2){width:460px;height:460px;background:#e9d5ff;bottom:-160px;right:-120px;animation:stfDrift2 33s ease-in-out infinite alternate}
-.stf-bg i:nth-child(3){width:340px;height:340px;background:#bae6fd;top:38%;left:62%;animation:stfDrift3 40s ease-in-out infinite alternate}
+.stf-bg i:nth-child(1){width:540px;height:540px;background:#b9e6df;top:-180px;left:-140px;animation:stfDrift1 26s ease-in-out infinite alternate}
+.stf-bg i:nth-child(2){width:460px;height:460px;background:#d8dedc;bottom:-160px;right:-120px;animation:stfDrift2 33s ease-in-out infinite alternate}
+.stf-bg i:nth-child(3){width:340px;height:340px;background:#a7d8d1;top:38%;left:62%;animation:stfDrift3 40s ease-in-out infinite alternate}
 @keyframes stfDrift1{to{transform:translate(110px,70px) scale(1.18)}}
 @keyframes stfDrift2{to{transform:translate(-90px,-80px) scale(1.12)}}
 @keyframes stfDrift3{to{transform:translate(-120px,90px) scale(1.22)}}
 body[data-theme="dark"] .stf-bg i{opacity:.14}
-body[data-theme="dark"] .stf-bg i:nth-child(1){background:#4338ca}
-body[data-theme="dark"] .stf-bg i:nth-child(2){background:#7e22ce}
-body[data-theme="dark"] .stf-bg i:nth-child(3){background:#0ea5e9}
+body[data-theme="dark"] .stf-bg i:nth-child(1){background:#0f766e}
+body[data-theme="dark"] .stf-bg i:nth-child(2){background:#33413e}
+body[data-theme="dark"] .stf-bg i:nth-child(3){background:#0d9488}
 
 /* 3D: perspective on card containers so entrances/tilt read as depth */
 #taskList,#taskDoneList,#custList,#taskMetrics,#khataMetrics,.stf-actions,#entryList{perspective:950px}

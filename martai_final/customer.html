@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KHATA PANA Customer Portal</title>
-<meta name="theme-color" content="#f4f6fa">
+<meta name="theme-color" content="#f4f6f5">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -73,7 +73,7 @@
 <script>
 const A=MartAI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));let session=A.getSession();
 /* Follow the theme chosen on the dashboard (same browser); defaults to light */
-{const th=localStorage.getItem('martai_dashboard_theme')==='dark'?'dark':'light';document.body.dataset.theme=th;document.documentElement.style.colorScheme=th;const mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',th==='light'?'#f4f6fa':'#0b1220')}
+{const th=localStorage.getItem('martai_dashboard_theme')==='dark'?'dark':'light';document.body.dataset.theme=th;document.documentElement.style.colorScheme=th;const mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',th==='light'?'#f4f6f5':'#080b0a')}
 function db(){return A.getDB()}function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>el.remove(),240)},2400)}
 function currentCustomer(){const d=db();return A.customerById(d,session?.customerId)||d.customers.find(c=>c._tableId===session?.customerTableId)}
 async function secureLogout(){await A.clearSession();location.replace('index.html')}
@@ -112,9 +112,9 @@ function render(){
   $('progressLabel').textContent=rate+'%';
   $('progressFill').style.width=rate+'%';
   $('overviewCards').innerHTML=[
-    metric('Total taken',A.money(b.taken),`${b.rows.length} credit records`,'rgba(6,182,212,.20)'),
-    metric('Total paid',A.money(b.paid),'Amount received by mart','rgba(34,197,94,.20)'),
-    metric('Pending balance',A.money(b.balance),b.balance>0?'Please clear when possible':'No due balance','rgba(239,68,68,.16)')
+    metric('Total taken',A.money(b.taken),`${b.rows.length} credit records`,'rgba(45,212,191,.20)'),
+    metric('Total paid',A.money(b.paid),'Amount received by mart','rgba(15,118,110,.18)'),
+    metric('Pending balance',A.money(b.balance),b.balance>0?'Please clear when possible':'No due balance','rgba(100,112,109,.16)')
   ].join('');
   const rows=[...b.rows].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   $('recentList').innerHTML=rows.length?rows.slice(0,5).map(r=>{const bal=A.num(r.amount)-A.num(r.paid);return `<div class="history-card"><div><b>${A.esc(r.items||'Credit entry')}</b><div class="small">${npDate(r.date)}${r.note?' - '+A.esc(r.note):''}</div></div><div style="text-align:right"><b>${A.money(r.amount)}</b><div class="small amount-green">Paid ${A.money(r.paid)}</div><div class="small ${bal>0?'amount-red':'amount-green'}">Balance ${A.money(bal)}</div></div></div>`}).join(''):'<div class="empty">No credit records yet.</div>';
