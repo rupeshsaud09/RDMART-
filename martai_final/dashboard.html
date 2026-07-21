@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=16">
+<link rel="stylesheet" href="assets/martai.css?v=17">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -464,6 +464,10 @@
         </div>
       </section>
 
+      <section class="page" id="page-ai">
+        <div id="smartInsightsRoot" class="smart-insights-root" aria-live="polite"></div>
+      </section>
+
       <section class="page" id="page-rooms">
         <div class="section-head"><div><div class="page-title">Room Rent</div><div class="page-sub">Rent, electricity and water for Rooms 1&ndash;4 &mdash; tenants see the same ledger in their portal</div></div><button class="btn btn-soft btn-sm" id="downloadRoomsBtn">Download CSV</button></div>
         <div id="roomRentDueBanner"></div>
@@ -646,6 +650,9 @@
 <script src="assets/martai-ui.js?v=1"></script>
 <script src="assets/martai-store.js?v=28"></script>
 <script src="assets/martai-cheques.js?v=1"></script>
+<script src="assets/martai-intelligence.js?v=1"></script>
+<script src="assets/martai-ai-client.js?v=1"></script>
+<script src="assets/martai-insights-ui.js?v=1"></script>
 <script src="assets/khata-backup.js?v=5"></script>
 <script src="assets/martai-qr.js?v=1"></script>
 <script>
@@ -658,7 +665,7 @@ function isMainAdmin(){return session().role==='admin'}
 function isStoreAdmin(){return session().role==='store_admin'}
 function isAdmin(){return session().role==='admin'}
 let currentPage='dashboard';
-const titles={dashboard:['Dashboard','Your mart summary'],tasks:['Tasks','Assign work to staff and track what gets done'],followup:['Follow-Up','Priority work queue'],customers:['Customers','Create customer portal login'],credits:['Credit Book','Customer credit and payments'],daily:['Daily Sales','Date-wise sales totals'],estimates:['Estimate Bills','Quotation tracking for admins and staff'],payments:['Party Payments','Supplier/vendor payment records'],cheques:['Cheque Tracker','Cheque status management'],rooms:['Room Rent','Rent, electricity and water for Rooms 1-4'],reports:['Reports','CSV downloads and analytics'],settings:['Settings','Admin and data tools']};
+const titles={dashboard:['Dashboard','Your mart summary'],tasks:['Tasks','Assign work to staff and track what gets done'],followup:['Follow-Up','Priority work queue'],customers:['Customers','Create customer portal login'],credits:['Credit Book','Customer credit and payments'],daily:['Daily Sales','Date-wise sales totals'],estimates:['Estimate Bills','Quotation tracking for admins and staff'],payments:['Party Payments','Supplier/vendor payment records'],cheques:['Cheque Tracker','Cheque status management'],ai:['Smart Insights','Priorities, risk and cash-flow - deterministic and offline'],rooms:['Room Rent','Rent, electricity and water for Rooms 1-4'],reports:['Reports','CSV downloads and analytics'],settings:['Settings','Admin and data tools']};
 function requireAdmin(){const s=A.getSession();if(s?.role==='staff'){location.replace('staff.html');return false}if(!s||!['admin','store_admin'].includes(s.role)){A.clearSession().finally(()=>location.replace('index.html'));return false}return true}
 function db(){return A.getDB()}
 function sdb(){const d=A.getDB();const sid=A.getActiveStoreId?.();if(!sid)return d;const isDefault=sid==='default';function sf(arr){if(!arr)return[];return arr.filter(x=>x.storeId===sid||(isDefault&&!x.storeId))}return{...d,customers:sf(d.customers),credits:sf(d.credits),dailySales:sf(d.dailySales),partyPayments:sf(d.partyPayments),cheques:sf(d.cheques),chequeQueue:sf(d.chequeQueue),parties:sf(d.parties),estimateBills:sf(d.estimateBills),sales:sf(d.sales),paymentRequests:sf(d.paymentRequests),tasks:sf(d.tasks)}}
@@ -1179,7 +1186,7 @@ function renderNotifications(){
   [[followBadge,followCount],[chequeBadge,chequeCount]].forEach(([el,n])=>{if(!el)return;el.hidden=!n;el.textContent=n>99?'99+':String(n)});
 }
 function applyStaffRestrictions(){if(!isStaff()&&!isStoreAdmin())return;['resetBtn','backupJsonBtn','backupBtn','downloadAllBtn','restoreJsonLabel','autoBackupCard'].forEach(id=>{const el=$(id);if(el)el.style.display='none'});if(isStaff()){document.querySelectorAll('[data-delete-customer],[data-delete-credit],[data-delete-sale],[data-delete-daily],[data-delete-payment],[data-delete-cheque],[data-delete-estimate],[data-delete-party]').forEach(el=>el.style.display='none');const tc=$('taskAssignCard');if(tc)tc.style.display='none'}}
-function renderAll(){updateSyncStatus();checkBackupReminder();polishStaticText();renderStoreSelector();const brandDB=sdb();applyBrandLogo((brandDB.settings||{}).storeLogo||'',(brandDB.settings||{}).martName||'MartAI');renderCustomerOptions();renderPartyOptions();setTodayInputs();syncDateButtons();renderTaskAlerts();renderNotifications();if(currentPage==='dashboard')renderDashboardModern();if(currentPage==='tasks')renderTasks();if(currentPage==='followup'){renderFollowup();renderFollowupBankingCheques(brandDB)}if(currentPage==='customers')renderCustomers();if(currentPage==='credits')renderCredits();if(currentPage==='daily')renderDaily();if(currentPage==='estimates')renderEstimates();if(currentPage==='payments')renderPayments();if(currentPage==='cheques')renderCheques();if(currentPage==='rooms')renderRooms();if(currentPage==='reports'){renderReports();renderBankingWeekReport(brandDB)}if(currentPage==='settings'){renderSettings();renderBrandSettings();refreshAutoBackupStatus()}applyStaffRestrictions();polishEmptyStates()}
+function renderAll(){updateSyncStatus();checkBackupReminder();polishStaticText();renderStoreSelector();const brandDB=sdb();applyBrandLogo((brandDB.settings||{}).storeLogo||'',(brandDB.settings||{}).martName||'MartAI');renderCustomerOptions();renderPartyOptions();setTodayInputs();syncDateButtons();renderTaskAlerts();renderNotifications();if(currentPage==='dashboard')renderDashboardModern();if(currentPage==='tasks')renderTasks();if(currentPage==='followup'){renderFollowup();renderFollowupBankingCheques(brandDB)}if(currentPage==='customers')renderCustomers();if(currentPage==='credits')renderCredits();if(currentPage==='daily')renderDaily();if(currentPage==='estimates')renderEstimates();if(currentPage==='payments')renderPayments();if(currentPage==='cheques')renderCheques();if(currentPage==='ai')renderSmartInsights();if(currentPage==='rooms')renderRooms();if(currentPage==='reports'){renderReports();renderBankingWeekReport(brandDB)}if(currentPage==='settings'){renderSettings();renderBrandSettings();refreshAutoBackupStatus()}applyStaffRestrictions();polishEmptyStates()}
 let backupScheduleTimer=0;
 function scheduleAutoBackup(delay=15000){if(!isMainAdmin()&&!isStoreAdmin())return;clearTimeout(backupScheduleTimer);backupScheduleTimer=setTimeout(()=>runAutoBackupCheck({quiet:true}),delay)}
 function submitWrap(fn){try{fn();renderAll();setTimeout(updateSyncStatus,400);scheduleAutoBackup()}catch(e){toast(e.message,'err')}}
@@ -1433,6 +1440,33 @@ $('chequeFollowupForm')?.addEventListener('submit',e=>{e.preventDefault();const 
 $('editChequeBtn')?.addEventListener('click',()=>{const id=chequeDrawerId,ch=sdb().cheques.find(x=>x.id===id);if(!ch)return;closeModal('chequeDrawer');chqTab('write');const f=$('chequeForm');f.elements.party.value=ch.party||'';f.elements.chequeNo.value=ch.chequeNo||'';f.elements.amount.value=ch.amount||'';if(f.elements.bank)f.elements.bank.value=ch.bank||'';if(f.elements.direction)f.elements.direction.value=ch.direction==='unspecified'?'unknown':(ch.direction||'');f.scrollIntoView({behavior:'smooth',block:'start'});toast('Editing creates a new record; the original stays in history. Adjust details and save.','ok')});
 $('explainRiskBtn')?.addEventListener('click',()=>{const ch=sdb().cheques.find(x=>x.id===chequeDrawerId);if(!ch)return;const item=CQ.normalizeRecord(ch,{today:A.today()});toast(item.riskLevel?`Risk ${item.riskLevel}${item.riskScore!=null?' (score '+item.riskScore+')':''}. ${(item.riskFactors||[]).join('; ')||'Deterministic factors only.'}`:'No risk score yet. Enable the intelligence layer to score risk deterministically.','ok')});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cheque-detail]');if(!b)return;openChequeDetail(b.dataset.chequeDetail)});
+/* Smart Insights: deterministic priority queue, risk transparency, cash-flow
+   outlook and a safe natural-language filter. No records are mutated and no
+   provider is called; optional AI stays labelled and review-only. */
+let insightsQuery='',insightsSelectedId='',insightsState=null;
+function renderSmartInsights(){
+  const root=$('smartInsightsRoot');if(!root)return;
+  if(!window.MartAIInsightsUI||!window.MartAIIntelligence){root.innerHTML='<div class="empty">Smart Insights could not load. Refresh the page and try again.</div>';return;}
+  let page;
+  try{page=MartAIInsightsUI.buildSmartInsightsPage({cheques:sdb().cheques,asOf:A.today(),query:insightsQuery,selectedChequeId:insightsSelectedId,maxPriorityItems:12});}
+  catch(err){root.innerHTML='<div class="empty">Could not build insights: '+A.esc(err.message)+'</div>';return;}
+  insightsState=page.state;root.innerHTML=page.markup;
+}
+function applyInsightsFilter(){
+  const ast=insightsState&&insightsState.query&&insightsState.query.ast;
+  ['chequeStatusFilter','chequeDirectionFilter','chequeBankFilter','chequeAmountMin','chequeAmountMax'].forEach(id=>{if($(id))$(id).value=''});
+  const statusMap={hold:'on_hold',on_hold:'on_hold',pending:'on_hold',cleared:'cleared',clear:'cleared',bounced:'bounced',bounce:'bounced',deposited:'deposited',written:'written',issued:'issued',received:'received',to_write:'to_write',draft:'draft',cancelled:'cancelled',overdue:'overdue'};
+  if(ast&&Array.isArray(ast.conditions))ast.conditions.forEach(c=>{const v=Array.isArray(c.value)?c.value[0]:c.value;
+    if(c.field==='status'&&$('chequeStatusFilter'))$('chequeStatusFilter').value=statusMap[String(v).toLowerCase()]||'';
+    else if(c.field==='direction'&&$('chequeDirectionFilter'))$('chequeDirectionFilter').value=v;
+    else if(c.field==='bank'&&$('chequeBankFilter'))$('chequeBankFilter').value=v;
+    else if(c.field==='amount'&&c.operator==='gte'&&$('chequeAmountMin'))$('chequeAmountMin').value=v;
+    else if(c.field==='amount'&&c.operator==='lte'&&$('chequeAmountMax'))$('chequeAmountMax').value=v;
+  });
+  chequeView='all';pgState.cheques=1;nav('cheques');chqTab('records');toast('Filters applied to the cheque list');
+}
+$('smartInsightsRoot')?.addEventListener('submit',e=>{const f=e.target.closest('[data-insights-form="query"]');if(!f)return;e.preventDefault();insightsQuery=(f.querySelector('#insights-query-input')?.value||'').slice(0,240);insightsSelectedId='';renderSmartInsights()});
+$('smartInsightsRoot')?.addEventListener('click',e=>{const b=e.target.closest('button[data-action]');if(!b)return;const act=b.dataset.action;if(act==='select-insight-record'){insightsSelectedId=b.dataset.recordId||'';renderSmartInsights()}else if(act==='apply-insights-filter'){applyInsightsFilter()}});
 document.querySelector('#chequeForm [name="chequeDate"]')?.addEventListener('input',updateChequeDateHint);
 document.querySelector('#chequeForm [name="chequeNo"]')?.addEventListener('input',updateChequeNoHint);
 document.addEventListener('click',e=>{const input=e.target.closest('[data-bs-date-input]');if(input)BSP.open(input,input);});
