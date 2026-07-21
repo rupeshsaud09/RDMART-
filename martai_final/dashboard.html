@@ -394,7 +394,7 @@
             <section class="cheque-form-section">
               <h4 class="cheque-section-label">Tracking</h4>
               <div class="form-grid">
-                <div class="field"><label>Starting status</label><select class="select" name="lifecycleStatus"><option value="draft">Draft</option><option value="to_write">To write</option><option value="written" selected>Written</option><option value="issued">Issued</option><option value="received">Received</option><option value="deposited">Deposited</option><option value="on_hold">On hold</option></select><span class="small cheque-field-hint">Cleared, bounced and cancelled need a confirmed change after saving.</span></div>
+                <div class="field"><label>Starting status</label><select class="select" name="lifecycleStatus"><option value="on_hold" selected>On hold</option><option value="cleared">Cleared</option><option value="bounced">Bounced</option></select><span class="small cheque-field-hint">New cheques are usually On hold until they clear or bounce.</span></div>
                 <div class="field"><label>Assigned to</label><select class="select" name="assignedTo"><option value="">Unassigned</option></select></div>
                 <div class="field span-2"><label>Internal note <span>Optional</span></label><textarea class="textarea" name="note" rows="2" placeholder="Purpose, promise, deposit instruction, or follow-up context"></textarea></div>
                 <div class="field span-2"><label>Cheque image <span>Optional</span></label><div class="cheque-upload-row"><input class="input" id="chequeImageInput" name="chequeImage" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="chequeImageHelp"><button class="btn btn-soft" id="extractChequeBtn" type="button">Extract for review</button></div><span class="small cheque-field-hint" id="chequeImageHelp">JPG, PNG or WebP, up to 8 MB. Extraction never saves the cheque automatically.</span></div>
@@ -418,7 +418,6 @@
             <button class="cheque-view-chip" type="button" data-cheque-view="today">Due today <span data-view-count="today">0</span></button>
             <button class="cheque-view-chip" type="button" data-cheque-view="upcoming">Upcoming <span data-view-count="upcoming">0</span></button>
             <button class="cheque-view-chip" type="button" data-cheque-view="to_write">To write <span data-view-count="to_write">0</span></button>
-            <button class="cheque-view-chip" type="button" data-cheque-view="deposited">Deposited <span data-view-count="deposited">0</span></button>
             <button class="cheque-view-chip" type="button" data-cheque-view="on_hold">On hold <span data-view-count="on_hold">0</span></button>
             <button class="cheque-view-chip" type="button" data-cheque-view="cleared">Cleared <span data-view-count="cleared">0</span></button>
             <button class="cheque-view-chip" type="button" data-cheque-view="bounced">Bounced <span data-view-count="bounced">0</span></button>
@@ -435,7 +434,7 @@
             </div>
             <div class="filter-field-wrap">
               <span class="filter-field-label">Status</span>
-              <select class="select" id="chequeStatusFilter"><option value="">All lifecycle states</option><option value="draft">Draft</option><option value="to_write">To write</option><option value="written">Written</option><option value="issued">Issued</option><option value="received">Received</option><option value="deposited">Deposited</option><option value="on_hold">On hold</option><option value="cleared">Cleared</option><option value="bounced">Bounced</option><option value="cancelled">Cancelled</option><option value="overdue">Overdue (derived)</option></select>
+              <select class="select" id="chequeStatusFilter"><option value="">All statuses</option><option value="on_hold">On hold</option><option value="cleared">Cleared</option><option value="bounced">Bounced</option><option value="postponed">Postponed</option></select>
             </div>
             <div class="filter-field-wrap"><span class="filter-field-label">Direction</span><select class="select" id="chequeDirectionFilter"><option value="">Incoming &amp; outgoing</option><option value="incoming">Incoming</option><option value="outgoing">Outgoing</option><option value="unknown">Unknown</option></select></div>
             <div class="filter-field-wrap"><span class="filter-field-label">Bank</span><select class="select" id="chequeBankFilter"><option value="">All banks</option></select></div>
@@ -1007,7 +1006,7 @@ function chequeDirChip(dir){return dir==='incoming'?'<span class="badge badge-gr
 function chequeRiskBadge(item){if(!item.riskLevel)return'';const tone={low:'green',medium:'amber',high:'red',critical:'red'}[item.riskLevel]||'blue';return ` <span class="badge badge-${tone}" title="Deterministic review priority${item.riskScore!=null?' · score '+item.riskScore:''}">${A.esc(item.riskLevel)} risk</span>`}
 function chequeStatusBadges(item){const base=`<span class="badge badge-${item.status==='cleared'?'green':(item.status==='bounced'||item.status==='cancelled')?'red':(item.status==='deposited'||item.status==='received')?'blue':item.status==='hold'?'amber':'purple'}">${A.esc(CQ.statusLabel(item.status))}</span>`;const over=item.isOverdue?` <span class="badge badge-red">Overdue ${item.daysOverdue}d</span>`:'';return base+over+chequeRiskBadge(item)}
 function chequeFileCell(item){return item.attachment?`<span class="badge badge-blue" title="${A.esc(item.attachment.name||'Attachment')}">&#128206;</span>`:'<span class="small" style="opacity:.5">&mdash;</span>'}
-function chequeActionTargets(item){return (CQ.ALLOWED_TRANSITIONS[item.status]||[]).filter(t=>t!=='overdue'&&t!=='cancelled'&&CQ.canTransition(item.status,t,{direction:item.direction}))}
+function chequeActionTargets(item){const allow=['hold','cleared','bounced'];return (CQ.ALLOWED_TRANSITIONS[item.status]||[]).filter(t=>allow.indexOf(t)>=0&&CQ.canTransition(item.status,t,{direction:item.direction}))}
 function chequeActionButtons(item){
   if(item.status==='cleared'||item.status==='bounced'||item.status==='cancelled')return `<div class="row-actions"><button class="btn btn-soft btn-sm" data-cheque-detail="${item.id}">Details</button></div>`;
   const targets=chequeActionTargets(item),primary=targets.indexOf('cleared')>=0?'cleared':targets.indexOf('deposited')>=0?'deposited':targets[0];
@@ -1546,7 +1545,7 @@ MartAI.ready.then(async()=>{
     function setOpen(open){
       menu.hidden=!open;
       btn.setAttribute('aria-expanded',open?'true':'false');
-      if(open){const first=menu.querySelector('.menu-item');if(first)first.focus()}
+      if(open){const first=menu.querySelector('.menu-item,.notification-item');if(first)first.focus()}
     }
     btn.addEventListener('click',e=>{e.stopPropagation();setOpen(menu.hidden)});
     menu.addEventListener('keydown',e=>{
@@ -1556,7 +1555,7 @@ MartAI.ready.then(async()=>{
       else if(e.key==='ArrowUp'){e.preventDefault();(items[i-1]||items[items.length-1]).focus()}
       else if(e.key==='Escape'){setOpen(false);btn.focus()}
     });
-    menu.addEventListener('click',e=>{if(e.target.closest('.menu-item'))setOpen(false)});
+    menu.addEventListener('click',e=>{if(e.target.closest('.menu-item,.notification-item,[data-page]'))setOpen(false)});
     document.addEventListener('click',e=>{if(!menu.hidden&&!menu.contains(e.target)&&e.target!==btn&&!btn.contains(e.target))setOpen(false)});
     return{setOpen};
   }
