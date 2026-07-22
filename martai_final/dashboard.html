@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=17">
+<link rel="stylesheet" href="assets/martai.css?v=18">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -456,7 +456,7 @@
               <button class="btn btn-soft btn-sm" id="clearChequeDateFilter" type="button">Clear filters</button>
             </div>
           </div>
-          <div class="cheque-view-tools"><div class="saved-view-group"><span>Saved views</span><button class="btn btn-soft btn-sm" id="saveChequeViewBtn" type="button">Save current view</button><select class="select" id="savedChequeView"><option value="">Choose a saved view</option></select></div><div class="bulk-action-bar" id="chequeBulkBar" hidden><b><span id="chequeBulkCount">0</span> selected</b><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="assign">Assign</button><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="followup">Schedule follow-up</button><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="export">Export selected</button></div></div>
+          <div class="cheque-view-tools"><div class="cheque-tools-left"><div class="cheque-sort-group"><span>Sort by</span><select class="select" id="chequeSort"><option value="due_asc">Due date &mdash; earliest first</option><option value="due_desc">Due date &mdash; latest first</option><option value="priority">Priority &mdash; urgent first</option><option value="amount_desc">Amount &mdash; high to low</option><option value="amount_asc">Amount &mdash; low to high</option></select></div><div class="saved-view-group"><span>Saved views</span><button class="btn btn-soft btn-sm" id="saveChequeViewBtn" type="button">Save current view</button><select class="select" id="savedChequeView"><option value="">Choose a saved view</option></select></div></div><div class="bulk-action-bar" id="chequeBulkBar" hidden><b><span id="chequeBulkCount">0</span> selected</b><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="assign">Assign</button><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="followup">Schedule follow-up</button><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="export">Export selected</button></div></div>
           <div class="cheque-record-summary" id="chequeRecordTotals" aria-live="polite"></div>
           <div class="table-wrap cheque-table-wrap"><table class="cheque-table"><thead><tr><th><input type="checkbox" id="selectAllCheques" aria-label="Select all visible cheques"></th><th>Customer / supplier</th><th>Bank / cheque no.</th><th>Amount</th><th>Issue / due date</th><th>Status / risk</th><th>Owner / next action</th><th>File</th><th>Actions</th></tr></thead><tbody id="chequeRows"></tbody></table></div><div class="cheque-card-list" id="chequeCardList"></div><div id="chequesPagination" style="padding:4px 8px 2px"></div>
         </div>
@@ -546,6 +546,16 @@
           <div class="quick-row backup-actions"><button class="btn btn-soft btn-sm" type="button" id="chooseAutoBackupFolderBtn">Choose backup folder</button><select class="select" id="autoBackupVersion" aria-label="Automatic backup to restore"><option value="">No backup available yet</option></select><button class="btn btn-soft btn-sm" type="button" id="restoreLatestAutoBackupBtn">Restore selected backup</button></div>
           <p class="backup-health" id="autoBackupStatus" role="status">Preparing automatic backup...</p>
           <p class="hint">Only the old KHATA PANA backup copy is removed. Live customers, sales, credits and other business records are never deleted. Up to 3 timestamped safety copies are also preserved before a restore or reset. Backups contain private business and login data, so use a private folder.</p>
+        </div>
+        <div class="card" style="margin-top:16px" id="dailyPushCard">
+          <div class="section-head"><div><div class="section-title">Daily summary on your phone</div><div class="section-sub">A once-a-day notification with yesterday's sales, credit and today's cheques &mdash; no app store needed</div></div></div>
+          <p class="small" id="dailyPushStatus">Checking this browser...</p>
+          <div class="quick-row" style="margin-top:14px">
+            <button class="btn btn-primary" type="button" id="enableDailyPushBtn">Enable on this phone</button>
+            <button class="btn btn-soft" type="button" id="testDailyPushBtn" style="display:none">Send test notification</button>
+            <button class="btn btn-red" type="button" id="disableDailyPushBtn" style="display:none">Disable on this phone</button>
+          </div>
+          <p class="hint">Turn this on separately on every phone that should be notified &mdash; each device keeps its own on/off switch. On iPhone, add RD MART to the Home Screen first (Share &rarr; Add to Home Screen), then open it from there before enabling.</p>
         </div>
         <div class="card" style="margin-top:16px" id="portalLinkCard">
           <div class="section-head"><div><div class="section-title">Customer portal link</div><div class="section-sub">Public website address used in Portal QR codes and WhatsApp links — set it once so they work on every device</div></div></div>
@@ -645,6 +655,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
 <script src="assets/martai-supabase-config.js"></script>
+<script src="assets/martai-push-config.js"></script>
 <script src="assets/martai-date.js?v=1"></script>
 <script src="assets/martai-ui.js?v=1"></script>
 <script src="assets/martai-store.js?v=29"></script>
@@ -983,7 +994,7 @@ function renderChequeRecordTotals(rows){
    The UI never mutates a cheque directly — every status change is a confirmed,
    audited transition through the data layer. */
 const CHQ_VIEW_MAP=Object.freeze({action:'action_needed',today:'due_today',upcoming:'upcoming',to_write:'to_write',deposited:'deposited',on_hold:'hold',cleared:'cleared',bounced:'bounced',all:'all'});
-let chequeView='action',chequeSelected=new Set(),chequeFilteredCache=[],chequeDrawerId='';
+let chequeView='action',chequeSort='due_asc',chequeSelected=new Set(),chequeFilteredCache=[],chequeDrawerId='';
 function chequePopulateBankFilter(d){const sel=$('chequeBankFilter');if(!sel)return;const banks=[...new Set(d.cheques.map(x=>String(x.bank||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));const old=sel.value;sel.innerHTML='<option value="">All banks</option>'+banks.map(b=>`<option value="${A.esc(b)}">${A.esc(b)}</option>`).join('');if(banks.some(b=>b.toLowerCase()===old.toLowerCase()))sel.value=old}
 function chequePopulateAssignee(d){const sel=document.querySelector('#chequeForm [name="assignedTo"]');if(!sel)return;const staff=(d.staffAccounts||[]).filter(s=>s.active!==false);const old=sel.value;sel.innerHTML='<option value="">Unassigned</option>'+staff.map(s=>`<option value="${A.esc(s.email)}">${A.esc(s.name||s.email)}</option>`).join('');if([...sel.options].some(o=>o.value===old))sel.value=old}
 function buildChequeQuery(){
@@ -1013,7 +1024,7 @@ function chequeActionButtons(item){
   const primaryBtn=primary?`<button class="btn ${primary==='cleared'?'btn-green':'btn-primary'} btn-sm" data-cheque-status="${primary}" data-id="${item.id}">${A.esc(CQ.statusLabel(primary))}</button>`:'';
   const others=targets.filter(t=>t!==primary).map(t=>`<button class="btn btn-soft btn-sm" data-cheque-status="${t}" data-id="${item.id}">Mark ${A.esc(CQ.statusLabel(t))}</button>`).join('');
   const bounce=CQ.canTransition(item.status,'bounced',{direction:item.direction})&&primary!=='bounced'&&targets.indexOf('bounced')<0?`<button class="btn btn-red btn-sm" data-cheque-status="bounced" data-id="${item.id}">Mark Bounced</button>`:'';
-  return `<div class="row-actions"><button class="btn btn-soft btn-sm" data-cheque-detail="${item.id}">Details</button>${primaryBtn}<details class="row-menu"><summary aria-label="More actions for cheque ${A.esc(item.chequeNo)}" title="More actions">&#8943;</summary><div class="row-menu-pop">${others}${bounce}<button class="btn btn-soft btn-sm" data-postpone="${item.id}">Postpone</button><button class="btn btn-red btn-sm" data-delete-cheque="${item.id}">Cancel &amp; remove</button></div></details></div>`;
+  return `<div class="row-actions">${primaryBtn}<details class="row-menu"><summary aria-label="More actions for cheque ${A.esc(item.chequeNo)}" title="More actions">&#8943;</summary><div class="row-menu-pop"><button class="btn btn-soft btn-sm" data-cheque-detail="${item.id}">View details</button>${others}${bounce}<button class="btn btn-soft btn-sm" data-postpone="${item.id}">Postpone</button><button class="btn btn-red btn-sm" data-delete-cheque="${item.id}">Cancel &amp; remove</button></div></details></div>`;
 }
 function chequeOwnerCell(item){return `${item.assignedTo?A.esc(item.assignedTo):'<span class="small" style="opacity:.55">Unassigned</span>'}${item.nextActionAt?`<div class="small">Next: ${npDate(item.nextActionAt)}</div>`:''}`}
 function chequeDatesCell(item){const shim={chequeDate:item.dueDate};return `${item.issueDate?`<div class="small">Issued ${npDate(item.issueDate)}</div>`:''}${item.dueDate?chequeDateCell(shim):'<span class="small" style="opacity:.55">No due date</span>'}`}
@@ -1033,11 +1044,22 @@ function renderChequeSmartCounts(d){
 function renderChequeBulkBar(){
   const bar=$('chequeBulkBar');if(!bar)return;const n=chequeSelected.size;bar.hidden=n===0;const c=$('chequeBulkCount');if(c)c.textContent=n;
 }
+function chequeDueRank(x){return x.dueDate?String(x.dueDate):'';}
+function sortChequeCache(rows){
+  const s=chequeSort,arr=rows.slice();
+  const byDue=(a,b,dir)=>{const av=chequeDueRank(a),bv=chequeDueRank(b);if(!av&&!bv)return 0;if(!av)return 1;if(!bv)return -1;return dir*av.localeCompare(bv);};
+  if(s==='due_asc')arr.sort((a,b)=>byDue(a,b,1)||(b.amount||0)-(a.amount||0));
+  else if(s==='due_desc')arr.sort((a,b)=>byDue(a,b,-1)||(b.amount||0)-(a.amount||0));
+  else if(s==='amount_desc')arr.sort((a,b)=>(b.amount||0)-(a.amount||0));
+  else if(s==='amount_asc')arr.sort((a,b)=>(a.amount||0)-(b.amount||0));
+  else return rows;
+  return arr;
+}
 function renderCheques(){
   const d=sdb();renderChequeMetrics(d);renderChequeQueue(d);renderChequePlanner(d);updateChequeDateHint();chequePopulateBankFilter(d);chequePopulateAssignee(d);renderChequeSmartCounts(d);
   const {q,source}=buildChequeQuery();
   const all=CQ.queryRecords(source,{...q,page:1,pageSize:100000});
-  chequeFilteredCache=all.items.map(it=>({...it,bsDate:it.dueDate?bsKey(it.dueDate):''}));
+  chequeFilteredCache=sortChequeCache(all.items.map(it=>({...it,bsDate:it.dueDate?bsKey(it.dueDate):''})));
   chequeSelected=new Set([...chequeSelected].filter(id=>chequeFilteredCache.some(x=>x.id===id)));
   renderChequeRecordTotals(chequeFilteredCache);
   const total=chequeFilteredCache.length,tpCh=Math.ceil(total/PER_PAGE)||1,pgCh=pgState.cheques=Math.max(1,Math.min(pgState.cheques,tpCh)),pageItems=chequeFilteredCache.slice((pgCh-1)*PER_PAGE,pgCh*PER_PAGE);
@@ -1185,7 +1207,7 @@ function renderNotifications(){
   [[followBadge,followCount],[chequeBadge,chequeCount]].forEach(([el,n])=>{if(!el)return;el.hidden=!n;el.textContent=n>99?'99+':String(n)});
 }
 function applyStaffRestrictions(){if(!isStaff()&&!isStoreAdmin())return;['resetBtn','backupJsonBtn','backupBtn','downloadAllBtn','restoreJsonLabel','autoBackupCard'].forEach(id=>{const el=$(id);if(el)el.style.display='none'});if(isStaff()){document.querySelectorAll('[data-delete-customer],[data-delete-credit],[data-delete-sale],[data-delete-daily],[data-delete-payment],[data-delete-cheque],[data-delete-estimate],[data-delete-party]').forEach(el=>el.style.display='none');const tc=$('taskAssignCard');if(tc)tc.style.display='none'}}
-function renderAll(){updateSyncStatus();checkBackupReminder();polishStaticText();renderStoreSelector();const brandDB=sdb();applyBrandLogo((brandDB.settings||{}).storeLogo||'',(brandDB.settings||{}).martName||'MartAI');renderCustomerOptions();renderPartyOptions();setTodayInputs();syncDateButtons();renderTaskAlerts();renderNotifications();if(currentPage==='dashboard')renderDashboardModern();if(currentPage==='tasks')renderTasks();if(currentPage==='followup'){renderFollowup();renderFollowupBankingCheques(brandDB)}if(currentPage==='customers')renderCustomers();if(currentPage==='credits')renderCredits();if(currentPage==='daily')renderDaily();if(currentPage==='estimates')renderEstimates();if(currentPage==='payments')renderPayments();if(currentPage==='cheques')renderCheques();if(currentPage==='ai')renderSmartInsights();if(currentPage==='rooms')renderRooms();if(currentPage==='reports'){renderReports();renderBankingWeekReport(brandDB)}if(currentPage==='settings'){renderSettings();renderBrandSettings();refreshAutoBackupStatus()}applyStaffRestrictions();polishEmptyStates()}
+function renderAll(){updateSyncStatus();checkBackupReminder();polishStaticText();renderStoreSelector();const brandDB=sdb();applyBrandLogo((brandDB.settings||{}).storeLogo||'',(brandDB.settings||{}).martName||'MartAI');renderCustomerOptions();renderPartyOptions();setTodayInputs();syncDateButtons();renderTaskAlerts();renderNotifications();if(currentPage==='dashboard')renderDashboardModern();if(currentPage==='tasks')renderTasks();if(currentPage==='followup'){renderFollowup();renderFollowupBankingCheques(brandDB)}if(currentPage==='customers')renderCustomers();if(currentPage==='credits')renderCredits();if(currentPage==='daily')renderDaily();if(currentPage==='estimates')renderEstimates();if(currentPage==='payments')renderPayments();if(currentPage==='cheques')renderCheques();if(currentPage==='ai')renderSmartInsights();if(currentPage==='rooms')renderRooms();if(currentPage==='reports'){renderReports();renderBankingWeekReport(brandDB)}if(currentPage==='settings'){renderSettings();renderBrandSettings();refreshAutoBackupStatus();refreshPushUI()}applyStaffRestrictions();polishEmptyStates()}
 let backupScheduleTimer=0;
 function scheduleAutoBackup(delay=15000){if(!isMainAdmin()&&!isStoreAdmin())return;clearTimeout(backupScheduleTimer);backupScheduleTimer=setTimeout(()=>runAutoBackupCheck({quiet:true}),delay)}
 function submitWrap(fn){try{fn();renderAll();setTimeout(updateSyncStatus,400);scheduleAutoBackup()}catch(e){toast(e.message,'err')}}
@@ -1245,6 +1267,78 @@ async function checkpointBeforeRestore(){
   if(!result?.internal&&!result?.external)throw new Error('Could not create the required pre-restore safety copy. Restore was cancelled.');
   return result;
 }
+/* Daily-summary push notifications: opt-in per phone/browser. Enabling
+   stores this device's push endpoint + keys in push_subscriptions (own row
+   only, see RLS in add-push-subscriptions.sql). The actual once-a-day send
+   runs unattended via Vercel Cron hitting /api/daily-summary with a
+   server-only secret — this page never sees or sends the summary itself. */
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(String(base64String||'')+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw=atob(base64),out=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+  return out;
+}
+function pushConfigured(){return Boolean(window.MARTAI_PUSH&&window.MARTAI_PUSH.vapidPublicKey)}
+function pushApiSupported(){return 'serviceWorker' in navigator&&'PushManager' in window&&typeof Notification!=='undefined'}
+async function currentPushSubscription(){
+  if(!pushApiSupported())return null;
+  try{const reg=await navigator.serviceWorker.ready;return await reg.pushManager.getSubscription()}catch(_){return null}
+}
+async function refreshPushUI(){
+  const statusEl=$('dailyPushStatus'),enableBtn=$('enableDailyPushBtn'),testBtn=$('testDailyPushBtn'),disableBtn=$('disableDailyPushBtn');
+  if(!statusEl||!enableBtn||!testBtn||!disableBtn)return;
+  const show=(msg,state)=>{statusEl.textContent=msg;enableBtn.style.display=state==='off'?'':'none';testBtn.style.display=state==='on'?'':'none';disableBtn.style.display=state==='on'?'':'none'};
+  if(!pushConfigured())return show('Daily summary notifications are not set up on this server yet.','none');
+  if(!pushApiSupported())return show('This browser does not support notifications. On iPhone: Share → Add to Home Screen, then open RD MART from there.','none');
+  if(Notification.permission==='denied')return show('Notifications are blocked for this site. Allow them in your phone/browser settings, then reload this page.','none');
+  const sub=await currentPushSubscription();
+  show(sub?'Enabled on this phone.':'Not enabled on this phone yet.',sub?'on':'off');
+}
+async function enableDailyPush(){
+  if(!pushConfigured())return toast('Daily summary notifications are not set up on this server yet','err');
+  if(!pushApiSupported())return toast('This browser does not support notifications','err');
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){await refreshPushUI();return toast('Notification permission was not granted','err')}
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(window.MARTAI_PUSH.vapidPublicKey)});
+    const client=A.getSupabase();
+    if(!client)throw new Error('Online sync is not connected, so this phone cannot be registered yet.');
+    const keys=sub.toJSON().keys||{};
+    const row={store_id:A.getActiveStoreId(),endpoint:sub.endpoint,p256dh:keys.p256dh||'',auth_key:keys.auth||'',user_agent:String(navigator.userAgent||'').slice(0,300),last_seen_at:new Date().toISOString()};
+    const r=await client.from('push_subscriptions').upsert(row,{onConflict:'endpoint'});
+    if(r.error)throw r.error;
+    toast('Daily summary enabled on this phone');
+  }catch(e){toast('Could not enable notifications: '+(e.message||String(e)),'err')}
+  await refreshPushUI();
+}
+async function disableDailyPush(){
+  try{
+    const sub=await currentPushSubscription();
+    if(sub){
+      const client=A.getSupabase();
+      if(client){const r=await client.from('push_subscriptions').delete().eq('endpoint',sub.endpoint);if(r.error)console.warn('Could not remove push subscription row:',r.error)}
+      await sub.unsubscribe();
+    }
+    toast('Daily summary disabled on this phone');
+  }catch(e){toast('Could not disable notifications: '+(e.message||String(e)),'err')}
+  await refreshPushUI();
+}
+async function testDailyPush(){
+  let token='';try{token=A.accessToken?await A.accessToken():''}catch(_){}
+  if(!token)return toast('Sign in again to send a test notification','err');
+  try{
+    const r=await fetch('/api/daily-summary',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({storeId:A.getActiveStoreId()})});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok||!data.ok)throw new Error(data.message||data.error||'Test notification could not be sent.');
+    toast(data.sent?'Test notification sent — check this phone':'No devices are enabled yet on this store',data.sent?'ok':'err');
+  }catch(e){toast('Test notification failed: '+(e.message||String(e)),'err')}
+}
+$('enableDailyPushBtn')?.addEventListener('click',enableDailyPush);
+$('disableDailyPushBtn')?.addEventListener('click',disableDailyPush);
+$('testDailyPushBtn')?.addEventListener('click',testDailyPush);
 /* Portal links must work on OTHER devices. When the dashboard runs on
    localhost / a LAN address, the auto-detected link is useless outside this
    computer — so the admin can save the public site address once and every
@@ -1390,6 +1484,7 @@ $('clearCreditDateFilter')?.addEventListener('click',()=>{$('creditDateFrom').va
 $('clearDailyDateFilter')?.addEventListener('click',()=>{$('dailyDateFrom').value='';$('dailyDateTo').value='';syncDateButtons();pgState.daily=1;renderAll()});
 $('clearChequeDateFilter')?.addEventListener('click',()=>{['chequeSearch','chequeDateFrom','chequeDateTo','chequeAmountMin','chequeAmountMax'].forEach(id=>{if($(id))$(id).value=''});['chequeStatusFilter','chequeDirectionFilter','chequeBankFilter'].forEach(id=>{if($(id))$(id).value=''});if($('chequePeriodFilter'))$('chequePeriodFilter').value='all';chequeView='action';chequeSelected=new Set();syncDateButtons();pgState.cheques=1;renderAll()});
 $('chequeStatusFilter')?.addEventListener('change',()=>{pgState.cheques=1;renderAll()});
+$('chequeSort')?.addEventListener('change',()=>{chequeSort=$('chequeSort').value;pgState.cheques=1;renderCheques()});
 $('chequePeriodFilter')?.addEventListener('change',()=>{pgState.cheques=1;renderAll()});
 ['chequeDirectionFilter','chequeBankFilter'].forEach(id=>$(id)?.addEventListener('change',()=>{pgState.cheques=1;renderAll()}));
 ['chequeAmountMin','chequeAmountMax'].forEach(id=>$(id)?.addEventListener('input',()=>{pgState.cheques=1;renderAll()}));

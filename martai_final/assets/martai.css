@@ -876,11 +876,15 @@ body{background:
 .dashboard-hero{
   position:relative;isolation:isolate;overflow:hidden;align-items:stretch;min-height:220px;padding:30px 32px;
   border-radius:22px;border:1px solid color-mix(in srgb,var(--brand) 34%,transparent);
-  background:linear-gradient(125deg,#312E81 0%,#4F46E5 58%,#2563EB 100%);
+  background:linear-gradient(125deg,#312E81 0%,#4F46E5 35%,#2563EB 62%,#4F46E5 100%);
+  background-size:220% 220%;
+  animation:heroGradientDrift 24s ease-in-out infinite;
   box-shadow:0 22px 54px rgba(49,46,129,.2);color:#fff;
 }
-.dashboard-hero::before{content:"";position:absolute;z-index:-1;width:330px;height:330px;right:-70px;top:-180px;border:75px solid rgba(255,255,255,.08);border-radius:50%}
-.dashboard-hero::after{content:"";position:absolute;z-index:-1;width:170px;height:170px;right:23%;bottom:-125px;border:42px solid rgba(255,255,255,.055);border-radius:50%}
+@keyframes heroGradientDrift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes heroRingFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(-16px,12px)}}
+.dashboard-hero::before{content:"";position:absolute;z-index:-1;width:330px;height:330px;right:-70px;top:-180px;border:75px solid rgba(255,255,255,.08);border-radius:50%;animation:heroRingFloat 17s ease-in-out infinite}
+.dashboard-hero::after{content:"";position:absolute;z-index:-1;width:170px;height:170px;right:23%;bottom:-125px;border:42px solid rgba(255,255,255,.055);border-radius:50%;animation:heroRingFloat 21s ease-in-out infinite reverse}
 .dashboard-hero-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;max-width:800px}
 .dashboard-hero .hero-kicker{display:inline-flex;align-items:center;gap:8px;margin-bottom:11px;color:rgba(255,255,255,.76);font-size:12px;text-transform:uppercase;letter-spacing:.09em}
 .hero-status-dot{width:7px;height:7px;border-radius:50%;background:#86EFAC;box-shadow:0 0 0 5px rgba(134,239,172,.14)}
@@ -1036,7 +1040,7 @@ button.metric:hover .metric-open{color:var(--brand);border-color:color-mix(in sr
 .cheque-record-summary>div{padding:13px 14px;border-radius:12px;background:var(--surface)}
 .cheque-record-summary b{font-size:17px}
 
-body[data-theme="dark"] .dashboard-hero{background:linear-gradient(125deg,#1E1B4B,#3730A3 58%,#1D4ED8)}
+body[data-theme="dark"] .dashboard-hero{background-image:linear-gradient(125deg,#1E1B4B 0%,#3730A3 40%,#1D4ED8 68%,#3730A3 100%)}
 body[data-theme="dark"] .dashboard-health-grid .dashboard-insight{background:color-mix(in srgb,var(--surface) 88%,var(--brand-soft))}
 body[data-theme="dark"] .bank-calendar-note{box-shadow:none}
 
@@ -1146,6 +1150,10 @@ body[data-theme="dark"] .bank-calendar-note{box-shadow:none}
 .saved-view-group,.bulk-action-bar{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .saved-view-group>span{color:var(--muted);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .saved-view-group .select{width:190px;height:34px;font-size:11.5px}
+.cheque-tools-left{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.cheque-sort-group{display:flex;align-items:center;gap:8px}
+.cheque-sort-group>span{color:var(--muted);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.cheque-sort-group .select{width:220px;height:34px;font-size:11.5px}
 .bulk-action-bar{padding:5px 7px;border:1px solid color-mix(in srgb,var(--brand) 28%,var(--line));border-radius:10px;background:var(--brand-soft)}
 .bulk-action-bar b{padding:0 5px;color:var(--brand-soft-text);font-size:11.5px}
 .cheque-table{min-width:1180px}
@@ -1192,7 +1200,7 @@ body[data-theme="dark"] .bank-calendar-note{box-shadow:none}
 @media(max-width:1300px){#chq-records .filter-strip{grid-template-columns:repeat(3,minmax(0,1fr))}.filter-search-wrap{grid-column:span 2}}
 @media(max-width:760px){
   .cheque-upload-row{grid-template-columns:1fr}.cheque-save-actions{align-items:stretch;flex-direction:column}.save-another{min-height:36px;align-items:center}.cheque-save-btn{width:100%}
-  #chq-records .filter-strip{grid-template-columns:1fr 1fr}.filter-search-wrap{grid-column:1/-1}.cheque-view-tools{align-items:stretch;flex-direction:column}.saved-view-group,.bulk-action-bar{width:100%}.saved-view-group .select{flex:1;min-width:0}
+  #chq-records .filter-strip{grid-template-columns:1fr 1fr}.filter-search-wrap{grid-column:1/-1}.cheque-view-tools{align-items:stretch;flex-direction:column}.saved-view-group,.bulk-action-bar{width:100%}.saved-view-group .select{flex:1;min-width:0}.cheque-tools-left{width:100%;flex-direction:column;align-items:stretch;gap:10px}.cheque-sort-group{width:100%}.cheque-sort-group .select{flex:1;width:auto;min-width:0}
   .cheque-table-wrap{display:none}.cheque-card-list{display:grid;gap:9px}.cheque-mobile-card{display:grid;gap:10px;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.cheque-mobile-head,.cheque-mobile-meta,.cheque-mobile-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}.cheque-mobile-head b{font-size:13px}.cheque-mobile-meta{align-items:flex-start;color:var(--muted);font-size:10.5px}.cheque-mobile-actions{justify-content:flex-start;flex-wrap:wrap}
   .cheque-drawer{width:100%}.drawer-header{padding:16px}.drawer-content{padding:12px}.drawer-status-strip{padding:9px 14px}.drawer-split{grid-template-columns:1fr}.drawer-actions{padding:10px 12px}.cheque-detail-grid{grid-template-columns:1fr 1fr}
 }

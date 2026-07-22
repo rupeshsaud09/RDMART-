@@ -1,0 +1,9 @@
+{
+  "name": "rd-mart-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Serverless API functions for RD MART (Vercel). The static app itself lives in martai_final/ and has no build step.",
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}

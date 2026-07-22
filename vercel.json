@@ -3,6 +3,9 @@
   "buildCommand": null,
   "devCommand": null,
   "framework": null,
+  "crons": [
+    { "path": "/api/daily-summary", "schedule": "15 1 * * *" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

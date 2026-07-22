@@ -1,3 +1,4 @@
+node_modules/
 sql/import-cheques.sql
 sql/private-imports/
 .claude/
