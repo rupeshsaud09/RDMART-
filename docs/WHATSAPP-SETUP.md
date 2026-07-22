@@ -109,3 +109,51 @@ Numbers are stored in your synced settings, so no database migration is needed.
   templates are the cheapest category.
 - The endpoint sends only the template with the three fields above — no cheque
   images, account numbers, or other sensitive data.
+
+---
+
+## Daily summary via WhatsApp (separate feature, same Meta app)
+
+The daily business-summary notification (see the "Daily summary" card in
+Settings) can also deliver over WhatsApp — useful because push notifications
+to iPhone are unreliable even with every setting correct. It reuses the same
+`WHATSAPP_TOKEN` / `WHATSAPP_PHONE_NUMBER_ID` from above, but needs its **own**
+approved template, since the content is completely different from a task alert.
+
+### 1. Create the template
+
+**WhatsApp Manager → Message templates → Create template**.
+
+- Category: **Utility**. Name: **`daily_summary`**. Language: **English**.
+- Body (must have exactly **3** variables, in this order):
+
+  ```
+  📊 RD MART Daily Summary — {{1}}
+
+  {{2}}
+
+  {{3}}
+  ```
+
+  - `{{1}}` = today's date
+  - `{{2}}` = yesterday's sales/credit line
+  - `{{3}}` = today's cheques-due / pending-actions line
+
+Add sample values (e.g. `2026-07-23`, `Yesterday: Rs 32,500 sales, Rs 4,000 credit given, Rs 1,200 collected.`, `Today: 2 cheques due (Rs 15,000). 1 payment report waiting, 3 open tasks.`) and submit.
+
+### 2. Set two more environment variables (Vercel)
+
+| Variable | Value |
+|---|---|
+| `WHATSAPP_SUMMARY_TEMPLATE_NAME` | `daily_summary` |
+| `WHATSAPP_SUMMARY_TEMPLATE_LANG` | `en` |
+
+Redeploy. No new Meta app, token, or phone number needed if task alerts are
+already working — this only adds a second template on the same sender.
+
+### 3. Where it's sent
+
+The store's own **Mart WhatsApp phone** number (Settings → Mart settings) —
+not a per-device subscription like push. There's nothing to "enable" for this
+channel; it's automatic once the two env vars above are set and a phone number
+is saved. Use **Send test summary** in Settings to confirm delivery.
