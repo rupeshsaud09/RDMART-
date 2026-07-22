@@ -699,22 +699,24 @@ tr:hover td{background:var(--surface-2)}
   .topbar{padding:8px var(--sp-4)}
   .command-open{min-width:0}
   .command-open .search-word,.command-open .kbd{display:none}
-  .command-open{width:38px;padding:0;justify-content:center}
+  .command-open{width:38px;padding:0;justify-content:center;flex-shrink:0}
 }
 
 @media(max-width:760px){
   .topbar{flex-wrap:wrap;gap:var(--sp-2);padding:8px var(--sp-3)}
   .topbar>div:first-child{width:100%;min-width:0}
   .top-actions{width:100%;flex-wrap:nowrap;justify-content:space-between;gap:6px;overflow-x:auto;padding-bottom:2px}
-  .top-actions .store-switcher{flex:1;min-width:84px;width:auto}
+  .top-actions .store-switcher{flex:1;min-width:108px;width:auto}
   .page-title{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .page-sub{display:none}
   .top-actions{gap:6px}
   .store-switcher{width:120px}
-  .db-signal b{display:none}
-  .db-signal{padding:0 8px}
+  /* DB status still reachable via the hamburger menu's sidebar footer (#syncStatus) */
+  .db-signal{display:none}
   .theme-switch button span{display:none}
   .theme-switch button{padding:5px 8px}
+  /* One icon-only toggle instead of two buttons: show only the "switch to" side */
+  .theme-switch button.active{display:none}
 
   .content{padding:var(--sp-3)}
   .grid{gap:var(--sp-3)}
