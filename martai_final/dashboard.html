@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=18">
+<link rel="stylesheet" href="assets/martai.css?v=19">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -71,9 +71,14 @@
         </div>
         <div class="menu-wrap">
           <button class="icon-btn notification-btn" id="notificationBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Notifications"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg><span class="notification-count" id="notificationCount" hidden>0</span></button>
-          <div class="menu-pop notification-menu" id="notificationMenu" hidden role="menu" aria-label="Notifications">
-            <div class="notification-head"><div><b>Needs attention</b><span id="notificationSummary">Checking your records…</span></div><button class="btn btn-ghost btn-sm" type="button" data-page="followup">View all</button></div>
+          <div class="menu-pop notification-menu" id="notificationMenu" hidden aria-label="Notifications and reminder history">
+            <div class="notification-head"><div><b>Notifications &amp; reminders</b><span id="notificationSummary">Checking your records…</span></div><button class="btn btn-ghost btn-sm" type="button" data-page="followup">View all</button></div>
+            <div class="notification-tabs" role="tablist" aria-label="Notification views">
+              <button class="notification-tab active" id="notificationCurrentTab" type="button" role="tab" aria-selected="true" data-notification-tab="current">Current</button>
+              <button class="notification-tab" id="notificationHistoryTab" type="button" role="tab" aria-selected="false" data-notification-tab="history">History <span id="notificationHistoryCount"></span></button>
+            </div>
             <div id="notificationList" class="notification-list" aria-live="polite"></div>
+            <div class="notification-footer"><button class="btn btn-ghost btn-sm notification-action" type="button" id="notificationMarkReadBtn">Mark all read</button><button class="btn btn-ghost btn-sm notification-action" type="button" id="notificationClearBtn" hidden>Clear history</button></div>
           </div>
         </div>
         <div class="theme-switch" id="themeSwitch" role="group" aria-label="Theme">
@@ -658,7 +663,8 @@
 <script src="assets/martai-push-config.js"></script>
 <script src="assets/martai-date.js?v=1"></script>
 <script src="assets/martai-ui.js?v=1"></script>
-<script src="assets/martai-store.js?v=29"></script>
+<script src="assets/martai-store.js?v=30"></script>
+<script src="assets/martai-notifications.js?v=1"></script>
 <script src="assets/martai-cheques.js?v=1"></script>
 <script src="assets/martai-intelligence.js?v=1"></script>
 <script src="assets/martai-ai-client.js?v=1"></script>
@@ -666,7 +672,7 @@
 <script src="assets/khata-backup.js?v=5"></script>
 <script src="assets/martai-qr.js?v=1"></script>
 <script>
-let pendingCreditDeleteId='';let pendingCreditDeleteTimer=null;const A=MartAI,UI=window.MartAIUI,DateTools=window.MartAIDate,CQ=window.MartAICheques;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));
+let pendingCreditDeleteId='';let pendingCreditDeleteTimer=null;const A=MartAI,UI=window.MartAIUI,DateTools=window.MartAIDate,CQ=window.MartAICheques,N=window.MartAINotifications;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));
 const PER_PAGE=10;const pgState={customers:1,credits:1,creditHistory:1,daily:1,estimates:1,payments:1,cheques:1,roomLedger:1,parties:1,stores:1,staff:1,logins:1,payreq:1};
 function paginationHTML(key,pg,total,per){if(!total)return'';const pages=Math.ceil(total/per);const from=(pg-1)*per+1;const to=Math.min(pg*per,total);let h='<div style="display:flex;align-items:center;gap:8px;padding:10px 0 2px;border-top:1px solid var(--line);margin-top:8px"><span class="small" style="margin-right:auto">'+from+'–'+to+' of '+total+'</span>';if(pages>1){h+='<button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="-1"'+(pg===1?' disabled':'')+'>&#8249; Prev</button><span class="small" style="min-width:3em;text-align:center">'+pg+' / '+pages+'</span><button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="1"'+(pg>=pages?' disabled':'')+'>Next &#8250;</button>'}return h+'</div>'}
 function session(){return A.getSession()||{}}
@@ -1192,22 +1198,51 @@ function renderTaskAlerts(){
     taskAnnounceReady=true;
   }
 }
+let notificationTab='current';
+function notificationScope(){
+  const s=session(),identity=String(s.email||s.username||s.role||'user').toLowerCase();
+  return [A.getActiveStoreId?.()||'default',s.role||'user',identity].join(':');
+}
+function recordReminderHistory(item){
+  if(!N)return null;
+  const entry=N.record(notificationScope(),{type:'reminder',tone:'info',count:1,...item},new Date().toISOString());
+  renderNotifications();
+  return entry;
+}
+function renderNotificationHistoryEntry(entry){
+  const page=entry.page?` data-page="${A.esc(entry.page)}"`:'';
+  const message=entry.message?A.esc(entry.message):`${entry.count||1} item${entry.count===1?'':'s'}`;
+  return `<button class="notification-item notification-history-item state-${entry.tone||'info'} ${entry.readAt?'is-read':''}" type="button"${page} data-notification-id="${A.esc(entry.id)}"><span class="notification-mark" aria-hidden="true"></span><span><span class="notification-kind">${entry.type==='reminder'?'Reminder':'Notification'}</span><b>${A.esc(entry.title)}</b><small>${message} &middot; ${npDateTime(entry.createdAt)}</small></span><span aria-hidden="true">&rarr;</span></button>`;
+}
 function renderNotifications(){
   const d=sdb(),f=followupData(d),today=A.today();
   const overdueCheques=(d.cheques||[]).filter(x=>x.status==='hold'&&x.chequeDate&&String(x.chequeDate).slice(0,10)<today);
   const dueToday=(d.cheques||[]).filter(x=>x.status==='hold'&&String(x.chequeDate||'').slice(0,10)===today);
   const openTasks=(d.tasks||[]).filter(x=>x.status!=='done').length;
   const groups=[
-    {label:'Overdue cheques',count:overdueCheques.length,amount:overdueCheques.reduce((s,x)=>s+A.num(x.amount),0),page:'cheques',tone:'danger'},
-    {label:'Cheques due today',count:dueToday.length,amount:dueToday.reduce((s,x)=>s+A.num(x.amount),0),page:'cheques',tone:'warning'},
-    {label:'Overdue credit entries',count:f.overdueCredits.length,amount:f.overdueCredits.reduce((s,x)=>s+x.balance,0),page:'followup',tone:'danger'},
-    {label:'Payments to confirm',count:f.paymentReports.length,amount:f.paymentReports.reduce((s,x)=>s+A.num(x.amount),0),page:'credits',tone:'warning'},
-    {label:'Pending tasks',count:openTasks,amount:0,page:'tasks',tone:'info'}
+    {key:'overdue-cheques',label:'Overdue cheques',count:overdueCheques.length,amount:overdueCheques.reduce((s,x)=>s+A.num(x.amount),0),page:'cheques',tone:'danger',type:'reminder'},
+    {key:'cheques-due-today',label:'Cheques due today',count:dueToday.length,amount:dueToday.reduce((s,x)=>s+A.num(x.amount),0),page:'cheques',tone:'warning',type:'reminder'},
+    {key:'overdue-credit',label:'Overdue credit entries',count:f.overdueCredits.length,amount:f.overdueCredits.reduce((s,x)=>s+x.balance,0),page:'followup',tone:'danger',type:'reminder'},
+    {key:'payments-confirm',label:'Payments to confirm',count:f.paymentReports.length,amount:f.paymentReports.reduce((s,x)=>s+A.num(x.amount),0),page:'credits',tone:'warning',type:'notification'},
+    {key:'pending-tasks',label:'Pending tasks',count:openTasks,amount:0,page:'tasks',tone:'info',type:'reminder'}
   ].filter(x=>x.count>0);
+  groups.forEach(x=>{x.title=x.label;x.message=`${x.count} item${x.count!==1?'s':''}${x.amount>0?' | '+A.money(x.amount):''}`});
+  const history=N?N.sync(notificationScope(),groups,new Date().toISOString()):{entries:[],unread:groups.reduce((sum,x)=>sum+x.count,0)};
   const total=groups.reduce((s,x)=>s+x.count,0),count=$('notificationCount'),summary=$('notificationSummary'),list=$('notificationList');
-  if(count){count.hidden=!total;count.textContent=total>99?'99+':String(total)}
-  if(summary)summary.textContent=total?`${total} item${total!==1?'s':''} across ${groups.length} priorit${groups.length===1?'y':'ies'}`:'Nothing urgent right now';
-  if(list)list.innerHTML=groups.length?groups.map(x=>`<button class="notification-item state-${x.tone}" type="button" data-page="${x.page}" role="menuitem"><span class="notification-mark" aria-hidden="true"></span><span><b>${A.esc(x.label)}</b><small>${x.count} item${x.count!==1?'s':''}${x.amount>0?' · '+A.money(x.amount):''}</small></span><span aria-hidden="true">→</span></button>`).join(''):'<div class="empty compact-empty">You are caught up. New actions will appear here.</div>';
+  if(count){count.hidden=!history.unread;count.textContent=history.unread>99?'99+':String(history.unread)}
+  if($('notificationHistoryCount'))$('notificationHistoryCount').textContent=history.entries.length?String(history.entries.length):'';
+  $$('.notification-tab').forEach(tab=>{const active=tab.dataset.notificationTab===notificationTab;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',active?'true':'false')});
+  if($('notificationClearBtn'))$('notificationClearBtn').hidden=notificationTab!=='history'||!history.entries.length;
+  if($('notificationMarkReadBtn'))$('notificationMarkReadBtn').hidden=!history.unread;
+  const headTitle=document.querySelector('#notificationMenu .notification-head b');if(headTitle)headTitle.textContent='Notifications & reminders';
+  if(notificationTab==='history'){
+    if(summary)summary.textContent=history.entries.length?`${history.entries.length} saved event${history.entries.length!==1?'s':''} | ${history.unread} unread`:'No notification history yet';
+    if(list)list.innerHTML=history.entries.length?history.entries.map(renderNotificationHistoryEntry).join(''):'<div class="empty compact-empty">Notification and reminder activity will appear here.</div>';
+  }else{
+    if(summary)summary.textContent=total?`${total} item${total!==1?'s':''} need attention`:'Nothing urgent right now';
+    const unreadKeys=new Set(history.entries.filter(x=>!x.readAt).map(x=>x.key));
+    if(list)list.innerHTML=groups.length?groups.map(x=>`<button class="notification-item state-${x.tone} ${unreadKeys.has(x.key)?'':'is-read'}" type="button" data-page="${x.page}" data-notification-key="${x.key}"><span class="notification-mark" aria-hidden="true"></span><span><b>${A.esc(x.label)}</b><small>${x.count} item${x.count!==1?'s':''}${x.amount>0?' &middot; '+A.money(x.amount):''}</small></span><span aria-hidden="true">&rarr;</span></button>`).join(''):'<div class="empty compact-empty">You are caught up. New actions will appear here.</div>';
+  }
   const followBadge=$('followupNavBadge'),chequeBadge=$('chequeNavBadge');
   const followCount=f.overdueCredits.length+f.paymentReports.length+f.limitWarnings.length;
   const chequeCount=overdueCheques.length+dueToday.length+f.chequeQueue.length;
@@ -1335,19 +1370,22 @@ async function disableDailyPush(){
   await refreshPushUI();
 }
 async function testDailyPush(){
+  const button=$('testDailyPushBtn'),oldLabel=button?.textContent||'Send test summary';
+  if(button){button.disabled=true;button.textContent='Sending summary...'}
   let token='';try{token=A.accessToken?await A.accessToken():''}catch(_){}
-  if(!token)return toast('Sign in again to send a test notification','err');
+  if(!token){if(button){button.disabled=false;button.textContent=oldLabel}return toast('Sign in again to send a test summary','err')}
   try{
     const r=await fetch('/api/daily-summary',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({storeId:A.getActiveStoreId()})});
     const data=await r.json().catch(()=>({}));
-    if(!r.ok||!data.ok)throw new Error(data.message||data.error||'Test notification could not be sent.');
-    const em=data.email||{};
-    const parts=[data.sent?'Push: sent to this phone.':'Push: not enabled on this phone.'];
+    if(!r.ok||!data.ok)throw new Error(data.message||data.error||`Test summary request failed (${r.status}).`);
+    const em=data.email||{},push=data.push||{};
+    const parts=[push.sent?`Push: sent to ${push.sent} registered device${push.sent===1?'':'s'}.`:push.error?'Push: '+push.error:'Push: no registered device is enabled.'];
     if(em.sent)parts.push('Email: sent to '+em.to+'.');
     else if(em.attempted)parts.push('Email failed: '+(em.error||'unknown error'));
     else if(em.error)parts.push('Email: '+em.error);
-    toast(parts.join(' '),(data.sent||em.sent)?'ok':'err');
-  }catch(e){toast('Test notification failed: '+(e.message||String(e)),'err')}
+    toast(parts.join(' '),(push.sent||em.sent)?'ok':'err');
+  }catch(e){toast('Test summary failed: '+(e.message||String(e)),'err')}
+  finally{if(button){button.disabled=false;button.textContent=oldLabel}}
 }
 $('enableDailyPushBtn')?.addEventListener('click',enableDailyPush);
 $('disableDailyPushBtn')?.addEventListener('click',disableDailyPush);
@@ -1458,6 +1496,40 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
   if(b.dataset.taskDelete){if(isStaff())return toast('Staff cannot delete tasks','err');submitWrap(()=>{if(confirm('Delete this task?'))A.deleteTask(db(),b.dataset.taskDelete)});return}
   if(b.id==='taskNotifyBtn'){if(typeof Notification==='undefined')return toast('Notifications not supported in this browser','err');Notification.requestPermission().then(p=>toast(p==='granted'?'Desktop alerts enabled':'Notifications blocked'));return}
 });
+document.addEventListener('click',e=>{
+  const button=e.target.closest('button');if(!button)return;
+  if(button.dataset.notificationTab){
+    notificationTab=button.dataset.notificationTab==='history'?'history':'current';
+    renderNotifications();return;
+  }
+  if(button.id==='notificationMarkReadBtn'){
+    if(N)N.markAllRead(notificationScope(),new Date().toISOString());
+    renderNotifications();return;
+  }
+  if(button.id==='notificationClearBtn'){
+    if(N&&confirm('Clear notification and reminder history on this device?')){N.clear(notificationScope());renderNotifications()}
+    return;
+  }
+  if(N&&(button.dataset.notificationId||button.dataset.notificationKey)){
+    N.markRead(notificationScope(),button.dataset.notificationId||button.dataset.notificationKey,new Date().toISOString());
+    renderNotifications();
+  }
+});
+/* Reminder links open WhatsApp or the SMS app; record that hand-off honestly as
+   "opened" because the browser cannot verify that the user pressed Send. */
+document.addEventListener('click',e=>{
+  const button=e.target.closest('button');if(!button||!N)return;
+  let customer=null,channel='';
+  if(button.dataset.wa){customer=A.customerById(sdb(),button.dataset.wa);channel='WhatsApp'}
+  else if(button.dataset.sms){customer=A.customerById(sdb(),button.dataset.sms);channel='SMS'}
+  else if(button.id==='waSendNextBtn'&&waReminderIdx<waReminderQueue.length){customer=waReminderQueue[waReminderIdx].customer;channel='WhatsApp'}
+  else if(button.id==='smsSendNextBtn'&&smsReminderIdx<smsReminderQueue.length){customer=smsReminderQueue[smsReminderIdx].customer;channel='SMS'}
+  else if('waSend' in button.dataset){customer=waReminderQueue[Number(button.dataset.waSend)]?.customer;channel='WhatsApp'}
+  else if('smsSend' in button.dataset){customer=smsReminderQueue[Number(button.dataset.smsSend)]?.customer;channel='SMS'}
+  if(!customer)return;
+  const balance=A.customerBalance(sdb(),customer.id).balance;
+  recordReminderHistory({title:`${channel} reminder opened`,message:`${customer.name} | ${A.money(balance)}`,page:'credits'});
+},true);
 // Picking a saved party in the estimate form auto-fills its phone
 document.querySelector('#estimateForm [name="customer"]')?.addEventListener('change',e=>{const p=(sdb().parties||[]).find(x=>String(x.name).trim().toLowerCase()===String(e.target.value).trim().toLowerCase());const ph=document.querySelector('#estimateForm [name="phone"]');if(p&&p.phone&&ph&&!ph.value)ph.value=p.phone});
 $('settingsForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.saveSettings(db(),formData(e.target));toast('Settings saved')})});
@@ -1585,7 +1657,7 @@ async function notifyStaffWhatsApp(phone,staffName,task){
   try{
     const r=await fetch('/api/notify-whatsapp',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({to:phone,staffName:staffName||'Staff',taskTitle:(task&&task.title)||'',dueDate:task&&task.dueDate?npDate(task.dueDate):''})});
     const data=await r.json().catch(()=>({}));
-    if(data&&data.ok)toast('WhatsApp alert sent to '+(staffName||'staff'));
+    if(data&&data.ok){toast('WhatsApp alert sent to '+(staffName||'staff'));recordReminderHistory({title:'Task alert sent',message:`${staffName||'Staff'} | ${(task&&task.title)||'Assigned task'}`,page:'tasks',tone:'success'})}
     else if(data&&data.state==='NOT_CONFIGURED'){/* not set up yet — stay silent */}
     else if(data&&data.error)toast('WhatsApp alert failed: '+String(data.error).slice(0,90),'err');
   }catch(_){/* network issue — task is already saved */}
@@ -1676,11 +1748,11 @@ MartAI.ready.then(async()=>{
     function setOpen(open){
       menu.hidden=!open;
       btn.setAttribute('aria-expanded',open?'true':'false');
-      if(open){const first=menu.querySelector('.menu-item,.notification-item');if(first)first.focus()}
+      if(open){const first=menu.querySelector('.menu-item,.notification-tab,.notification-item');if(first)first.focus()}
     }
     btn.addEventListener('click',e=>{e.stopPropagation();setOpen(menu.hidden)});
     menu.addEventListener('keydown',e=>{
-      const items=Array.from(menu.querySelectorAll('.menu-item'));
+      const items=Array.from(menu.querySelectorAll('.menu-item,.notification-tab,.notification-item,.notification-action'));
       const i=items.indexOf(document.activeElement);
       if(e.key==='ArrowDown'){e.preventDefault();(items[i+1]||items[0]).focus()}
       else if(e.key==='ArrowUp'){e.preventDefault();(items[i-1]||items[items.length-1]).focus()}

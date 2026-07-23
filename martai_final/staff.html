@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=18">
-<link rel="stylesheet" href="assets/staff.css?v=3">
+<link rel="stylesheet" href="assets/martai.css?v=19">
+<link rel="stylesheet" href="assets/staff.css?v=4">
 </head>
 <body class="staff-page">
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;})();</script>
@@ -67,6 +67,27 @@
       <div class="stf-sec"><h2>Recent entries</h2><span class="stf-small">Credit book</span></div>
       <div class="stf-card" id="entryList"></div>
     </section>
+
+    <!-- ============ DAILY SALES (write-only) ============ -->
+    <section class="stf-page" id="tab-daily">
+      <div class="stf-sec"><div><h2>Enter daily sales</h2><span class="stf-small" id="dailyDateLbl"></span></div><span class="badge badge-amber">PIN protected</span></div>
+      <div class="stf-card stf-daily-card">
+        <div class="stf-writeonly-note"><b>Write-only entry</b><span>You can submit today&rsquo;s totals. Daily-sales history is visible only to admins.</span></div>
+        <form id="dailyForm" autocomplete="off">
+          <div class="stf-row2">
+            <div class="stf-field"><label>POS (Rs)</label><input class="input" name="pos" inputmode="decimal" type="number" min="0" step="0.01" placeholder="0"></div>
+            <div class="stf-field"><label>FonePay (Rs)</label><input class="input" name="fonepay" inputmode="decimal" type="number" min="0" step="0.01" placeholder="0"></div>
+            <div class="stf-field"><label>Cash (Rs)</label><input class="input" name="cash" inputmode="decimal" type="number" min="0" step="0.01" placeholder="0"></div>
+            <div class="stf-field"><label>Finance (Rs)</label><input class="input" name="finance" inputmode="decimal" type="number" min="0" step="0.01" placeholder="0"></div>
+            <div class="stf-field"><label>Party payment (Rs)</label><input class="input" name="partyPayment" inputmode="decimal" type="number" min="0" step="0.01" placeholder="0"></div>
+            <div class="stf-field"><label>Other (Rs)</label><input class="input" name="other" inputmode="decimal" type="number" min="0" step="0.01" placeholder="0"></div>
+          </div>
+          <div class="stf-field"><label>Note <span style="opacity:.5">(optional)</span></label><input class="input" name="note" maxlength="300" placeholder="Shift, counter, or reconciliation note"></div>
+          <div class="stf-daily-total"><span>Total to submit</span><b id="dailyEntryTotal">Rs 0</b></div>
+          <button class="btn btn-primary stf-submit" id="dailySubmitBtn" type="submit">Verify PIN &amp; save today&rsquo;s sales</button>
+        </form>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -75,6 +96,7 @@
   <button class="active" data-tab="tasks" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="lbl">Tasks</span><span class="stf-nav-badge" id="navTaskBadge" style="display:none">0</span></button>
   <button data-tab="customers" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lbl">Customers</span><span class="stf-nav-lockico" data-lockico><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></button>
   <button data-tab="khata" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="lbl">Khata</span><span class="stf-nav-lockico" data-lockico><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></button>
+  <button data-tab="daily" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19V3"/><path d="M2 19h22"/></svg><span class="lbl">Daily sales</span><span class="stf-nav-lockico" data-lockico><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></button>
 </nav>
 
 <!-- ============ SHEETS ============ -->
@@ -135,11 +157,16 @@
   <div id="detailBody"></div>
 </div>
 
+<div class="stf-sheet stf-statement-sheet" id="sheetStatement">
+  <div class="stf-grip"></div>
+  <div id="statementBody"></div>
+</div>
+
 <div class="stf-lock" id="lockScreen" role="dialog" aria-modal="true" aria-label="Security PIN">
   <div class="stf-lock-card" id="lockCard">
     <div class="stf-lock-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
     <h3 id="lockTitle">Enter security PIN</h3>
-    <p class="stf-lock-sub" id="lockSub">Customers &amp; Khata are PIN protected</p>
+    <p class="stf-lock-sub" id="lockSub">Customers, Khata &amp; Daily Sales are PIN protected</p>
     <div class="stf-lock-dots" id="lockDots"><i></i><i></i><i></i><i></i></div>
     <div class="stf-lock-msg" id="lockMsg"></div>
     <div class="stf-keypad" id="lockPad">
@@ -164,7 +191,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
 <script src="assets/martai-supabase-config.js"></script>
-<script src="assets/martai-store.js?v=29"></script>
+<script src="assets/martai-store.js?v=30"></script>
 <script src="assets/martai-ui.js?v=1"></script>
 <script>
 const A=MartAI,UI=window.MartAIUI;const $=id=>document.getElementById(id);
@@ -188,7 +215,7 @@ function npDateTime(v){if(!v)return'-';try{const d=new Date(v);return npDate(loc
 
 /* ---------- data helpers ---------- */
 function db(){return A.getDB()}
-function sdb(){const d=A.getDB();const sid=A.getActiveStoreId?.();if(!sid)return d;const isDefault=sid==='default';const sf=arr=>(arr||[]).filter(x=>x.storeId===sid||(isDefault&&!x.storeId));return{...d,customers:sf(d.customers),credits:sf(d.credits),tasks:sf(d.tasks)}}
+function sdb(){const d=A.getDB();const sid=A.getActiveStoreId?.();if(!sid)return{...d,dailySales:[]};const isDefault=sid==='default';const sf=arr=>(arr||[]).filter(x=>x.storeId===sid||(isDefault&&!x.storeId));return{...d,customers:sf(d.customers),credits:sf(d.credits),tasks:sf(d.tasks),dailySales:[]}}
 const myEmail=String(session.email||'').toLowerCase();
 const myName=(session.name||myEmail.split('@')[0]||'Staff').replace(/^\w/,c=>c.toUpperCase());
 function isMine(t){return !t.assignedToEmail||t.assignedToEmail===myEmail}
@@ -215,10 +242,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
 function celebrate(){if(REDUCED)return;const box=$('celebrate');const colors=['#2dd4bf','#5eead4','#0f766e','#aeb8b5','#f4f7f6'];let conf='';for(let i=0;i<14;i++){const a=Math.random()*Math.PI*2,r=70+Math.random()*90;conf+=`<span class="stf-confetti" style="--x:${Math.cos(a)*r}px;--y:${Math.sin(a)*r-40}px;--c:${colors[i%colors.length]};--d:${(Math.random()*.18).toFixed(2)}s"></span>`}
 box.innerHTML=`<div class="ring">${conf}<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>`;box.classList.add('show');setTimeout(()=>{box.classList.remove('show');box.innerHTML=''},1050)}
 
-/* ---------- tabs (Customers + Khata sit behind the PIN gate) ---------- */
+/* ---------- tabs (money and customer pages sit behind the PIN gate) ---------- */
 let activeTab='tasks';
-const TAB_ORDER=['tasks','customers','khata'];
-function setTab(tab,unlocked){if(GATED.includes(tab)&&!unlocked&&!isUnlocked()){requestUnlock(tab);return}
+const TAB_ORDER=['tasks','customers','khata','daily'];
+function setTab(tab,unlocked){const needsFreshDaily=tab==='daily'&&!unlocked;if(GATED.includes(tab)&&(needsFreshDaily||!isUnlocked())){requestUnlock(tab);return}
   const dir=Math.sign(TAB_ORDER.indexOf(tab)-TAB_ORDER.indexOf(activeTab))||0;activeTab=tab;document.querySelectorAll('#stfNav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));document.querySelectorAll('.stf-page').forEach(p=>p.classList.remove('active'));const pg=$('tab-'+tab);pg.style.setProperty('--dir',dir);void pg.offsetWidth;pg.classList.add('active');if(location.hash!=='#'+tab)try{history.replaceState(null,'','#'+tab)}catch(e){}renderAll()}
 $('stfNav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(!b||b.dataset.tab===activeTab)return;setTab(b.dataset.tab)});
 
@@ -229,7 +256,7 @@ $('stfNav').addEventListener('click',e=>{const b=e.target.closest('button[data-t
    attempts trigger an exponential lockout; the gate auto-relocks after
    5 minutes of inactivity or 60s in the background. Forgot PIN requires
    the account's real login password (verified against Supabase auth). */
-const GATED=['customers','khata'];
+const GATED=['customers','khata','daily'];
 const PIN_KEY='martai_staff_lock_v1_'+myEmail;
 const PIN_ITER=120000,UNLOCK_MS=5*60*1000,MAX_TRIES=5;
 let unlockedUntil=0,pendingTab='',lockMode='unlock',pinBuf='',pinFirst='',lockBusy=false,hiddenAt=0,lockTick=0;
@@ -247,7 +274,7 @@ function lockShake(){const c=$('lockCard'),d=$('lockDots');c.classList.remove('s
 function lockCountdown(){clearInterval(lockTick);const left=lockRemaining();if(!left)return;const tick=()=>{const l=lockRemaining();if(!l){clearInterval(lockTick);lockMsg('Try again now');return}lockMsg('Too many attempts — wait '+l+'s',true)};tick();lockTick=setInterval(tick,1000)}
 function openLock(mode,tab){lockMode=mode;pendingTab=tab||pendingTab;pinBuf='';pinFirst='';renderLockDots();$('lockPw').classList.remove('show');$('lockPad').style.display='';$('lockForgot').style.display=mode==='unlock'?'':'none';
   $('lockTitle').textContent=mode==='setup'?'Create a security PIN':mode==='confirm'?'Confirm your PIN':'Enter security PIN';
-  $('lockSub').textContent=mode==='setup'?'This 4-digit PIN protects Customers & Khata on this device.':'Customers & Khata are PIN protected';
+  $('lockSub').textContent=mode==='setup'?'This 4-digit PIN protects Customers, Khata and Daily Sales on this device.':pendingTab==='daily'?'Verify your PIN before entering daily sales.':'Customers, Khata & Daily Sales are PIN protected';
   lockMsg('');if(mode==='unlock')lockCountdown();
   document.body.classList.add('stf-lock-open');$('lockScreen').classList.add('show')}
 function closeLock(){clearInterval(lockTick);document.body.classList.remove('stf-lock-open');$('lockScreen').classList.remove('show');pinBuf='';pinFirst='';$('lockPwInput').value=''}
@@ -291,8 +318,8 @@ $('lockPwVerify').addEventListener('click',async()=>{const pw=$('lockPwInput').v
   finally{$('lockPwVerify').disabled=false}});
 /* auto-relock: extend while active, drop after backgrounding or idle */
 ['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{if(isUnlocked())unlockedUntil=Date.now()+UNLOCK_MS},{passive:true}));
-document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else if(hiddenAt&&Date.now()-hiddenAt>60000&&isUnlocked()){unlockedUntil=0;updateNavLocks();if(GATED.includes(activeTab)){setTab('tasks');toast('🔒 Locked for your security')}}});
-setInterval(()=>{updateNavLocks();if(GATED.includes(activeTab)&&!isUnlocked()){setTab('tasks');toast('🔒 Locked for your security')}},15000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else if(hiddenAt&&Date.now()-hiddenAt>60000&&isUnlocked()){unlockedUntil=0;updateNavLocks();if(GATED.includes(activeTab)){closeSheet();setTab('tasks');toast('🔒 Locked for your security')}}});
+setInterval(()=>{updateNavLocks();if(GATED.includes(activeTab)&&!isUnlocked()){closeSheet();setTab('tasks');toast('🔒 Locked for your security')}},15000);
 
 /* ---------- renderers ---------- */
 function renderHero(){const d=sdb();const name=(d.settings||{}).martName||'RD MART';$('heroMart').textContent=name;const logo=(d.settings||{}).storeLogo||'';$('heroLogo').innerHTML=logo?`<img src="${logo}" alt="">`:A.esc(name.charAt(0).toUpperCase());const h=new Date().getHours();const greet=h<12?'Good morning':h<17?'Good afternoon':'Good evening';$('greetTitle').textContent=`${greet}, ${myName.split(' ')[0]}!`;$('greetDate').textContent=npDate(A.today())+' · '+A.today()}
@@ -331,8 +358,10 @@ function renderKhata(){const d=sdb();const today=A.today();
   countUp($('kGiven'),givenToday,v=>A.money(v));countUp($('kDueTotal'),dueRows.reduce((s,x)=>s+x.balance,0),v=>A.money(v));countUp($('kDueCust'),dueRows.length,v=>String(v));countUp($('kClear'),bals.length-dueRows.length,v=>String(v));
   const recent=A.byDate(d.credits,'date').slice(0,12);
   $('entryList').innerHTML=recent.length?recent.map(entryRow).join(''):'<div class="empty">No credit entries yet.</div>'}
+function renderDailyEntry(){$('dailyDateLbl').textContent=npDate(A.today())+' · Today only';updateDailyEntryTotal()}
+function updateDailyEntryTotal(){const form=$('dailyForm');if(!form)return;const fields=['pos','fonepay','cash','finance','partyPayment','other'];const total=fields.reduce((sum,name)=>sum+A.num(form.elements[name]?.value),0);$('dailyEntryTotal').textContent=A.money(total)}
 
-function renderAll(){if(!guard())return;renderHero();updateSyncChip();if(activeTab==='tasks')renderTasks();if(activeTab==='customers')renderCustomers();if(activeTab==='khata')renderKhata();applyTilt()}
+function renderAll(){if(!guard())return;renderHero();updateSyncChip();if(activeTab==='tasks')renderTasks();if(activeTab==='customers')renderCustomers();if(activeTab==='khata')renderKhata();if(activeTab==='daily')renderDailyEntry();applyTilt()}
 function applyTilt(){if(REDUCED)return;document.querySelectorAll('.stf-tilt').forEach(el=>{if(el.dataset.t3)return;el.dataset.t3='1';try{A.tilt3d(el,5)}catch(e){}})}
 document.addEventListener('pointerdown',e=>{if(REDUCED)return;const h=e.target.closest('.btn,.stf-action,#stfNav button,.stf-done-btn,.stf-fab-add,.stf-chip');if(!h)return;const r=h.getBoundingClientRect();const s=document.createElement('span');s.className='stf-ripple';s.style.left=(e.clientX-r.left)+'px';s.style.top=(e.clientY-r.top)+'px';h.appendChild(s);setTimeout(()=>s.remove(),650)});
 
@@ -361,6 +390,18 @@ $('creditForm').addEventListener('submit',e=>{e.preventDefault();const data=form
 $('payForm').addEventListener('submit',e=>{e.preventDefault();const data=formData(e.target);if(!data.customerId)return toast('Select a customer first','err');
   submitWrap(()=>{const applied=A.addCreditPayment(db(),data.customerId,A.num(data.amount),data.note);e.target.reset();pmPicker.clear();closeSheet();
     toast(applied>0?'Payment '+A.money(applied)+' recorded':'No dues to apply this payment to',applied>0?'ok':'err');if(applied>0)celebrate()})});
+$('dailyForm').addEventListener('input',updateDailyEntryTotal);
+$('dailyForm').addEventListener('submit',async e=>{e.preventDefault();
+  if(!isUnlocked()){requestUnlock('daily');return toast('Verify your security PIN before saving daily sales','err')}
+  const button=$('dailySubmitBtn'),oldLabel=button.textContent;button.disabled=true;button.textContent='Saving securely…';
+  try{
+    const entry=await A.addStaffDaily(formData(e.target));e.target.reset();updateDailyEntryTotal();celebrate();
+    unlockedUntil=0;updateNavLocks();setTab('tasks',true);
+    const total=['pos','fonepay','cash','finance','partyPayment','other'].reduce((sum,key)=>sum+A.num(entry[key]),0);
+    toast('Daily sales '+A.money(total)+' saved. History remains admin-only.')
+  }catch(error){toast(error.message||String(error),'err')}
+  finally{button.disabled=false;button.textContent=oldLabel}
+});
 
 /* ---------- customer detail ---------- */
 function openDetail(custId){const d=sdb();const c=d.customers.find(x=>x.id===custId);if(!c)return;
@@ -370,16 +411,29 @@ function openDetail(custId){const d=sdb();const c=d.customers.find(x=>x.id===cus
   <div class="stf-detail-actions">
     <button class="btn btn-red" type="button" data-act-credit="${A.esc(c.id)}">+ Credit</button>
     <button class="btn btn-green" type="button" data-act-pay="${A.esc(c.id)}">Payment</button>
+    <button class="btn btn-primary" type="button" data-act-statement="${A.esc(c.id)}">Full statement</button>
     <button class="btn btn-soft" type="button" data-act-wa="${A.esc(c.id)}" ${c.phone&&bal.balance>0?'':'disabled'}>WhatsApp</button>
   </div>
   ${recent.length?'<div class="stf-sec" style="margin:14px 0 4px"><h2>Recent entries</h2></div>'+recent.map(entryRow).join(''):''}`;
   openSheet('sheetDetail')}
+let statementCustomerId='';
+function staffStatementRows(d,customerId){return(d.credits||[]).filter(row=>row.customerId===customerId).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.createdAt||'').localeCompare(String(b.createdAt||'')))}
+function openStaffStatement(customerId){const d=sdb(),c=d.customers.find(row=>row.id===customerId);if(!c)return;statementCustomerId=customerId;const rows=staffStatementRows(d,customerId),bal=A.customerBalance(d,customerId);let running=0;
+  const body=rows.map(row=>{const amount=A.num(row.amount),paid=A.num(row.paid),note=row.note||row.paymentNote||'';running+=amount-paid;return`<tr><td>${npDate(row.date)}</td><td>${A.esc(row.items||'Credit entry')}${note?`<small>${A.esc(note)}</small>`:''}</td><td>${A.money(amount)}</td><td>${A.money(paid)}</td><td><b>${A.money(running)}</b></td></tr>`}).join('');
+  $('statementBody').innerHTML=`<div class="stf-detail-head">${ava(c.name)}<div><h3>${A.esc(c.name)}</h3><div class="stf-sub" style="margin:0">${A.esc(c.phone||'No phone')} · Full customer statement</div></div></div>
+  <div class="stf-detail-bal"><div class="${bal.balance>0?'due':''}"><b>${A.money(bal.balance)}</b><span>Balance due</span></div><div><b>${A.money(bal.taken)}</b><span>Total credit</span></div><div><b>${A.money(bal.paid)}</b><span>Total paid</span></div></div>
+  <div class="stf-statement-table"><table><thead><tr><th>Date</th><th>Details</th><th>Credit</th><th>Paid</th><th>Balance</th></tr></thead><tbody>${body||'<tr><td colspan="5"><div class="empty">No statement entries yet.</div></td></tr>'}</tbody></table></div>
+  <div class="stf-statement-actions"><button class="btn btn-soft" type="button" data-stmt-close>Close</button><button class="btn btn-primary" type="button" data-stmt-download>Download CSV</button></div>`;
+  openSheet('sheetStatement')}
+function downloadStaffStatement(){const d=sdb(),c=d.customers.find(row=>row.id===statementCustomerId);if(!c)return;const rows=staffStatementRows(d,c.id);let running=0,csv='Date AD,Date BS,Items,Note,Amount,Paid,Balance\n';rows.forEach(row=>{const amount=A.num(row.amount),paid=A.num(row.paid);running+=amount-paid;csv+=[row.date,npDate(row.date),row.items||'',row.note||row.paymentNote||'',amount,paid,running].map(A.csvEscape).join(',')+'\n'});csv+=['','','','TOTALS',rows.reduce((sum,row)=>sum+A.num(row.amount),0),rows.reduce((sum,row)=>sum+A.num(row.paid),0),running].map(A.csvEscape).join(',')+'\n';A.download('statement_'+(A.phoneClean(c.phone)||String(c.name).replace(/\W+/g,'_'))+'.csv',csv)}
 $('custList').addEventListener('click',e=>{const b=e.target.closest('[data-cust]');if(b)openDetail(b.dataset.cust)});
 $('detailBody').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.dataset.actCredit){closeSheet();crPicker.clear();crPicker.choose(b.dataset.actCredit);openSheet('sheetCredit')}
   if(b.dataset.actPay){closeSheet();pmPicker.clear();pmPicker.choose(b.dataset.actPay);openSheet('sheetPay')}
+  if(b.dataset.actStatement){closeSheet();openStaffStatement(b.dataset.actStatement)}
   if(b.dataset.actWa){const d=sdb();const c=d.customers.find(x=>x.id===b.dataset.actWa);if(!c)return;const bal=A.customerBalance(d,c.id).balance;
     try{A.wa(c.phone,`Namaste ${c.name} ji! 🙏 ${(d.settings||{}).martName||'RD MART'} bata reminder: tapaiko udhaaro baki Rs ${Number(bal).toLocaleString('en-IN')} cha. Kripaya milayera bhuktani garnuhola. Dhanyabad!`)}catch(err){toast(err.message,'err')}}});
+$('statementBody').addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;if(button.hasAttribute('data-stmt-close'))closeSheet();if(button.hasAttribute('data-stmt-download'))downloadStaffStatement()});
 
 /* ---------- task actions ---------- */
 $('taskList').addEventListener('click',e=>{const b=e.target.closest('[data-task-done]');if(!b)return;const id=b.dataset.taskDone;const card=b.closest('.stf-task');
@@ -397,7 +451,7 @@ $('logoutBtn').addEventListener('click',()=>{A.clearSession().finally(()=>locati
 /* ---------- boot ---------- */
 (async()=>{try{await A.ready}catch(e){}
   session=A.getSession()||session;if(!guard())return;
-  const h=location.hash.slice(1);if(['customers','khata'].includes(h)){setTab(h)}else renderAll();
+  const h=location.hash.slice(1);if(['customers','khata','daily'].includes(h)){setTab(h)}else renderAll();
   A.onDataChange(()=>{renderAll();toast('Updated from another device')});
   try{A.startRealtime()}catch(e){}
   setInterval(updateSyncChip,5000);

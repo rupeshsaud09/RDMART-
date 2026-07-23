@@ -961,9 +961,10 @@ drop policy if exists "staff insert daily sales"     on public.daily_sales;
 drop policy if exists "staff update daily sales"     on public.daily_sales;
 drop policy if exists "store admins use daily sales" on public.daily_sales;
 create policy "admins manage daily sales"    on public.daily_sales for all    to authenticated using (public.is_mart_admin())          with check (public.is_mart_admin());
-create policy "staff use daily sales"        on public.daily_sales for select to authenticated using (public.is_mart_staff());
-create policy "staff insert daily sales"     on public.daily_sales for insert to authenticated                                         with check (public.is_mart_staff());
-create policy "staff update daily sales"     on public.daily_sales for update to authenticated using (public.is_mart_staff())         with check (public.is_mart_staff());
+-- Staff daily sales are intentionally write-only: they may enter today's
+-- totals, but only admins/store admins can read or edit the historical rows.
+create policy "staff insert daily sales"     on public.daily_sales for insert to authenticated
+  with check (public.is_mart_staff() and sale_date = (now() at time zone 'Asia/Kathmandu')::date);
 create policy "store admins use daily sales" on public.daily_sales for all    to authenticated using (public.is_store_admin(store_id)) with check (public.is_store_admin(store_id));
 
 -- party_payments

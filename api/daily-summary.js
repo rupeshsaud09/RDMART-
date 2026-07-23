@@ -55,6 +55,8 @@ const REQUIRED_ENV = Object.freeze([
   'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
   'VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT', 'CRON_SECRET'
 ]);
+const TEST_AUTH_REQUIRED_ENV = Object.freeze(['SUPABASE_URL', 'SUPABASE_ANON_KEY']);
+const PUSH_REQUIRED_ENV = Object.freeze(['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT']);
 const EMAIL_REQUIRED_ENV = Object.freeze(['RESEND_API_KEY', 'RESEND_FROM_EMAIL', 'SUMMARY_EMAIL_TO']);
 const NEPAL_OFFSET_MINUTES = 345; // UTC+5:45
 const MAX_BODY_BYTES = 4096;
@@ -88,9 +90,17 @@ function loadConfiguration(environment) {
   const vapidSubject = value('VAPID_SUBJECT');
   const validSubject = /^(mailto:|https:\/\/)/i.test(vapidSubject);
   if (!validSubject && !missing.includes('VAPID_SUBJECT')) missing.push('VAPID_SUBJECT');
+  const testAuthMissing = TEST_AUTH_REQUIRED_ENV.filter(key => !value(key));
+  if (!supabaseUrl && !testAuthMissing.includes('SUPABASE_URL')) testAuthMissing.push('SUPABASE_URL');
+  const pushMissing = PUSH_REQUIRED_ENV.filter(key => !value(key));
+  if (!validSubject && !pushMissing.includes('VAPID_SUBJECT')) pushMissing.push('VAPID_SUBJECT');
   return {
     ok: missing.length === 0,
     missing: Object.freeze(missing),
+    testAuthOk: testAuthMissing.length === 0,
+    testAuthMissing: Object.freeze(testAuthMissing),
+    pushOk: pushMissing.length === 0,
+    pushMissing: Object.freeze(pushMissing),
     supabaseUrl: supabaseUrl ? supabaseUrl.toString().replace(/\/+$/, '') : '',
     anonKey: value('SUPABASE_ANON_KEY'),
     serviceRoleKey: value('SUPABASE_SERVICE_ROLE_KEY'),
@@ -113,6 +123,7 @@ function loadEmailConfiguration(environment) {
   if (toEmail && !EMAIL_PATTERN.test(toAddressOnly) && !missing.includes('SUMMARY_EMAIL_TO')) missing.push('SUMMARY_EMAIL_TO');
   return {
     ok: missing.length === 0,
+    missing: Object.freeze(missing),
     apiKey: value('RESEND_API_KEY'),
     fromEmail: value('RESEND_FROM_EMAIL'),
     toEmail: toEmail
@@ -461,9 +472,16 @@ async function handleTestSend(request, response, configuration, emailConfigurati
   if (!admin && !storeAdmin) return respond(response, 403, { ok: false, error: 'Only an admin can send a test notification.' });
 
   const rest = (table, query) => restRequest(fetchImplementation, configuration.supabaseUrl, auth.headers, `${table}?${query}`);
-  const subscriptionsResult = await rest('push_subscriptions', `select=id,endpoint,p256dh,auth_key&store_id=eq.${storeId}`);
-  if (!subscriptionsResult.ok || !Array.isArray(subscriptionsResult.data)) {
-    return respond(response, 502, { ok: false, error: 'Could not read this device\'s registration.' });
+  let subscriptions = [], pushError = null;
+  if (configuration.pushOk) {
+    const subscriptionsResult = await rest('push_subscriptions', `select=id,endpoint,p256dh,auth_key&store_id=eq.${storeId}`);
+    if (subscriptionsResult.ok && Array.isArray(subscriptionsResult.data)) subscriptions = subscriptionsResult.data;
+    else {
+      pushError = 'Could not read this device\'s registration.';
+      if (!emailConfiguration.ok) return respond(response, 502, { ok: false, error: pushError });
+    }
+  } else {
+    pushError = 'Push is not configured on this server.';
   }
 
   const today = nepalTodayIso(new Date());
@@ -474,9 +492,10 @@ async function handleTestSend(request, response, configuration, emailConfigurati
   payload.tag = 'martai-daily-summary-test';
 
   let pushSent = 0;
-  if (subscriptionsResult.data.length) {
-    const results = await sendToSubscriptions(webpush, configuration, subscriptionsResult.data, payload);
+  if (subscriptions.length) {
+    const results = await sendToSubscriptions(webpush, configuration, subscriptions, payload);
     pushSent = results.filter(r => r.ok).length;
+    if (!pushSent && results.length) pushError = 'The registered device rejected the test notification.';
   }
 
   let email = { attempted: false, sent: false, to: null, error: null };
@@ -490,7 +509,12 @@ async function handleTestSend(request, response, configuration, emailConfigurati
     email.error = emailResult.ok ? null : emailResult.error;
   }
 
-  return respond(response, 200, { ok: true, sent: pushSent, push: { sent: pushSent }, email: email });
+  return respond(response, 200, {
+    ok: true,
+    sent: pushSent,
+    push: { configured: configuration.pushOk, sent: pushSent, error: pushError },
+    email: email
+  });
 }
 
 function createHandler(dependencies) {
@@ -508,11 +532,24 @@ function createHandler(dependencies) {
       if (typeof response.setHeader === 'function') response.setHeader('Allow', 'GET, POST');
       return respond(response, 405, { ok: false, error: 'Only GET and POST are supported.' });
     }
-    if (!configuration.ok) {
-      return respond(response, 200, { ok: false, state: 'NOT_CONFIGURED', message: 'Daily summary notifications are not configured yet.', missing: configuration.missing });
-    }
     if (!fetchImplementation) return respond(response, 500, { ok: false, error: 'No fetch implementation available.' });
-    if (method === 'GET') return handleCron(request, response, configuration, emailConfiguration, fetchImplementation, webpush);
+    if (method === 'GET') {
+      if (!configuration.ok) {
+        return respond(response, 200, { ok: false, state: 'NOT_CONFIGURED', message: 'Scheduled daily summaries are not configured yet.', missing: configuration.missing });
+      }
+      return handleCron(request, response, configuration, emailConfiguration, fetchImplementation, webpush);
+    }
+    if (!configuration.testAuthOk) {
+      return respond(response, 200, { ok: false, state: 'NOT_CONFIGURED', message: 'Daily summary testing is not connected to the database yet.', missing: configuration.testAuthMissing });
+    }
+    if (!configuration.pushOk && !emailConfiguration.ok) {
+      return respond(response, 200, {
+        ok: false,
+        state: 'NOT_CONFIGURED',
+        message: 'Configure push notifications or summary email before sending a test.',
+        missing: { push: configuration.pushMissing, email: emailConfiguration.missing }
+      });
+    }
     return handleTestSend(request, response, configuration, emailConfiguration, fetchImplementation, webpush);
   };
 }
@@ -530,5 +567,7 @@ module.exports._test = Object.freeze({
   buildStoreSummary,
   sameOriginRequest,
   REQUIRED_ENV,
+  TEST_AUTH_REQUIRED_ENV,
+  PUSH_REQUIRED_ENV,
   EMAIL_REQUIRED_ENV
 });

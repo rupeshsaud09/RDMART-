@@ -331,6 +331,12 @@ body[data-theme="dark"] .theme-switch button.active{background:var(--surface-3)}
 .notification-head>div{display:grid;gap:2px}
 .notification-head b{font-size:13.5px}
 .notification-head span{color:var(--muted);font-size:11.5px}
+.notification-tabs{display:flex;gap:4px;padding:8px 10px 0;border-bottom:1px solid var(--line)}
+.notification-tab{position:relative;border:0;background:transparent;color:var(--muted);padding:8px 10px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.notification-tab::after{content:'';position:absolute;left:9px;right:9px;bottom:-1px;height:2px;border-radius:2px;background:transparent}
+.notification-tab:hover,.notification-tab.active{color:var(--text)}
+.notification-tab.active::after{background:var(--brand)}
+.notification-tab span:not(:empty){display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:3px;padding:0 5px;border-radius:999px;background:var(--surface-3);font-size:9px}
 .notification-list{display:grid;gap:1px;padding:6px;max-height:380px;overflow:auto}
 .notification-item{width:100%;display:grid;grid-template-columns:9px minmax(0,1fr) auto;align-items:center;gap:10px;border:1px solid transparent;border-radius:10px;padding:10px 11px;text-align:left;cursor:pointer}
 .notification-item:hover{filter:brightness(.985);border-color:currentColor}
@@ -338,6 +344,11 @@ body[data-theme="dark"] .theme-switch button.active{background:var(--surface-3)}
 .notification-item b{font-size:12.5px;color:var(--text)}
 .notification-item small{margin-top:2px;color:var(--muted);font-size:11px}
 .notification-mark{width:8px;height:8px;border-radius:50%;background:currentColor}
+.notification-item.is-read{opacity:.67}
+.notification-item.is-read .notification-mark{background:transparent;border:1.5px solid currentColor}
+.notification-history-item{grid-template-columns:9px minmax(0,1fr) auto}
+.notification-kind{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.notification-footer{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:8px 10px;border-top:1px solid var(--line)}
 .compact-empty{padding:22px 14px}
 
 /* ---------- 8. CONTENT + CARDS ---------- */

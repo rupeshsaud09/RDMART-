@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test ../tests/khata-backup.test.js ../tests/security-hardening.test.js"
+    "test": "node --test ../tests/khata-backup.test.js ../tests/security-hardening.test.js ../tests/daily-summary.test.js ../tests/staff-portal.test.js tests/notifications.test.js"
   },
   "dependencies": {}
 }

@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+let dailySummaryHandler = null;
 const root = __dirname;
 const types = {'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml'};
 const server = http.createServer((req,res)=>{
@@ -17,6 +18,15 @@ const server = http.createServer((req,res)=>{
   }catch(e){
     res.writeHead(400,{'Content-Type':'text/plain'});
     return res.end('Bad request');
+  }
+  if(urlPath === '/api/daily-summary'){
+    try{
+      dailySummaryHandler=dailySummaryHandler||require('../api/daily-summary');
+      return dailySummaryHandler(req,res);
+    }catch(error){
+      res.writeHead(500,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+      return res.end(JSON.stringify({ok:false,error:'Daily summary service could not start.'}));
+    }
   }
   if(urlPath === '/') urlPath = '/index.html';
   const filePath = path.normalize(path.join(root, urlPath));

@@ -47,7 +47,7 @@
     if(tableMode()){const sid=getActiveStoreId();db.sales.forEach(s=>{if(!s.storeId)s.storeId=sid})}
     return db;
   }
-  function redactStoredSecrets(db){if(!tableMode()||!db||typeof db!=='object')return db;db.settings=db.settings||{};db.settings.adminPass='';(db.staffAccounts||[]).forEach(s=>{delete s.password});(db.customers||[]).forEach(c=>{if(!dirty.customers.has(c.id))c.pin=''});return db}
+  function redactStoredSecrets(db){if(!tableMode()||!db||typeof db!=='object')return db;db.settings=db.settings||{};db.settings.adminPass='';(db.staffAccounts||[]).forEach(s=>{delete s.password});(db.customers||[]).forEach(c=>{if(!dirty.customers.has(c.id))c.pin=''});if(isStaffSession())db.dailySales=[];return db}
   function readLocal(){let db;try{db=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){db=null}return normalizeDB(redactStoredSecrets(db))}
   function writeLocal(db){const stored=tableMode()?redactStoredSecrets(JSON.parse(JSON.stringify(db))):db;localStorage.setItem(KEY,JSON.stringify(stored))}
   function getDB(){if(!currentDB)currentDB=readLocal();return currentDB}
@@ -82,12 +82,13 @@
       const stores=storeResult.error?[defaultStore()]:(storeResult.data||[]).map(fromStoreRow);
       let storeId=getActiveStoreId();if(!stores.some(s=>s.id===storeId)){storeId=stores[0]?.id||'default';setActiveStoreId(storeId)}
       const byStore=q=>storeResult.error?q:q.eq('store_id',storeId);
+      const staffView=isStaffSession();
       const [settings,customers,credits,sales,daily,party,cheques,estimates,activity,payReqs,chequeQueueRes,partiesRes,tasksRes]=await Promise.all([
         client.from('mart_settings').select('*').eq('id',true).maybeSingle(),
         byStore(client.from('customers').select('*')).order('created_at',{ascending:false}),
         byStore(client.from('credits').select('*')).order('credit_date',{ascending:false}),
         byStore(client.from('sales').select('*')).order('sale_date',{ascending:false}),
-        byStore(client.from('daily_sales').select('*')).order('sale_date',{ascending:false}),
+        staffView?Promise.resolve({data:[],error:null}):byStore(client.from('daily_sales').select('*')).order('sale_date',{ascending:false}),
         byStore(client.from('party_payments').select('*')).order('payment_date',{ascending:false}),
         byStore(client.from('cheques').select('*')).order('cheque_date',{ascending:false}),
         byStore(client.from('estimate_bills').select('*')).order('estimate_date',{ascending:false}).limit(200),
@@ -108,7 +109,7 @@
         customers:customerRows,
         credits:(credits.data||[]).map(r=>fromCreditRow(r,customerRows)),
         sales:(sales.data||[]).map(fromSaleRow),
-        dailySales:(daily.data||[]).map(fromDailyRow),
+        dailySales:staffView?[]:(daily.data||[]).map(fromDailyRow),
         partyPayments:(party.data||[]).map(fromPartyPaymentRow),
         cheques:(cheques.data||[]).map(fromChequeRow),
         // cheque_queue table may not exist until add-cheque-queue.sql is run — keep local copy then
@@ -425,6 +426,22 @@
   function addSale(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const s={id:id(),storeId:getActiveStoreId(),date:input.date||today(),party:String(input.party||'Walk-in Customer').trim(),amount,note:String(input.note||'').trim(),createdAt:now()};db.sales.unshift(s);markDirty('sales',s.id);addActivity(db,`Sale ${money(amount)} - ${s.party}`,'sale');saveDB(db);return s}
   function deleteSale(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.sales.find(x=>x.id===idv);deleteTableRow('sales',r);db.sales=db.sales.filter(x=>x.id!==idv);if(r)addActivity(db,`Sale deleted: ${money(r.amount)}`,'sale');saveDB(db)}
   function addDaily(db,input){const fields=['pos','fonepay','cash','finance','partyPayment','other'];const d={id:id(),storeId:getActiveStoreId(),date:input.date||today(),note:String(input.note||'').trim(),createdAt:now()};fields.forEach(f=>d[f]=num(input[f]));db.dailySales.unshift(d);markDirty('dailySales',d.id);addActivity(db,`Daily sales saved for ${d.date}`,'daily');saveDB(db);return d}
+  async function addStaffDaily(input){
+    if(!isStaffSession())throw new Error('Only a signed-in staff member can use this entry form');
+    const fields=['pos','fonepay','cash','finance','partyPayment','other'],entry={id:id(),storeId:getActiveStoreId(),date:today(),createdAt:now()};
+    fields.forEach(field=>{entry[field]=num(input&&input[field]);if(entry[field]<0)throw new Error('Daily sales amounts cannot be negative')});
+    const total=fields.reduce((sum,field)=>sum+entry[field],0);if(total<=0)throw new Error('Enter at least one sales amount');
+    const actor=String(getSession()?.email||getSession()?.name||'Staff').slice(0,120),note=String(input?.note||'').trim().slice(0,300);
+    entry.note=[note,`Entered by ${actor}`].filter(Boolean).join(' | ');
+    if(!tableMode())return addDaily(getDB(),entry);
+    const client=getSupabase();if(!client)throw new Error('Daily sales entry needs an internet connection');
+    const row={legacy_id:entry.id,store_id:entry.storeId,sale_date:entry.date,pos:entry.pos,fonepay:entry.fonepay,cash:entry.cash,finance:entry.finance,party_payment:entry.partyPayment,other:entry.other,note:entry.note,created_at:entry.createdAt};
+    touchLocal();
+    const result=await client.from('daily_sales').insert(row);
+    if(result.error)throw result.error;
+    remoteEnabled=true;remoteError='';
+    return entry;
+  }
   function updateDaily(db,idv,input){const r=db.dailySales.find(x=>x.id===idv);if(!r)throw new Error('Daily sales entry not found');const fields=['pos','fonepay','cash','finance','partyPayment','other'];r.date=input.date||r.date||today();fields.forEach(f=>{if(f in input)r[f]=num(input[f])});r.note=String(input.note||'').trim();r.updatedAt=now();markDirty('dailySales',r.id);addActivity(db,`Daily sales updated for ${r.date}`,'daily');saveDB(db);return r}
   function deleteDaily(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.dailySales.find(x=>x.id===idv);deleteTableRow('daily_sales',r);db.dailySales=db.dailySales.filter(x=>x.id!==idv);addActivity(db,'Daily sales entry deleted','daily');saveDB(db)}
   function addPartyPayment(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const p={id:id(),storeId:getActiveStoreId(),date:input.date||today(),party:String(input.party||'').trim(),amount,method:String(input.method||'Cash'),reference:String(input.reference||'').trim(),note:String(input.note||'').trim(),createdAt:now()};if(!p.party)throw new Error('Party name is required');db.partyPayments.unshift(p);markDirty('partyPayments',p.id);addActivity(db,`Party payment ${money(amount)} to ${p.party}`,'party');saveDB(db);return p}
@@ -500,7 +517,8 @@
     if(!tableMode()||realtimeChannel)return false;
     const client=getSupabase();if(!client||typeof client.channel!=='function')return false;
     const s=getSession();if(!(s?.role==='admin'||s?.role==='staff'||s?.role==='store_admin'))return false;
-    const tables=['customers','credits','sales','daily_sales','party_payments','cheques','cheque_queue','parties','estimate_bills','payment_requests','mart_stores','mart_tasks'];
+    const tables=['customers','credits','sales','party_payments','cheques','cheque_queue','parties','estimate_bills','payment_requests','mart_stores','mart_tasks'];
+    if(s.role!=='staff')tables.push('daily_sales');
     realtimeChannel=client.channel('martai-live');
     tables.forEach(t=>realtimeChannel.on('postgres_changes',{event:'*',schema:'public',table:t},()=>{
       if(Date.now()-lastLocalWriteAt<3000)return; // our own write echoing back
@@ -546,5 +564,5 @@
   // PWA: always check for a fresh worker and reload once when a new release takes control.
   if('serviceWorker' in navigator){let refreshing=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;location.reload()});window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=38',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})})}
   const ready=initialize();
-  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,safeImageDataUrl,phoneClean,getDB,saveDB,markDirty,resetDB,validateRestoreBackup,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateChequeStatus,postponeCheque,deleteCheque,addChequeNote,scheduleChequeFollowUp,addChequeQueue,deleteChequeQueue,addParty,deleteParty,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,setStaffPhone,staffPhone,accessToken,addTask,completeTask,reopenTask,deleteTask,acknowledgeTasks,csvEscape,download,wa,byDate,tilt3d,getSupabase};
+  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,safeImageDataUrl,phoneClean,getDB,saveDB,markDirty,resetDB,validateRestoreBackup,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,addStaffDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateChequeStatus,postponeCheque,deleteCheque,addChequeNote,scheduleChequeFollowUp,addChequeQueue,deleteChequeQueue,addParty,deleteParty,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,setStaffPhone,staffPhone,accessToken,addTask,completeTask,reopenTask,deleteTask,acknowledgeTasks,csvEscape,download,wa,byDate,tilt3d,getSupabase};
 })();
