@@ -549,6 +549,109 @@
   }
 
   /*
+   * Lightweight, accessible tooltip system. Declarative: add data-tooltip="text"
+   * to any element and it's covered automatically, including elements rendered
+   * later (event delegation, not a one-time scan) - no per-element wiring needed.
+   * One shared bubble is reused for whichever element is currently active, so
+   * this stays cheap even with many tooltipped elements on a busy dashboard page.
+   *
+   * Shows on hover AND focus (keyboard users get the same information, not just
+   * mouse users), hides on mouseout/blur/Escape, and wires aria-describedby on
+   * the trigger while visible rather than relying on the native title attribute
+   * (which is inconsistently exposed to assistive tech and can't be styled).
+   *
+   * Idempotent: calling this more than once on the same document is a no-op
+   * after the first call, returning the same controller. This does not replace
+   * existing title="" attributes anywhere in the app - it's additive
+   * infrastructure for new/updated UI that wants a styled, accessible tooltip.
+   */
+  function initTooltips(options) {
+    const settings = options || {};
+    const doc = settings.document || (typeof document !== 'undefined' ? document : null);
+    if (!doc || typeof doc.addEventListener !== 'function') return { destroy: function noopDestroy() {} };
+    if (doc.__martaiTooltips) return doc.__martaiTooltips;
+
+    let bubble = null;
+    let currentTarget = null;
+    let hideTimer = null;
+
+    function ensureBubble() {
+      if (bubble) return bubble;
+      bubble = doc.createElement('div');
+      bubble.className = 'ui-tooltip';
+      bubble.setAttribute('role', 'tooltip');
+      bubble.id = uniqueId('tooltip');
+      bubble.hidden = true;
+      (doc.body || doc.documentElement).appendChild(bubble);
+      return bubble;
+    }
+
+    function place(target, el) {
+      const rect = target.getBoundingClientRect();
+      const gap = 8;
+      const viewportWidth = doc.documentElement.clientWidth || (typeof window !== 'undefined' ? window.innerWidth : 0);
+      let top = rect.top - el.offsetHeight - gap;
+      if (top < gap) top = rect.bottom + gap;
+      let left = rect.left + (rect.width - el.offsetWidth) / 2;
+      left = Math.max(gap, Math.min(left, viewportWidth - el.offsetWidth - gap));
+      el.style.top = top + 'px';
+      el.style.left = left + 'px';
+    }
+
+    function show(target) {
+      const text = target.getAttribute('data-tooltip');
+      if (!text) return;
+      if (hideTimer !== null) { clearTimeout(hideTimer); hideTimer = null; }
+      currentTarget = target;
+      const el = ensureBubble();
+      el.textContent = text;
+      el.hidden = false;
+      el.classList.remove('is-visible');
+      place(target, el);
+      target.setAttribute('aria-describedby', el.id);
+      const scheduleFrame = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : function (cb) { setTimeout(cb, 0); };
+      scheduleFrame(function revealTooltip() { if (currentTarget === target) el.classList.add('is-visible'); });
+    }
+
+    function hide(target) {
+      if (target && target !== currentTarget) return;
+      if (!bubble) return;
+      bubble.classList.remove('is-visible');
+      if (currentTarget && typeof currentTarget.removeAttribute === 'function') currentTarget.removeAttribute('aria-describedby');
+      currentTarget = null;
+      hideTimer = setTimeout(function finishHide() { if (bubble) bubble.hidden = true; }, 120);
+    }
+
+    function targetOf(event) {
+      return event && event.target && typeof event.target.closest === 'function' ? event.target.closest('[data-tooltip]') : null;
+    }
+    function onShowEvent(event) { const target = targetOf(event); if (target) show(target); }
+    function onHideEvent(event) { const target = targetOf(event); if (target) hide(target); }
+    function onKeydown(event) { if (event && event.key === 'Escape' && currentTarget) hide(currentTarget); }
+
+    doc.addEventListener('mouseover', onShowEvent);
+    doc.addEventListener('mouseout', onHideEvent);
+    doc.addEventListener('focusin', onShowEvent);
+    doc.addEventListener('focusout', onHideEvent);
+    doc.addEventListener('keydown', onKeydown);
+
+    const controller = {
+      destroy: function destroy() {
+        doc.removeEventListener('mouseover', onShowEvent);
+        doc.removeEventListener('mouseout', onHideEvent);
+        doc.removeEventListener('focusin', onShowEvent);
+        doc.removeEventListener('focusout', onHideEvent);
+        doc.removeEventListener('keydown', onKeydown);
+        if (bubble) removeElement(bubble);
+        bubble = null;
+        doc.__martaiTooltips = null;
+      }
+    };
+    doc.__martaiTooltips = controller;
+    return controller;
+  }
+
+  /*
    * Generic accessible confirmation dialog for dangerous/financial actions.
    * Builds its markup on the fly (matching the existing .modal-backdrop/.modal
    * convention) and layers on createDialog's focus-trap/Escape/backdrop-close.
@@ -661,6 +764,7 @@
     escapeAttribute: escapeHtml,
     escapeHtml: escapeHtml,
     focusableElements: focusableElements,
+    initTooltips: initTooltips,
     toast: toast
   });
 });

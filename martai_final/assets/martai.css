@@ -534,6 +534,8 @@ tr:hover td{background:var(--surface-2)}
 .modal{width:min(560px,100%);max-height:90vh;overflow:auto;padding:var(--sp-5);animation:modalIn .16s ease both;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-lg)}
 .modal-title{font-size:17px;font-weight:700;margin-bottom:var(--sp-3);letter-spacing:-.2px}
 .modal-actions{display:flex;justify-content:flex-end;gap:var(--sp-2);margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--line)}
+.ui-tooltip{position:fixed;z-index:300;max-width:240px;padding:6px 10px;border-radius:var(--radius-xs);background:var(--text);color:var(--bg);font-size:12px;font-weight:600;line-height:1.4;box-shadow:var(--shadow-md);opacity:0;transform:translateY(2px);transition:opacity .12s ease,transform .12s ease;pointer-events:none}
+.ui-tooltip.is-visible{opacity:1;transform:translateY(0)}
 @keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
 
 .toast-box{position:fixed;right:var(--sp-4);top:var(--sp-4);z-index:999;display:flex;flex-direction:column;gap:var(--sp-2)}

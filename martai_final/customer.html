@@ -72,7 +72,7 @@
 <script src="assets/martai-qr.js?v=1"></script>
 <script src="assets/martai-ui.js?v=1"></script>
 <script>
-const A=MartAI,UI=window.MartAIUI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));let session=A.getSession();
+const A=MartAI,UI=window.MartAIUI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));let session=A.getSession();if(UI)UI.initTooltips();
 /* Follow the theme chosen on the dashboard (same browser); defaults to light */
 {const th=localStorage.getItem('martai_dashboard_theme')==='dark'?'dark':'light';document.body.dataset.theme=th;document.documentElement.style.colorScheme=th;const mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',th==='light'?'#f4f6f5':'#080b0a')}
 function db(){return A.getDB()}function toast(msg,type='ok'){if(UI)return UI.toast(msg,{type:type==='err'?'error':type,container:'#toasts',duration:2400});const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;el.setAttribute('role',type==='err'?'alert':'status');$('toasts').appendChild(el);setTimeout(()=>el.remove(),2400)}

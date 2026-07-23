@@ -194,7 +194,7 @@
 <script src="assets/martai-store.js?v=30"></script>
 <script src="assets/martai-ui.js?v=1"></script>
 <script>
-const A=MartAI,UI=window.MartAIUI;const $=id=>document.getElementById(id);
+const A=MartAI,UI=window.MartAIUI;const $=id=>document.getElementById(id);if(UI)UI.initTooltips();
 let session=A.getSession();
 function guard(){const s=A.getSession();if(s?.role==='staff')return true;if(s?.role==='admin'||s?.role==='store_admin')location.replace('dashboard.html');else if(s?.role==='customer')location.replace('customer.html');else location.replace('index.html');return false}
 if(!guard())throw new Error('redirect');

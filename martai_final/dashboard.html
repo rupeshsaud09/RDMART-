@@ -672,7 +672,7 @@
 <script src="assets/khata-backup.js?v=5"></script>
 <script src="assets/martai-qr.js?v=1"></script>
 <script>
-let pendingCreditDeleteId='';let pendingCreditDeleteTimer=null;const A=MartAI,UI=window.MartAIUI,DateTools=window.MartAIDate,CQ=window.MartAICheques,N=window.MartAINotifications;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));
+let pendingCreditDeleteId='';let pendingCreditDeleteTimer=null;const A=MartAI,UI=window.MartAIUI,DateTools=window.MartAIDate,CQ=window.MartAICheques,N=window.MartAINotifications;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));if(UI)UI.initTooltips();
 const PER_PAGE=10;const pgState={customers:1,credits:1,creditHistory:1,daily:1,estimates:1,payments:1,cheques:1,roomLedger:1,parties:1,stores:1,staff:1,logins:1,payreq:1};
 function paginationHTML(key,pg,total,per){if(!total)return'';const pages=Math.ceil(total/per);const from=(pg-1)*per+1;const to=Math.min(pg*per,total);let h='<div style="display:flex;align-items:center;gap:8px;padding:10px 0 2px;border-top:1px solid var(--line);margin-top:8px"><span class="small" style="margin-right:auto">'+from+'–'+to+' of '+total+'</span>';if(pages>1){h+='<button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="-1"'+(pg===1?' disabled':'')+'>&#8249; Prev</button><span class="small" style="min-width:3em;text-align:center">'+pg+' / '+pages+'</span><button class="btn btn-soft btn-sm" data-pg="'+key+'" data-pg-dir="1"'+(pg>=pages?' disabled':'')+'>Next &#8250;</button>'}return h+'</div>'}
 function session(){return A.getSession()||{}}
