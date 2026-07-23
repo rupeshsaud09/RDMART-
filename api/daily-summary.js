@@ -25,7 +25,8 @@
  * Required configuration (push):
  *   SUPABASE_URL               Supabase project URL; may reuse the browser's public config
  *   SUPABASE_ANON_KEY          public anon key; may reuse the browser's public config (POST)
- *   SUPABASE_SERVICE_ROLE_KEY  service-role key, used only for the cron-triggered GET
+ *   SUPABASE_SERVICE_ROLE_KEY  server Secret key (sb_secret_...) or legacy
+ *                              service_role key, used only by scheduled GET
  *   VAPID_PUBLIC_KEY           Web Push VAPID public key (also embedded in the browser)
  *   VAPID_PRIVATE_KEY          Web Push VAPID private key
  *   VAPID_SUBJECT              contact URI required by the Web Push spec (mailto: or https:)
@@ -86,7 +87,8 @@ function loadConfiguration(environment, publicConfiguration) {
   const publicConfig = plainObject(publicConfiguration) ? publicConfiguration : {};
   const publicFallback = {
     SUPABASE_URL: publicConfig.url,
-    SUPABASE_ANON_KEY: publicConfig.anonKey
+    SUPABASE_ANON_KEY: publicConfig.anonKey,
+    SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SECRET_KEY
   };
   const value = key => String(
     env[key] == null || String(env[key]).trim() === ''
@@ -118,6 +120,19 @@ function loadConfiguration(environment, publicConfiguration) {
     vapidSubject: vapidSubject,
     cronSecret: value('CRON_SECRET')
   };
+}
+
+/* New sb_secret_ keys are opaque API keys and must not be sent as a Bearer
+   JWT. Legacy service_role keys are JWTs and still require both headers. */
+function serviceHeaders(key, includeJson) {
+  const value = String(key || '').trim();
+  const headers = { apikey: value };
+  if (!value.startsWith('sb_secret_')) headers.Authorization = `Bearer ${value}`;
+  if (includeJson) {
+    headers['Content-Type'] = 'application/json';
+    headers.Prefer = 'return=minimal';
+  }
+  return headers;
 }
 
 /* Independent of loadConfiguration(): email is an optional second channel.
@@ -331,12 +346,7 @@ async function sendToSubscriptions(webpush, configuration, subscriptions, payloa
 }
 
 async function pruneAndMark(fetchImplementation, configuration, results, rowsById) {
-  const headers = {
-    apikey: configuration.serviceRoleKey,
-    Authorization: `Bearer ${configuration.serviceRoleKey}`,
-    'Content-Type': 'application/json',
-    Prefer: 'return=minimal'
-  };
+  const headers = serviceHeaders(configuration.serviceRoleKey, true);
   await Promise.allSettled(results.map(result => {
     if (!result || !result.id || !rowsById.has(result.id)) return null;
     const gone = result.statusCode === 404 || result.statusCode === 410;
@@ -356,7 +366,7 @@ async function handleCron(request, response, configuration, emailConfiguration, 
   if (!secretsMatch(provided, configuration.cronSecret)) {
     return respond(response, 401, { ok: false, state: 'UNAUTHENTICATED', error: 'A valid schedule secret is required.' });
   }
-  const headers = { apikey: configuration.serviceRoleKey, Authorization: `Bearer ${configuration.serviceRoleKey}` };
+  const headers = serviceHeaders(configuration.serviceRoleKey, false);
   const rest = (table, query) => restRequest(fetchImplementation, configuration.supabaseUrl, headers, `${table}?${query}`);
 
   const [subscriptionsResult, storesResult] = await Promise.all([
@@ -579,6 +589,7 @@ module.exports._test = Object.freeze({
   addDaysIso,
   nepalMidnightUtcIso,
   buildStoreSummary,
+  serviceHeaders,
   sameOriginRequest,
   REQUIRED_ENV,
   TEST_AUTH_REQUIRED_ENV,

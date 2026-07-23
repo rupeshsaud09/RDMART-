@@ -138,3 +138,14 @@ test('manual tests can reuse the browser public Supabase configuration',()=>{
   assert.equal(config.ok,false);
   assert.deepEqual(config.missing,['SUPABASE_SERVICE_ROLE_KEY','CRON_SECRET']);
 });
+
+test('new Supabase secret keys are never sent as Bearer JWTs',()=>{
+  const modern=dailySummary._test.serviceHeaders('sb_secret_example',true);
+  assert.equal(modern.apikey,'sb_secret_example');
+  assert.equal(modern.Authorization,undefined);
+  assert.equal(modern['Content-Type'],'application/json');
+
+  const legacy=dailySummary._test.serviceHeaders('legacy-service-role-jwt',false);
+  assert.equal(legacy.apikey,'legacy-service-role-jwt');
+  assert.equal(legacy.Authorization,'Bearer legacy-service-role-jwt');
+});
