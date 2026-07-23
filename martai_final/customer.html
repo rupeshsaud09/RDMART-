@@ -103,8 +103,8 @@ function render(){
   const c=currentCustomer();
   if(!c)return requireCustomer();
   const b=A.customerBalance(d,c.id);
-  $('martName').textContent=d.settings.martName||'MartAI';
-  applyBrandLogo(d.settings.storeLogo||'',d.settings.martName||'MartAI');
+  $('martName').textContent=d.settings.martName||'RD MART';
+  applyBrandLogo(d.settings.storeLogo||'',d.settings.martName||'RD MART');
   $('helloText').textContent=(new Date().getHours()<12?'Good morning':'Welcome')+',';
   $('customerName').textContent=c.name;
   $('balanceBig').textContent=A.money(b.balance);
