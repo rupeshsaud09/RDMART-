@@ -22,9 +22,9 @@
  *          file — decides what the caller may see. It only ever pushes to
  *          that same caller's own registered device(s).
  *
- * Required server-only environment variables (push):
- *   SUPABASE_URL               Supabase project URL
- *   SUPABASE_ANON_KEY          public anon key, used with the caller's bearer token (POST)
+ * Required configuration (push):
+ *   SUPABASE_URL               Supabase project URL; may reuse the browser's public config
+ *   SUPABASE_ANON_KEY          public anon key; may reuse the browser's public config (POST)
  *   SUPABASE_SERVICE_ROLE_KEY  service-role key, used only for the cron-triggered GET
  *   VAPID_PUBLIC_KEY           Web Push VAPID public key (also embedded in the browser)
  *   VAPID_PRIVATE_KEY          Web Push VAPID private key
@@ -81,9 +81,18 @@ function safeHttpsUrl(value) {
   }
 }
 
-function loadConfiguration(environment) {
+function loadConfiguration(environment, publicConfiguration) {
   const env = environment && typeof environment === 'object' ? environment : {};
-  const value = key => String(env[key] == null ? '' : env[key]).trim();
+  const publicConfig = plainObject(publicConfiguration) ? publicConfiguration : {};
+  const publicFallback = {
+    SUPABASE_URL: publicConfig.url,
+    SUPABASE_ANON_KEY: publicConfig.anonKey
+  };
+  const value = key => String(
+    env[key] == null || String(env[key]).trim() === ''
+      ? (publicFallback[key] == null ? '' : publicFallback[key])
+      : env[key]
+  ).trim();
   const missing = REQUIRED_ENV.filter(key => !value(key));
   const supabaseUrl = safeHttpsUrl(value('SUPABASE_URL'));
   if (!supabaseUrl && !missing.includes('SUPABASE_URL')) missing.push('SUPABASE_URL');
@@ -520,12 +529,17 @@ async function handleTestSend(request, response, configuration, emailConfigurati
 function createHandler(dependencies) {
   const settings = plainObject(dependencies) ? dependencies : {};
   const environment = settings.env || process.env;
+  let publicConfiguration = settings.publicConfig;
+  if (publicConfiguration === undefined) {
+    try { publicConfiguration = require('../martai_final/assets/martai-supabase-config.js'); }
+    catch (_) { publicConfiguration = {}; }
+  }
   const fetchImplementation = settings.fetch || (typeof fetch === 'function' ? fetch : null);
   const webpush = settings.webpush || require('web-push');
 
   return async function dailySummaryHandler(request, response) {
     if (!request || !response) return;
-    const configuration = loadConfiguration(environment);
+    const configuration = loadConfiguration(environment, publicConfiguration);
     const emailConfiguration = loadEmailConfiguration(environment);
     const method = String(request.method || 'GET').toUpperCase();
     if (method !== 'GET' && method !== 'POST') {

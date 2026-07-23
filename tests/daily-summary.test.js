@@ -122,3 +122,19 @@ test('scheduled summaries still fail closed without cron-only configuration',asy
   assert.equal(response.body.state,'NOT_CONFIGURED');
   assert.equal(fetchCalls,0);
 });
+
+test('manual tests can reuse the browser public Supabase configuration',()=>{
+  const config=dailySummary._test.loadConfiguration(
+    {
+      VAPID_PUBLIC_KEY:'public-vapid-key',
+      VAPID_PRIVATE_KEY:'private-vapid-key',
+      VAPID_SUBJECT:'mailto:owner@example.com'
+    },
+    {url:'https://project.supabase.co',anonKey:'public-anon-key-for-tests'}
+  );
+  assert.equal(config.testAuthOk,true);
+  assert.equal(config.supabaseUrl,'https://project.supabase.co');
+  assert.equal(config.anonKey,'public-anon-key-for-tests');
+  assert.equal(config.ok,false);
+  assert.deepEqual(config.missing,['SUPABASE_SERVICE_ROLE_KEY','CRON_SECRET']);
+});
