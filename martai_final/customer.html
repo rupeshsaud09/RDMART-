@@ -70,11 +70,12 @@
 <script src="assets/martai-supabase-config.js"></script>
 <script src="assets/martai-store.js?v=29"></script>
 <script src="assets/martai-qr.js?v=1"></script>
+<script src="assets/martai-ui.js?v=1"></script>
 <script>
-const A=MartAI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));let session=A.getSession();
+const A=MartAI,UI=window.MartAIUI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));let session=A.getSession();
 /* Follow the theme chosen on the dashboard (same browser); defaults to light */
 {const th=localStorage.getItem('martai_dashboard_theme')==='dark'?'dark':'light';document.body.dataset.theme=th;document.documentElement.style.colorScheme=th;const mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',th==='light'?'#f4f6f5':'#080b0a')}
-function db(){return A.getDB()}function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>el.remove(),240)},2400)}
+function db(){return A.getDB()}function toast(msg,type='ok'){if(UI)return UI.toast(msg,{type:type==='err'?'error':type,container:'#toasts',duration:2400});const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;el.setAttribute('role',type==='err'?'alert':'status');$('toasts').appendChild(el);setTimeout(()=>el.remove(),2400)}
 function currentCustomer(){const d=db();return A.customerById(d,session?.customerId)||d.customers.find(c=>c._tableId===session?.customerTableId)}
 async function secureLogout(){await A.clearSession();location.replace('index.html')}
 function requireCustomer(){if(!session||session.role!=='customer'){secureLogout();return false}const c=currentCustomer();if(!c){secureLogout();return false}return true}

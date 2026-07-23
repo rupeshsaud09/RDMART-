@@ -19,10 +19,10 @@
 
 /* Light theme (default): calm indigo with explicit semantic states. */
 body{
-  --bg:#F6F8FC;
+  --bg:#F8FAFC;
   --sidebar:#FFFFFF;
   --surface:#ffffff;
-  --surface-2:#F8FAFC;
+  --surface-2:#F1F5F9;
   --surface-3:#EEF2F7;
   --line:#E2E8F0;
   --line-strong:#CBD5E1;
@@ -38,7 +38,7 @@ body{
   --brand-soft-text:#3730A3;
   --brand-ring:rgba(79,70,229,.18);
 
-  --accent:#0EA5E9;
+  --accent:#0F9F9A;
   --green:#16A34A;--green-strong:#15803D;--green-soft:#F0FDF4;--green-soft-text:#166534;
   --red:#DC2626;--red-strong:#B91C1C;--red-soft:#FEF2F2;--red-soft-text:#991B1B;
   --amber:#D97706;--amber-strong:#B45309;--amber-soft:#FFFBEB;--amber-soft-text:#92400E;
@@ -76,7 +76,7 @@ body[data-theme="dark"]{
   --brand-soft-text:#B7BBFF;
   --brand-ring:rgba(124,131,255,.28);
 
-  --accent:#38BDF8;
+  --accent:#2DD4BF;
   --green:#22C55E;--green-strong:#4ADE80;--green-soft:rgba(34,197,94,.14);--green-soft-text:#86EFAC;
   --red:#F87171;--red-strong:#FCA5A5;--red-soft:rgba(248,113,113,.14);--red-soft-text:#FCA5A5;
   --amber:#F59E0B;--amber-strong:#FBBF24;--amber-soft:rgba(245,158,11,.14);--amber-soft-text:#FCD34D;

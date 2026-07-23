@@ -165,8 +165,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
 <script src="assets/martai-supabase-config.js"></script>
 <script src="assets/martai-store.js?v=29"></script>
+<script src="assets/martai-ui.js?v=1"></script>
 <script>
-const A=MartAI;const $=id=>document.getElementById(id);
+const A=MartAI,UI=window.MartAIUI;const $=id=>document.getElementById(id);
 let session=A.getSession();
 function guard(){const s=A.getSession();if(s?.role==='staff')return true;if(s?.role==='admin'||s?.role==='store_admin')location.replace('dashboard.html');else if(s?.role==='customer')location.replace('customer.html');else location.replace('index.html');return false}
 if(!guard())throw new Error('redirect');
@@ -194,7 +195,7 @@ function isMine(t){return !t.assignedToEmail||t.assignedToEmail===myEmail}
 function balances(d){return d.customers.map(c=>({c,...A.customerBalance(d,c.id)}))}
 
 /* ---------- ui helpers ---------- */
-function toast(msg,type='ok'){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>el.remove(),240)},2600)}
+function toast(msg,type='ok'){if(UI)return UI.toast(msg,{type:type==='err'?'error':type,container:'#toasts',duration:2600});const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;el.setAttribute('role',type==='err'?'alert':'status');$('toasts').appendChild(el);setTimeout(()=>el.remove(),2600)}
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const lastVals={};
 function countUp(el,to,fmt){const from=Number(lastVals[el.id]||0);lastVals[el.id]=to;if(REDUCED||from===to){el.textContent=fmt(to);return}const t0=performance.now(),dur=620;function step(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(Math.round(from+(to-from)*e));if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
