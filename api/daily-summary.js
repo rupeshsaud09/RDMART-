@@ -1,7 +1,7 @@
 'use strict';
 
 /*
- * Daily business-summary push notification for RD MART.
+ * Daily business-summary notification for RD MART.
  *
  * Two ways in, both fail closed when unconfigured:
  *
@@ -12,17 +12,17 @@
  *          exception in this codebase to "never touch data server-side
  *          without a caller's own session" — and that key is used ONLY in
  *          this function, gated ONLY behind CRON_SECRET, and is NEVER sent
- *          to a browser. It sends the same push to every registered device
- *          for each store that has one.
+ *          to a browser. It sends the same push/email to every registered
+ *          device and the configured recipient, for each active store.
  *
  *   POST — "send me a test notification now", called from the dashboard by
  *          a signed-in admin. Uses that admin's own Supabase access token
  *          with the ANON key (exactly like every other read the dashboard
  *          already performs), so Postgres row-level security — not this
  *          file — decides what the caller may see. It only ever pushes to
- *          that same caller's own registered device(s), never anyone else's.
+ *          that same caller's own registered device(s).
  *
- * Required server-only environment variables:
+ * Required server-only environment variables (push):
  *   SUPABASE_URL               Supabase project URL
  *   SUPABASE_ANON_KEY          public anon key, used with the caller's bearer token (POST)
  *   SUPABASE_SERVICE_ROLE_KEY  service-role key, used only for the cron-triggered GET
@@ -32,25 +32,21 @@
  *   CRON_SECRET                shared secret; Vercel Cron sends it automatically as
  *                              "Authorization: Bearer <CRON_SECRET>" once this env var exists
  *
- * WhatsApp is a second, fully independent delivery channel for the same
- * summary — useful because iOS Web Push is unreliable even when every device
- * setting is correct. It reuses the WhatsApp Cloud API credentials already
- * configured for task-assignment alerts (see api/notify-whatsapp.js /
- * docs/WHATSAPP-SETUP.md) but requires its OWN approved template, because the
- * content is completely different. It sends to the store's own "Mart
- * WhatsApp phone" (Settings → Mart settings), not a per-device subscription.
- * Missing WhatsApp env vars simply skip that channel — push still works, and
- * vice versa; neither channel's absence fails the request.
+ * Email is a second, fully independent delivery channel for the same
+ * summary — useful because iOS Web Push is unreliable even when every
+ * device setting is correct. It sends via the Resend API (plain HTTPS
+ * call, no SDK) to a single configured recipient — this app runs one shop,
+ * so a fixed recipient is simpler and more honest than building multi-user
+ * email preferences nobody needs yet. Missing email env vars simply skip
+ * that channel — push still works, and vice versa.
  *
- *   WHATSAPP_TOKEN                  same permanent token used for task alerts
- *   WHATSAPP_PHONE_NUMBER_ID        same sending number's Phone Number ID
- *   WHATSAPP_SUMMARY_TEMPLATE_NAME  approved template name (e.g. daily_summary)
- *   WHATSAPP_SUMMARY_TEMPLATE_LANG  template language code (e.g. en)
- * Optional: WHATSAPP_API_VERSION (default v21.0), WHATSAPP_DEFAULT_COUNTRY (default 977)
+ *   RESEND_API_KEY     API key from resend.com
+ *   RESEND_FROM_EMAIL  verified sender, e.g. "RD MART <onboarding@resend.dev>"
+ *   SUMMARY_EMAIL_TO   where the daily summary should land
  *
  * This function never reads request bodies larger than a few KB, never logs
- * subscription endpoints, push keys, phone numbers, or WhatsApp tokens, and
- * never returns another user's data.
+ * subscription endpoints, push keys, or email addresses, and never returns
+ * another user's data.
  */
 
 const crypto = require('crypto');
@@ -59,10 +55,12 @@ const REQUIRED_ENV = Object.freeze([
   'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
   'VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT', 'CRON_SECRET'
 ]);
+const EMAIL_REQUIRED_ENV = Object.freeze(['RESEND_API_KEY', 'RESEND_FROM_EMAIL', 'SUMMARY_EMAIL_TO']);
 const NEPAL_OFFSET_MINUTES = 345; // UTC+5:45
 const MAX_BODY_BYTES = 4096;
 const MAX_RESPONSE_BYTES = 262144;
 const MAX_AUTH_RESPONSE_BYTES = 32768;
+const EMAIL_PATTERN = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 
 function plainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
@@ -103,86 +101,60 @@ function loadConfiguration(environment) {
   };
 }
 
-const WHATSAPP_REQUIRED_ENV = Object.freeze(['WHATSAPP_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_SUMMARY_TEMPLATE_NAME', 'WHATSAPP_SUMMARY_TEMPLATE_LANG']);
-
-/* Independent of loadConfiguration(): WhatsApp is an optional second channel.
+/* Independent of loadConfiguration(): email is an optional second channel.
    Its absence never fails the request — push keeps working without it. */
-function loadWhatsAppConfiguration(environment) {
+function loadEmailConfiguration(environment) {
   const env = environment && typeof environment === 'object' ? environment : {};
   const value = key => String(env[key] == null ? '' : env[key]).trim();
-  const missing = WHATSAPP_REQUIRED_ENV.filter(key => !value(key));
-  const apiVersion = /^v\d+\.\d+$/.test(value('WHATSAPP_API_VERSION')) ? value('WHATSAPP_API_VERSION') : 'v21.0';
-  const country = value('WHATSAPP_DEFAULT_COUNTRY').replace(/\D/g, '') || '977';
+  const missing = EMAIL_REQUIRED_ENV.filter(key => !value(key));
+  const toEmail = value('SUMMARY_EMAIL_TO');
+  const toMatch = toEmail.match(/<([^<>]+)>\s*$/);
+  const toAddressOnly = toMatch ? toMatch[1] : toEmail;
+  if (toEmail && !EMAIL_PATTERN.test(toAddressOnly) && !missing.includes('SUMMARY_EMAIL_TO')) missing.push('SUMMARY_EMAIL_TO');
   return {
     ok: missing.length === 0,
-    token: value('WHATSAPP_TOKEN'),
-    phoneNumberId: value('WHATSAPP_PHONE_NUMBER_ID').replace(/[^\d]/g, ''),
-    templateName: value('WHATSAPP_SUMMARY_TEMPLATE_NAME'),
-    templateLang: value('WHATSAPP_SUMMARY_TEMPLATE_LANG') || 'en',
-    apiVersion: apiVersion,
-    defaultCountry: country
+    apiKey: value('RESEND_API_KEY'),
+    fromEmail: value('RESEND_FROM_EMAIL'),
+    toEmail: toEmail
   };
 }
 
-/* Same normalization as api/notify-whatsapp.js: local 10-digit "98…" numbers
-   become full international "977…"; anything already-international or too
-   short/long to be plausible is rejected rather than guessed at. */
-function normalizePhone(raw, defaultCountry) {
-  const country = String(defaultCountry || '977').replace(/\D/g, '') || '977';
-  let digits = String(raw == null ? '' : raw).replace(/\D/g, '');
-  if (!digits) return '';
-  if (digits.startsWith('00')) digits = digits.slice(2);
-  if (digits.startsWith(country) && digits.length >= country.length + 8 && digits.length <= 15) return digits;
-  if (digits.length === 10 && digits[0] === '9') return (country + digits).slice(0, 15);
-  if (digits.length >= 8 && digits.length <= 15) return digits;
-  return '';
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-/* WhatsApp template parameters may not contain newlines/tabs or long runs of
-   spaces; keep this defensive even though our own strings are already
-   single-line. */
-function waSafeParam(value) {
-  return String(value == null ? '' : value).replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim().slice(0, 300) || '-';
-}
-
-async function sendWhatsAppSummary(fetchImplementation, waConfig, toRaw, dateLabel, line1, line2) {
-  const to = normalizePhone(toRaw, waConfig.defaultCountry);
-  if (!to) return { ok: false, error: 'No valid WhatsApp number is set in Mart settings.' };
-  const message = {
-    messaging_product: 'whatsapp',
-    to: to,
-    type: 'template',
-    template: {
-      name: waConfig.templateName,
-      language: { code: waConfig.templateLang },
-      components: [{
-        type: 'body',
-        parameters: [waSafeParam(dateLabel), waSafeParam(line1), waSafeParam(line2)].map(text => ({ type: 'text', text }))
-      }]
-    }
-  };
+async function sendSummaryEmail(fetchImplementation, emailConfig, dateLabel, line1, line2) {
+  const subject = `RD MART Daily Summary — ${dateLabel}`;
+  const text = `${line1}\n${line2}`;
+  const html = `<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">`
+    + `<p style="margin:0 0 10px;font-size:17px;font-weight:700">RD MART Daily Summary — ${escapeHtml(dateLabel)}</p>`
+    + `<p style="margin:0 0 8px">${escapeHtml(line1)}</p>`
+    + `<p style="margin:0">${escapeHtml(line2)}</p>`
+    + `</div>`;
   try {
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
     const timer = controller ? setTimeout(() => controller.abort(), 10000) : null;
     let response;
     try {
-      response = await fetchImplementation(
-        `https://graph.facebook.com/${waConfig.apiVersion}/${waConfig.phoneNumberId}/messages`,
-        Object.assign(
-          { method: 'POST', headers: { Authorization: `Bearer ${waConfig.token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(message) },
-          controller ? { signal: controller.signal } : {}
-        )
-      );
+      response = await fetchImplementation('https://api.resend.com/emails', Object.assign(
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${emailConfig.apiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: emailConfig.fromEmail, to: [emailConfig.toEmail], subject, html, text })
+        },
+        controller ? { signal: controller.signal } : {}
+      ));
     } finally {
       if (timer) clearTimeout(timer);
     }
-    const text = await readBoundedText(response, MAX_RESPONSE_BYTES);
+    const respText = await readBoundedText(response, MAX_RESPONSE_BYTES);
     let data = null;
-    try { data = text ? JSON.parse(text) : null; } catch (_) { data = null; }
-    if (!response.ok) return { ok: false, error: (data && data.error && data.error.message) ? String(data.error.message).slice(0, 240) : 'WhatsApp API rejected the message.' };
-    return { ok: true, to };
+    try { data = respText ? JSON.parse(respText) : null; } catch (_) { data = null; }
+    if (!response.ok) return { ok: false, error: (data && data.message) ? String(data.message).slice(0, 240) : 'Email provider rejected the message.' };
+    return { ok: true, to: emailConfig.toEmail };
   } catch (_) {
-    return { ok: false, error: 'WhatsApp API could not be reached.' };
+    return { ok: false, error: 'Email provider could not be reached.' };
   }
 }
 
@@ -358,8 +330,8 @@ async function pruneAndMark(fetchImplementation, configuration, results, rowsByI
   }));
 }
 
-/* --- GET: cron-triggered send to every registered device + WhatsApp number, every store --- */
-async function handleCron(request, response, configuration, waConfiguration, fetchImplementation, webpush) {
+/* --- GET: cron-triggered send to every registered device + configured email, every store --- */
+async function handleCron(request, response, configuration, emailConfiguration, fetchImplementation, webpush) {
   const provided = getHeader(request, 'authorization').replace(/^Bearer\s+/i, '');
   if (!secretsMatch(provided, configuration.cronSecret)) {
     return respond(response, 401, { ok: false, state: 'UNAUTHENTICATED', error: 'A valid schedule secret is required.' });
@@ -369,7 +341,7 @@ async function handleCron(request, response, configuration, waConfiguration, fet
 
   const [subscriptionsResult, storesResult] = await Promise.all([
     rest('push_subscriptions', 'select=id,store_id,endpoint,p256dh,auth_key'),
-    waConfiguration.ok ? rest('mart_stores', 'select=id,phone&is_active=eq.true') : Promise.resolve({ ok: true, data: [] })
+    emailConfiguration.ok ? rest('mart_stores', 'select=id&is_active=eq.true') : Promise.resolve({ ok: true, data: [] })
   ]);
   if (!subscriptionsResult.ok || !Array.isArray(subscriptionsResult.data)) {
     return respond(response, 502, { ok: false, state: 'UPSTREAM_ERROR', error: 'Could not read registered devices.' });
@@ -380,16 +352,13 @@ async function handleCron(request, response, configuration, waConfiguration, fet
     if (!pushByStore.has(row.store_id)) pushByStore.set(row.store_id, []);
     pushByStore.get(row.store_id).push(row);
   });
-  const phoneByStore = new Map();
-  (Array.isArray(storesResult.data) ? storesResult.data : []).forEach(row => {
-    if (row && row.id && row.phone) phoneByStore.set(row.id, row.phone);
-  });
-  const storeIds = new Set([...pushByStore.keys(), ...phoneByStore.keys()]);
+  const emailStoreIds = new Set((Array.isArray(storesResult.data) ? storesResult.data : []).map(row => row && row.id).filter(Boolean));
+  const storeIds = new Set([...pushByStore.keys(), ...emailStoreIds]);
 
   const today = nepalTodayIso(new Date());
   const yesterday = addDaysIso(today, -1);
 
-  let pushSent = 0, pushFailed = 0, pushPruned = 0, waSent = 0, waFailed = 0;
+  let pushSent = 0, pushFailed = 0, pushPruned = 0, emailSent = 0, emailFailed = 0;
   for (const storeId of storeIds) {
     const rows = pushByStore.get(storeId) || [];
     let payload;
@@ -397,7 +366,7 @@ async function handleCron(request, response, configuration, waConfiguration, fet
       payload = await buildStoreSummary(rest, storeId, today, yesterday);
     } catch (_) {
       pushFailed += rows.length;
-      if (phoneByStore.has(storeId)) waFailed += 1;
+      if (emailStoreIds.has(storeId)) emailFailed += 1;
       continue;
     }
     if (rows.length) {
@@ -410,10 +379,9 @@ async function handleCron(request, response, configuration, waConfiguration, fet
       });
       await pruneAndMark(fetchImplementation, configuration, results, rowsById);
     }
-    const phone = phoneByStore.get(storeId);
-    if (phone) {
-      const waResult = await sendWhatsAppSummary(fetchImplementation, waConfiguration, phone, payload.dateLabel, payload.line1, payload.line2);
-      if (waResult.ok) waSent += 1; else waFailed += 1;
+    if (emailConfiguration.ok && emailStoreIds.has(storeId)) {
+      const emailResult = await sendSummaryEmail(fetchImplementation, emailConfiguration, payload.dateLabel, payload.line1, payload.line2);
+      if (emailResult.ok) emailSent += 1; else emailFailed += 1;
     }
   }
   return respond(response, 200, {
@@ -421,7 +389,7 @@ async function handleCron(request, response, configuration, waConfiguration, fet
     state: 'SENT',
     stores: storeIds.size,
     push: { sent: pushSent, failed: pushFailed, pruned: pushPruned },
-    whatsapp: { sent: waSent, failed: waFailed }
+    email: { sent: emailSent, failed: emailFailed }
   });
 }
 
@@ -473,7 +441,7 @@ async function roleCheck(fetchImplementation, configuration, authHeaders, functi
   }
 }
 
-async function handleTestSend(request, response, configuration, waConfiguration, fetchImplementation, webpush) {
+async function handleTestSend(request, response, configuration, emailConfiguration, fetchImplementation, webpush) {
   if (!sameOriginRequest(request)) return respond(response, 403, { ok: false, error: 'Cross-origin requests are not accepted.' });
   if (!/^application\/json(?:\s*;|$)/i.test(getHeader(request, 'content-type'))) {
     return respond(response, 415, { ok: false, error: 'Content-Type must be application/json.' });
@@ -493,10 +461,7 @@ async function handleTestSend(request, response, configuration, waConfiguration,
   if (!admin && !storeAdmin) return respond(response, 403, { ok: false, error: 'Only an admin can send a test notification.' });
 
   const rest = (table, query) => restRequest(fetchImplementation, configuration.supabaseUrl, auth.headers, `${table}?${query}`);
-  const [subscriptionsResult, storeResult] = await Promise.all([
-    rest('push_subscriptions', `select=id,endpoint,p256dh,auth_key&store_id=eq.${storeId}`),
-    rest('mart_stores', `select=phone&id=eq.${storeId}`)
-  ]);
+  const subscriptionsResult = await rest('push_subscriptions', `select=id,endpoint,p256dh,auth_key&store_id=eq.${storeId}`);
   if (!subscriptionsResult.ok || !Array.isArray(subscriptionsResult.data)) {
     return respond(response, 502, { ok: false, error: 'Could not read this device\'s registration.' });
   }
@@ -514,21 +479,18 @@ async function handleTestSend(request, response, configuration, waConfiguration,
     pushSent = results.filter(r => r.ok).length;
   }
 
-  const phone = storeResult.ok && Array.isArray(storeResult.data) && storeResult.data[0] && storeResult.data[0].phone;
-  let whatsapp = { attempted: false, sent: false, to: null, error: null };
-  if (!waConfiguration.ok) {
-    whatsapp.error = 'WhatsApp is not configured yet.';
-  } else if (!phone) {
-    whatsapp.error = 'No WhatsApp number is set in Mart settings.';
+  let email = { attempted: false, sent: false, to: null, error: null };
+  if (!emailConfiguration.ok) {
+    email.error = 'Email is not configured yet.';
   } else {
-    whatsapp.attempted = true;
-    const waResult = await sendWhatsAppSummary(fetchImplementation, waConfiguration, phone, payload.dateLabel, payload.line1, payload.line2);
-    whatsapp.sent = waResult.ok;
-    whatsapp.to = waResult.ok ? waResult.to : null;
-    whatsapp.error = waResult.ok ? null : waResult.error;
+    email.attempted = true;
+    const emailResult = await sendSummaryEmail(fetchImplementation, emailConfiguration, payload.dateLabel, payload.line1, payload.line2);
+    email.sent = emailResult.ok;
+    email.to = emailResult.ok ? emailResult.to : null;
+    email.error = emailResult.ok ? null : emailResult.error;
   }
 
-  return respond(response, 200, { ok: true, sent: pushSent, push: { sent: pushSent }, whatsapp: whatsapp });
+  return respond(response, 200, { ok: true, sent: pushSent, push: { sent: pushSent }, email: email });
 }
 
 function createHandler(dependencies) {
@@ -540,7 +502,7 @@ function createHandler(dependencies) {
   return async function dailySummaryHandler(request, response) {
     if (!request || !response) return;
     const configuration = loadConfiguration(environment);
-    const waConfiguration = loadWhatsAppConfiguration(environment);
+    const emailConfiguration = loadEmailConfiguration(environment);
     const method = String(request.method || 'GET').toUpperCase();
     if (method !== 'GET' && method !== 'POST') {
       if (typeof response.setHeader === 'function') response.setHeader('Allow', 'GET, POST');
@@ -550,8 +512,8 @@ function createHandler(dependencies) {
       return respond(response, 200, { ok: false, state: 'NOT_CONFIGURED', message: 'Daily summary notifications are not configured yet.', missing: configuration.missing });
     }
     if (!fetchImplementation) return respond(response, 500, { ok: false, error: 'No fetch implementation available.' });
-    if (method === 'GET') return handleCron(request, response, configuration, waConfiguration, fetchImplementation, webpush);
-    return handleTestSend(request, response, configuration, waConfiguration, fetchImplementation, webpush);
+    if (method === 'GET') return handleCron(request, response, configuration, emailConfiguration, fetchImplementation, webpush);
+    return handleTestSend(request, response, configuration, emailConfiguration, fetchImplementation, webpush);
   };
 }
 
@@ -560,14 +522,13 @@ module.exports = handler;
 module.exports.createHandler = createHandler;
 module.exports._test = Object.freeze({
   loadConfiguration,
-  loadWhatsAppConfiguration,
+  loadEmailConfiguration,
   secretsMatch,
   nepalTodayIso,
   addDaysIso,
   nepalMidnightUtcIso,
   buildStoreSummary,
-  normalizePhone,
   sameOriginRequest,
   REQUIRED_ENV,
-  WHATSAPP_REQUIRED_ENV
+  EMAIL_REQUIRED_ENV
 });

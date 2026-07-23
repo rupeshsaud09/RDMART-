@@ -548,14 +548,14 @@
           <p class="hint">Only the old KHATA PANA backup copy is removed. Live customers, sales, credits and other business records are never deleted. Up to 3 timestamped safety copies are also preserved before a restore or reset. Backups contain private business and login data, so use a private folder.</p>
         </div>
         <div class="card" style="margin-top:16px" id="dailyPushCard">
-          <div class="section-head"><div><div class="section-title">Daily summary</div><div class="section-sub">A once-a-day digest of yesterday's sales, credit and today's cheques &mdash; sent by phone push and/or WhatsApp</div></div></div>
+          <div class="section-head"><div><div class="section-title">Daily summary</div><div class="section-sub">A once-a-day digest of yesterday's sales, credit and today's cheques &mdash; sent by phone push and/or email</div></div></div>
           <p class="small" id="dailyPushStatus">Checking this browser...</p>
           <div class="quick-row" style="margin-top:14px">
             <button class="btn btn-primary" type="button" id="enableDailyPushBtn">Enable push on this phone</button>
             <button class="btn btn-soft" type="button" id="testDailyPushBtn">Send test summary</button>
             <button class="btn btn-red" type="button" id="disableDailyPushBtn" style="display:none">Disable push on this phone</button>
           </div>
-          <p class="hint">Push notifications are opt-in per device &mdash; each phone keeps its own on/off switch, and iPhone needs Share &rarr; Add to Home Screen first, then open RD MART from there before enabling. A WhatsApp copy (if configured) goes automatically to the <b>Mart WhatsApp phone</b> number set above, no separate enabling needed.</p>
+          <p class="hint">Push notifications are opt-in per device &mdash; each phone keeps its own on/off switch, and iPhone needs Share &rarr; Add to Home Screen first, then open RD MART from there before enabling. An email copy (if configured on the server) goes automatically to the configured recipient every day, no separate enabling needed.</p>
         </div>
         <div class="card" style="margin-top:16px" id="portalLinkCard">
           <div class="section-head"><div><div class="section-title">Customer portal link</div><div class="section-sub">Public website address used in Portal QR codes and WhatsApp links — set it once so they work on every device</div></div></div>
@@ -1288,9 +1288,9 @@ async function currentPushSubscription(){
 async function refreshPushUI(){
   const statusEl=$('dailyPushStatus'),enableBtn=$('enableDailyPushBtn'),testBtn=$('testDailyPushBtn'),disableBtn=$('disableDailyPushBtn');
   if(!statusEl||!enableBtn||!testBtn||!disableBtn)return;
-  testBtn.style.display=''; // WhatsApp test doesn't depend on this phone's push state
+  testBtn.style.display=''; // email test doesn't depend on this phone's push state
   const show=(msg,state)=>{statusEl.textContent=msg;enableBtn.style.display=state==='off'?'':'none';disableBtn.style.display=state==='on'?'':'none'};
-  if(!pushConfigured())return show('Push to this phone is not set up on this server yet. A WhatsApp copy may still be configured — try the test button below.','none');
+  if(!pushConfigured())return show('Push to this phone is not set up on this server yet. An email copy may still be configured — try the test button below.','none');
   if(!pushApiSupported())return show('This browser does not support push notifications. On iPhone: Share → Add to Home Screen, then open RD MART from there.','none');
   if(Notification.permission==='denied')return show('Push notifications are blocked for this site. Allow them in your phone/browser settings, then reload this page.','none');
   const sub=await currentPushSubscription();
@@ -1334,12 +1334,12 @@ async function testDailyPush(){
     const r=await fetch('/api/daily-summary',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({storeId:A.getActiveStoreId()})});
     const data=await r.json().catch(()=>({}));
     if(!r.ok||!data.ok)throw new Error(data.message||data.error||'Test notification could not be sent.');
-    const wa=data.whatsapp||{};
+    const em=data.email||{};
     const parts=[data.sent?'Push: sent to this phone.':'Push: not enabled on this phone.'];
-    if(wa.sent)parts.push('WhatsApp: sent to '+wa.to+'.');
-    else if(wa.attempted)parts.push('WhatsApp failed: '+(wa.error||'unknown error'));
-    else if(wa.error)parts.push('WhatsApp: '+wa.error);
-    toast(parts.join(' '),(data.sent||wa.sent)?'ok':'err');
+    if(em.sent)parts.push('Email: sent to '+em.to+'.');
+    else if(em.attempted)parts.push('Email failed: '+(em.error||'unknown error'));
+    else if(em.error)parts.push('Email: '+em.error);
+    toast(parts.join(' '),(data.sent||em.sent)?'ok':'err');
   }catch(e){toast('Test notification failed: '+(e.message||String(e)),'err')}
 }
 $('enableDailyPushBtn')?.addEventListener('click',enableDailyPush);
