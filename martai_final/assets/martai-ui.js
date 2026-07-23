@@ -548,8 +548,113 @@
     return controller;
   }
 
+  /*
+   * Generic accessible confirmation dialog for dangerous/financial actions.
+   * Builds its markup on the fly (matching the existing .modal-backdrop/.modal
+   * convention) and layers on createDialog's focus-trap/Escape/backdrop-close.
+   * Resolves a promise instead of taking a callback so call sites read as
+   * `const result = await UI.confirmAction({...}); if (!result.confirmed) return;`
+   *
+   * options:
+   *   title, body, impact (all plain text, auto-escaped)
+   *   confirmLabel, cancelLabel
+   *   danger: true -> red confirm button, for destructive/irreversible actions
+   *   requireReason: true -> adds a required reason textarea (financial-safety rule)
+   *   reasonPlaceholder
+   *   requireTypedConfirmation: a string the user must type verbatim to enable
+   *     confirming (for highly destructive actions) - omit to skip this step
+   *   trigger: element to restore focus to on close (defaults to the active element)
+   *
+   * resolves: { confirmed: boolean, reason: string, typed: string }
+   */
+  function confirmAction(options) {
+    const settings = options || {};
+    const doc = elementDocument(settings.container, settings.document) || (typeof document !== 'undefined' ? document : null);
+    if (!doc || typeof doc.createElement !== 'function') {
+      return Promise.resolve({ confirmed: false, reason: '', typed: '' });
+    }
+
+    const danger = settings.danger === true;
+    const requireReason = settings.requireReason === true;
+    const requiredPhrase = settings.requireTypedConfirmation ? String(settings.requireTypedConfirmation) : '';
+    const titleId = uniqueId('confirm-title');
+    const descId = uniqueId('confirm-desc');
+
+    const backdrop = doc.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    backdrop.innerHTML =
+      '<form class="modal glass" novalidate>' +
+        '<div class="modal-title" id="' + titleId + '">' + escapeHtml(settings.title || 'Confirm action') + '</div>' +
+        '<p class="small" id="' + descId + '">' + escapeHtml(settings.body || 'Are you sure you want to continue?') + '</p>' +
+        (settings.impact ? '<p class="small" style="opacity:.75">' + escapeHtml(settings.impact) + '</p>' : '') +
+        (requireReason
+          ? '<div class="field"><label>Reason<span> Required</span></label><textarea class="textarea" data-confirm-reason required placeholder="' + escapeHtml(settings.reasonPlaceholder || 'Explain why this action is needed…') + '"></textarea></div>'
+          : '') +
+        (requiredPhrase
+          ? '<div class="field"><label>Type "' + escapeHtml(requiredPhrase) + '" to confirm</label><input class="input" data-confirm-typed autocomplete="off" required></div>'
+          : '') +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-soft" type="button" data-dialog-close>' + escapeHtml(settings.cancelLabel || 'Cancel') + '</button>' +
+          '<button class="btn ' + (danger ? 'btn-red' : 'btn-primary') + '" type="submit">' + escapeHtml(settings.confirmLabel || 'Confirm') + '</button>' +
+        '</div>' +
+      '</form>';
+
+    const panel = backdrop.querySelector('form');
+    panel.setAttribute('aria-labelledby', titleId);
+    panel.setAttribute('aria-describedby', descId);
+
+    const parent = resolveElement(settings.container, doc) || doc.body || doc.documentElement;
+    if (!parent || typeof parent.appendChild !== 'function') return Promise.resolve({ confirmed: false, reason: '', typed: '' });
+    parent.appendChild(backdrop);
+
+    return new Promise(function executor(resolve) {
+      let pending = { confirmed: false, reason: '', typed: '' };
+      const dialog = createDialog(backdrop, {
+        hideOnClose: true,
+        label: settings.title || undefined,
+        onClose: function onClose() {
+          removeElement(backdrop);
+          resolve(pending);
+        }
+      });
+
+      panel.addEventListener('submit', function onSubmit(event) {
+        event.preventDefault();
+        const reasonEl = panel.querySelector('[data-confirm-reason]');
+        const typedEl = panel.querySelector('[data-confirm-typed]');
+        const reason = reasonEl ? String(reasonEl.value || '').trim() : '';
+        const typed = typedEl ? String(typedEl.value || '').trim() : '';
+
+        if (requireReason && !reason) {
+          if (reasonEl) { focusElement(reasonEl); if (typeof reasonEl.reportValidity === 'function') reasonEl.reportValidity(); }
+          return;
+        }
+        if (requiredPhrase && typed !== requiredPhrase) {
+          if (typedEl) {
+            if (typeof typedEl.setCustomValidity === 'function') typedEl.setCustomValidity('Type "' + requiredPhrase + '" exactly to continue.');
+            if (typeof typedEl.reportValidity === 'function') typedEl.reportValidity();
+            focusElement(typedEl);
+          }
+          return;
+        }
+        pending = { confirmed: true, reason: reason, typed: typed };
+        dialog.close('confirm');
+      });
+
+      const typedInput = panel.querySelector('[data-confirm-typed]');
+      if (typedInput && typeof typedInput.addEventListener === 'function') {
+        typedInput.addEventListener('input', function clearCustomError() {
+          if (typeof typedInput.setCustomValidity === 'function') typedInput.setCustomValidity('');
+        });
+      }
+
+      dialog.open(settings.trigger);
+    });
+  }
+
   return Object.freeze({
     announce: announce,
+    confirmAction: confirmAction,
     createDialog: createDialog,
     createTabs: createTabs,
     debounce: debounce,
