@@ -480,6 +480,8 @@ td{padding:11px 12px;border-top:1px solid var(--line);font-size:13px;color:var(-
 tbody tr:first-child td{border-top:none}
 td b{color:var(--text);font-weight:650}
 tr:hover td{background:var(--surface-2)}
+.totals-row td{border-top:2px solid var(--line-strong);background:var(--surface-2)}
+.totals-row:hover td{background:var(--surface-2)}
 .table-wrap .btn{margin:2px}
 
 /* row actions + overflow menu (native <details>, no JS handlers needed) */
