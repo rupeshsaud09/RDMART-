@@ -58,6 +58,7 @@
         <div class="menu-wrap">
           <button class="btn btn-primary" id="quickAddBtn" type="button" aria-haspopup="true" aria-expanded="false"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span class="hide-sm">Quick add</span></button>
           <div class="menu-pop" id="quickAddMenu" hidden role="menu" aria-label="Quick add">
+            <div class="menu-search-wrap"><input class="input menu-search" type="text" data-menu-search placeholder="Search actions…" aria-label="Search quick-add actions" autocomplete="off"></div>
             <button class="menu-item" role="menuitem" data-page="daily" data-focusform="dailyForm"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg></span>Record daily sale</button>
             <button class="menu-item" role="menuitem" data-page="credits" data-focusform="creditForm"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>Add credit</button>
             <button class="menu-item" role="menuitem" data-page="credits" data-focusform="paymentFormInline"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V6H4v12h8"/><path d="M4 9h16"/><path d="m16 17 2 2 4-4"/></svg></span>Record customer payment</button>
@@ -67,6 +68,7 @@
             <button class="menu-item" role="menuitem" data-page="payments" data-focusform="partyPaymentForm"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.2"/><path d="M6 12h.01M18 12h.01"/></svg></span>Record party payment</button>
             <button class="menu-item" role="menuitem" data-page="tasks" data-focusform="taskForm"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Add task</button>
             <button class="menu-item" role="menuitem" data-page="followup"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>Schedule follow-up</button>
+            <div class="empty menu-empty" data-menu-empty hidden>No matching actions</div>
           </div>
         </div>
         <div class="menu-wrap">
@@ -1747,11 +1749,12 @@ MartAI.ready.then(async()=>{
     function setOpen(open){
       menu.hidden=!open;
       btn.setAttribute('aria-expanded',open?'true':'false');
-      if(open){const first=menu.querySelector('.menu-item,.notification-tab,.notification-item');if(first)first.focus()}
+      if(open){const first=menu.querySelector('[data-menu-search]')||menu.querySelector('.menu-item,.notification-tab,.notification-item');if(first)first.focus()}
+      else{const search=menu.querySelector('[data-menu-search]');if(search&&search.value){search.value='';search.dispatchEvent(new Event('input'))}}
     }
     btn.addEventListener('click',e=>{e.stopPropagation();setOpen(menu.hidden)});
     menu.addEventListener('keydown',e=>{
-      const items=Array.from(menu.querySelectorAll('.menu-item,.notification-tab,.notification-item,.notification-action'));
+      const items=Array.from(menu.querySelectorAll('.menu-item,.notification-tab,.notification-item,.notification-action')).filter(el=>!el.hidden);
       const i=items.indexOf(document.activeElement);
       if(e.key==='ArrowDown'){e.preventDefault();(items[i+1]||items[0]).focus()}
       else if(e.key==='ArrowUp'){e.preventDefault();(items[i-1]||items[items.length-1]).focus()}
@@ -1786,6 +1789,27 @@ MartAI.ready.then(async()=>{
       if(f)setTimeout(()=>f.focus(),250);
     },60);
   });
+
+  /* Quick Add search: filter the action list as you type; Enter runs the top match */
+  const qaSearch=qa?.querySelector('[data-menu-search]'),qaEmpty=qa?.querySelector('[data-menu-empty]');
+  if(qaSearch){
+    qaSearch.addEventListener('input',()=>{
+      const q=qaSearch.value.trim().toLowerCase();
+      let anyVisible=false;
+      qa.querySelectorAll('.menu-item').forEach(item=>{
+        const match=!q||item.textContent.toLowerCase().includes(q);
+        item.hidden=!match;
+        if(match)anyVisible=true;
+      });
+      if(qaEmpty)qaEmpty.hidden=anyVisible;
+    });
+    qaSearch.addEventListener('keydown',e=>{
+      if(e.key!=='Enter')return;
+      e.preventDefault();
+      const firstVisible=qa.querySelector('.menu-item:not([hidden])');
+      if(firstVisible)firstVisible.click();
+    });
+  }
 
   /* Sidebar collapse (desktop) with persistence */
   const NAV_KEY='martai_nav_collapsed';
