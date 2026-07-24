@@ -861,17 +861,45 @@ function renderFinancialHealth(d){
   renderDashboardChart(d);
 }
 function actionItem(label,detail,amount,page,tone,priority){return{label,detail,amount:A.num(amount),page,tone,priority:Number(priority)||0}}
+function actionCentreRowHtml(x,i){
+  const amountHtml=x.amount?`<strong>${A.money(x.amount)}</strong>`:'<span class="badge badge-blue">Open</span>';
+  const head=`<span class="action-rank">${i+1}</span><span class="action-copy"><b>${A.esc(x.label)}</b><small>${A.esc(x.detail)}</small></span>${amountHtml}`;
+  if(x.entries&&x.entries.length>1)return `<details class="action-centre-group"><summary class="action-centre-item state-${x.tone}">${head}</summary><div class="action-group-entries">${x.entries.map(e=>`<button type="button" class="action-group-entry" data-page="${e.page}"><span>${e.detail}</span><b>${e.label}</b></button>`).join('')}</div></details>`;
+  return `<button type="button" class="action-centre-item state-${x.tone}" data-page="${x.page}">${head}</button>`;
+}
 function renderActionCentre(d){
   const today=A.today(),f=followupData(d),items=[];
   (d.cheques||[]).filter(x=>chequeLifecycle(x)==='bounced').forEach(x=>items.push(actionItem(`Bounced cheque · ${x.party||'Unknown party'}`,`Cheque ${x.chequeNo||'number missing'} · review immediately`,x.amount,'cheques','danger',220+A.num(x.amount)/10000)));
-  (d.cheques||[]).filter(x=>chequeLifecycle(x)==='on_hold'&&x.chequeDate&&String(x.chequeDate).slice(0,10)<today).forEach(x=>{const days=daysBetween(String(x.chequeDate).slice(0,10),today);items.push(actionItem(`Cheque overdue ${days} day${days!==1?'s':''}`,`${x.party||'Unknown party'} · ${x.chequeNo||'number missing'}`,x.amount,'cheques','danger',180+days*4+A.num(x.amount)/10000))});
+  const overdueChequeGroups=new Map();
+  (d.cheques||[]).filter(x=>chequeLifecycle(x)==='on_hold'&&x.chequeDate&&String(x.chequeDate).slice(0,10)<today).forEach(x=>{
+    const days=daysBetween(String(x.chequeDate).slice(0,10),today),key=(x.party||'Unknown party').trim().toLowerCase();
+    if(!overdueChequeGroups.has(key))overdueChequeGroups.set(key,{party:x.party||'Unknown party',entries:[]});
+    overdueChequeGroups.get(key).entries.push({...x,days});
+  });
+  overdueChequeGroups.forEach(g=>{
+    const total=g.entries.reduce((s,x)=>s+A.num(x.amount),0),oldest=Math.max(...g.entries.map(x=>x.days)),count=g.entries.length;
+    const item=actionItem(count>1?`${count} overdue cheques · ${g.party}`:`Cheque overdue ${oldest} day${oldest!==1?'s':''}`,count>1?`Oldest ${oldest} day${oldest!==1?'s':''} overdue`:`${g.party} · ${g.entries[0].chequeNo||'number missing'}`,total,'cheques','danger',180+oldest*4+total/10000);
+    if(count>1)item.entries=g.entries.sort((a,b)=>b.days-a.days).map(x=>({label:A.money(x.amount),detail:`Cheque ${A.esc(x.chequeNo||'number missing')} · ${x.days} day${x.days!==1?'s':''} overdue`,page:'cheques'}));
+    items.push(item);
+  });
   (d.cheques||[]).filter(x=>chequeLifecycle(x)==='on_hold'&&String(x.chequeDate||'').slice(0,10)===today).forEach(x=>items.push(actionItem('Cheque due today',`${x.party||'Unknown party'} · ${x.chequeNo||'number missing'}`,x.amount,'cheques','warning',160+A.num(x.amount)/10000)));
-  f.overdueCredits.slice(0,8).forEach(x=>items.push(actionItem(`Collect from ${x.customerObj.name}`,`${x.ageDays} day${x.ageDays!==1?'s':''} overdue · ${x.customerObj.phone||'phone missing'}`,x.balance,'followup',x.ageDays>=60?'danger':'warning',120+x.ageDays*2+x.balance/10000)));
+  const creditGroups=new Map();
+  f.overdueCredits.forEach(x=>{
+    const key=x.customerObj.id||x.customerObj.phone||x.customerObj.name;
+    if(!creditGroups.has(key))creditGroups.set(key,{customer:x.customerObj,entries:[]});
+    creditGroups.get(key).entries.push(x);
+  });
+  [...creditGroups.values()].slice(0,8).forEach(g=>{
+    const total=g.entries.reduce((s,x)=>s+x.balance,0),oldest=Math.max(...g.entries.map(x=>x.ageDays)),count=g.entries.length;
+    const item=actionItem(`Collect from ${g.customer.name}`,count>1?`${count} overdue entries · oldest ${oldest} day${oldest!==1?'s':''} · ${g.customer.phone||'phone missing'}`:`${oldest} day${oldest!==1?'s':''} overdue · ${g.customer.phone||'phone missing'}`,total,'followup',oldest>=60?'danger':'warning',120+oldest*2+total/10000);
+    if(count>1)item.entries=g.entries.sort((a,b)=>b.ageDays-a.ageDays).map(x=>({label:A.money(x.balance),detail:`${x.ageDays} day${x.ageDays!==1?'s':''} overdue · ${A.esc(x.items||'Credit entry')}`,page:'followup'}));
+    items.push(item);
+  });
   f.paymentReports.forEach(x=>items.push(actionItem('Confirm reported payment',`${x.customer||'Customer'} · ${x.method||'method not set'}`,x.amount,'credits','warning',145+A.num(x.amount)/10000)));
   const openTasks=(d.tasks||[]).filter(x=>x.status!=='done');if(openTasks.length)items.push(actionItem(`${openTasks.length} pending task${openTasks.length!==1?'s':''}`,'Review ownership and due dates',0,'tasks','info',85+openTasks.filter(x=>x.priority==='high').length*12));
   if(!(d.dailySales||[]).some(x=>String(x.date).slice(0,10)===today))items.push(actionItem('Daily sales not entered','Add today’s payment-method totals',0,'daily','warning',110));
   (d.chequeQueue||[]).forEach(x=>items.push(actionItem('Cheque waiting to be written',x.party||'Party not set',x.amount,'cheques','info',95+A.num(x.amount)/10000)));
-  items.sort((a,b)=>b.priority-a.priority||b.amount-a.amount||a.label.localeCompare(b.label));const visible=items.slice(0,9),el=$('actionCentreList'),summary=$('actionCentreSummary');if(summary)summary.textContent=items.length?`${items.length} prioritised item${items.length!==1?'s':''} · highest impact first`:'No urgent action detected';if(el)el.innerHTML=visible.length?visible.map((x,i)=>`<button type="button" class="action-centre-item state-${x.tone}" data-page="${x.page}"><span class="action-rank">${i+1}</span><span class="action-copy"><b>${A.esc(x.label)}</b><small>${A.esc(x.detail)}</small></span>${x.amount?`<strong>${A.money(x.amount)}</strong>`:'<span class="badge badge-blue">Open</span>'}</button>`).join(''):'<div class="empty action-empty"><b>All caught up</b><span>No overdue, bounced, missing, or unconfirmed items were detected.</span></div>';
+  items.sort((a,b)=>b.priority-a.priority||b.amount-a.amount||a.label.localeCompare(b.label));const visible=items.slice(0,9),el=$('actionCentreList'),summary=$('actionCentreSummary');if(summary)summary.textContent=items.length?`${items.length} prioritised item${items.length!==1?'s':''} · highest impact first`:'No urgent action detected';if(el)el.innerHTML=visible.length?visible.map((x,i)=>actionCentreRowHtml(x,i)).join(''):'<div class="empty action-empty"><b>All caught up</b><span>No overdue, bounced, missing, or unconfirmed items were detected.</span></div>';
 }
 function renderDashboardModern(){
   const d=sdb(),today=A.today(),yesterday=addDaysIso(today,-1),balances=allCustomerBalances(d),outstanding=balances.reduce((s,x)=>s+x.balance,0),todaySales=(d.dailySales||[]).filter(x=>x.date===today).reduce((s,x)=>s+totalDaily(x),0),yesterdaySales=(d.dailySales||[]).filter(x=>x.date===yesterday).reduce((s,x)=>s+totalDaily(x),0),todayCheques=(d.cheques||[]).filter(x=>String(x.dueDate||x.chequeDate||'').slice(0,10)===today&&!['cleared','bounced','cancelled'].includes(chequeLifecycle(x))),yesterdayCheques=(d.cheques||[]).filter(x=>String(x.dueDate||x.chequeDate||'').slice(0,10)===yesterday&&!['cleared','bounced','cancelled'].includes(chequeLifecycle(x))),todayChequeTotal=todayCheques.reduce((s,x)=>s+A.num(x.amount),0),yesterdayChequeTotal=yesterdayCheques.reduce((s,x)=>s+A.num(x.amount),0);
