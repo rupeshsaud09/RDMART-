@@ -438,7 +438,10 @@
     const row={legacy_id:entry.id,store_id:entry.storeId,sale_date:entry.date,pos:entry.pos,fonepay:entry.fonepay,cash:entry.cash,finance:entry.finance,party_payment:entry.partyPayment,other:entry.other,note:entry.note,created_at:entry.createdAt};
     touchLocal();
     const result=await client.from('daily_sales').insert(row);
-    if(result.error)throw result.error;
+    if(result.error){
+      if(result.error.code==='23505')throw new Error('Today’s entry has already been submitted. Ask an admin to review or correct it.');
+      throw result.error;
+    }
     remoteEnabled=true;remoteError='';
     return entry;
   }

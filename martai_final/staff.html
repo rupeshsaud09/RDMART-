@@ -359,7 +359,10 @@ function renderKhata(){const d=sdb();const today=A.today();
   const recent=A.byDate(d.credits,'date').slice(0,12);
   $('entryList').innerHTML=recent.length?recent.map(entryRow).join(''):'<div class="empty">No credit entries yet.</div>'}
 function renderDailyEntry(){$('dailyDateLbl').textContent=npDate(A.today())+' · Today only';updateDailyEntryTotal()}
-function updateDailyEntryTotal(){const form=$('dailyForm');if(!form)return;const fields=['pos','fonepay','cash','finance','partyPayment','other'];const total=fields.reduce((sum,name)=>sum+A.num(form.elements[name]?.value),0);$('dailyEntryTotal').textContent=A.money(total)}
+/* partyPayment is money paid OUT to a supplier - a cash outflow, not sales -
+   so it's deliberately excluded from this total (see dashboard.html's
+   totalDaily() for the full explanation of this field). */
+function updateDailyEntryTotal(){const form=$('dailyForm');if(!form)return;const fields=['pos','fonepay','cash','finance','other'];const total=fields.reduce((sum,name)=>sum+A.num(form.elements[name]?.value),0);$('dailyEntryTotal').textContent=A.money(total)}
 
 function renderAll(){if(!guard())return;renderHero();updateSyncChip();if(activeTab==='tasks')renderTasks();if(activeTab==='customers')renderCustomers();if(activeTab==='khata')renderKhata();if(activeTab==='daily')renderDailyEntry();applyTilt()}
 function applyTilt(){if(REDUCED)return;document.querySelectorAll('.stf-tilt').forEach(el=>{if(el.dataset.t3)return;el.dataset.t3='1';try{A.tilt3d(el,5)}catch(e){}})}
@@ -397,7 +400,7 @@ $('dailyForm').addEventListener('submit',async e=>{e.preventDefault();
   try{
     const entry=await A.addStaffDaily(formData(e.target));e.target.reset();updateDailyEntryTotal();celebrate();
     unlockedUntil=0;updateNavLocks();setTab('tasks',true);
-    const total=['pos','fonepay','cash','finance','partyPayment','other'].reduce((sum,key)=>sum+A.num(entry[key]),0);
+    const total=['pos','fonepay','cash','finance','other'].reduce((sum,key)=>sum+A.num(entry[key]),0);
     toast('Daily sales '+A.money(total)+' saved. History remains admin-only.')
   }catch(error){toast(error.message||String(error),'err')}
   finally{button.disabled=false;button.textContent=oldLabel}
