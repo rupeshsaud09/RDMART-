@@ -549,6 +549,32 @@
   }
 
   /*
+   * Consistent markup for "this section failed to load" states, matching the
+   * app's existing .empty convention (a plain HTML-string builder embedded
+   * directly by render functions, not a stateful controller) since every
+   * data section already has its own re-fetch/re-render function - retry
+   * wiring stays with the caller via its own data-* click delegation; this
+   * just guarantees every error state looks and reads the same way.
+   *
+   * The message text itself always carries the meaning (never color alone,
+   * per the app's accessibility rules) - the reddish tint is reinforcement,
+   * not the only signal.
+   */
+  function errorStateHtml(options) {
+    const settings = options || {};
+    const message = escapeHtml(settings.message || 'Something went wrong loading this.');
+    const detail = settings.detail ? '<div class="error-state-detail">' + escapeHtml(settings.detail) + '</div>' : '';
+    let retryButton = '';
+    if (settings.retryAttr) {
+      const attrName = 'data-' + String(settings.retryAttr).replace(/[^a-z0-9-]/gi, '');
+      const attrValue = settings.retryValue != null ? '="' + escapeHtml(settings.retryValue) + '"' : '';
+      const retryLabel = escapeHtml(settings.retryLabel || 'Try again');
+      retryButton = '<button class="btn btn-soft btn-sm" type="button" ' + attrName + attrValue + '>' + retryLabel + '</button>';
+    }
+    return '<div class="error-state" role="alert"><div class="error-state-message">' + message + '</div>' + detail + retryButton + '</div>';
+  }
+
+  /*
    * Lightweight, accessible tooltip system. Declarative: add data-tooltip="text"
    * to any element and it's covered automatically, including elements rendered
    * later (event delegation, not a one-time scan) - no per-element wiring needed.
@@ -761,6 +787,7 @@
     createDialog: createDialog,
     createTabs: createTabs,
     debounce: debounce,
+    errorStateHtml: errorStateHtml,
     escapeAttribute: escapeHtml,
     escapeHtml: escapeHtml,
     focusableElements: focusableElements,

@@ -457,6 +457,10 @@ body[data-theme="dark"] .dash-card .history-card{background:var(--surface-3)}
 
 /* empty state */
 .empty{padding:var(--sp-8) var(--sp-4);text-align:center;color:var(--muted);font-size:13px;line-height:1.6}
+.error-state{padding:var(--sp-6) var(--sp-4);text-align:center;font-size:13px;line-height:1.6;background:var(--red-soft);border:1px solid color-mix(in srgb,var(--red) 30%,var(--line));border-radius:var(--radius-sm)}
+.error-state-message{font-weight:650;color:var(--red-strong)}
+.error-state-detail{margin-top:4px;color:var(--muted);font-size:12px}
+.error-state .btn{margin-top:var(--sp-3)}
 .dash-card .empty{flex:1;display:grid;place-items:center;padding:var(--sp-4)}
 
 /* follow-up tasks */
