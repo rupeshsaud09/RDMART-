@@ -306,7 +306,10 @@ async function buildStoreSummary(rest, storeId, today, yesterday) {
     rest('payment_requests', `select=id&store_id=eq.${storeId}&status=eq.pending`),
     rest('mart_tasks', `select=id&store_id=eq.${storeId}&status=eq.pending`)
   ]);
-  const salesYesterday = sumBy(dailySales.data, ['pos', 'fonepay', 'cash', 'finance', 'party_payment', 'other']);
+  /* party_payment is money paid OUT to a supplier that day (see dashboard.html's
+     totalDaily() comment) - a cash outflow, not sales. Selected above only
+     because the query already reads the whole row; deliberately excluded here. */
+  const salesYesterday = sumBy(dailySales.data, ['pos', 'fonepay', 'cash', 'finance', 'other']);
   const creditGivenYesterday = sumBy(creditGiven.data, ['amount']);
   const creditCollectedYesterday = sumBy(creditCollected.data, ['paid']);
   const dueCount = Array.isArray(chequesDue.data) ? chequesDue.data.length : 0;
