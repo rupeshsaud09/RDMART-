@@ -215,6 +215,7 @@ input[type="checkbox"]{accent-color:var(--brand)}
   border-right:1px solid var(--line);background:var(--sidebar);overflow-y:auto;overflow-x:hidden;
   transition:width .2s ease;z-index:60;
 }
+.sidebar.has-more-below::after{content:'';position:absolute;left:0;right:0;bottom:0;height:28px;background:linear-gradient(to bottom,transparent,var(--sidebar) 80%);pointer-events:none}
 .side-brand{display:flex;align-items:center;gap:10px;padding:6px 6px 14px;min-width:0}
 .brand-logo{
   width:38px;height:38px;border-radius:10px;background:var(--brand);color:#fff;
@@ -291,19 +292,15 @@ body[data-theme="dark"] .nav-btn.active .nav-ico{color:var(--brand-soft-text)}
 }
 .theme-switch button:hover{color:var(--text)}
 .theme-switch button.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-sm)}
+/* One visible control, not two: show only the button that switches AWAY from
+   the current theme (its label already reads "Light"/"Dark" as the action). */
+.theme-switch button.active{display:none}
 body[data-theme="dark"] .theme-switch button.active{background:var(--surface-3)}
 
-.db-signal{
-  display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:var(--radius-pill);
-  background:var(--surface);padding:0 11px;height:32px;font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap;
-}
-.db-signal span{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
-.db-signal.connected{color:var(--green-strong);border-color:var(--green-soft)}
-.db-signal.connected span{background:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
-.db-signal.fallback{color:var(--amber-strong)}
-.db-signal.fallback span{background:var(--amber);box-shadow:0 0 0 3px var(--amber-soft)}
-.db-signal.error{color:var(--red-strong)}
-.db-signal.error span{background:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+/* .db-signal (toolbar DB-connection pill) removed 2026-07-24 — technical
+   status has no place in the primary action toolbar; the same live text
+   already renders in the sidebar footer (#syncStatus) and Settings
+   (#syncStatusSettings) via the same updateSyncStatus() call. */
 
 /* dropdown menus (Quick Add, profile) */
 .menu-wrap{position:relative}
@@ -728,12 +725,8 @@ tr:hover td{background:var(--surface-2)}
   .page-sub{display:none}
   .top-actions{gap:6px}
   .store-switcher{width:120px}
-  /* DB status still reachable via the hamburger menu's sidebar footer (#syncStatus) */
-  .db-signal{display:none}
   .theme-switch button span{display:none}
   .theme-switch button{padding:5px 8px}
-  /* One icon-only toggle instead of two buttons: show only the "switch to" side */
-  .theme-switch button.active{display:none}
 
   .content{padding:var(--sp-3)}
   .grid{gap:var(--sp-3)}
