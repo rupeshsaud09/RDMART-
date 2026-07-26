@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=19">
+<link rel="stylesheet" href="assets/martai.css?v=20">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -372,7 +372,7 @@
             <button class="btn btn-primary" type="button" data-chq-tab="write"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New cheque</button>
           </div>
         </div>
-        <div class="bank-calendar-note"><span class="bank-calendar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="m9 15 2 2 4-4"/></svg></span><div><b>Nepal bank calendar is on</b><span>Closed-day cheques roll to the next configured banking day while the original cheque date remains unchanged.</span></div><span class="bank-calendar-state">Configurable</span></div>
+        <div class="bank-calendar-note"><span class="bank-calendar-icon" aria-hidden="true">&#10003;</span><span class="bank-calendar-text">Nepal banking calendar enabled &mdash; closed-day cheques move to the next open day automatically.</span><span class="bank-calendar-state" id="bankCalendarState"></span></div>
         <div class="grid grid-4 cheque-metric-grid" id="chequeMetrics"></div>
         <div class="cheque-tabs" role="tablist" aria-label="Cheque tracker views">
           <button class="btn btn-primary" type="button" role="tab" aria-selected="true" aria-controls="chq-write" data-chq-tab="write"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg><span>Write cheque</span></button>
@@ -380,7 +380,7 @@
           <button class="btn btn-soft" type="button" role="tab" aria-selected="false" aria-controls="chq-planner" data-chq-tab="planner"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>30-day planner</span></button>
           <button class="btn btn-soft" type="button" role="tab" aria-selected="false" aria-controls="chq-queue" data-chq-tab="queue"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 5h11M9 12h11M9 19h11"/><path d="m3 5 1 1 2-2M3 12l1 1 2-2M3 19l1 1 2-2"/></svg><span>To write</span><span class="cheque-tab-count" id="chqQueueTabCount"></span></button>
         </div>
-        <div id="chq-queue" role="tabpanel" style="display:none">
+        <div id="chq-queue" role="tabpanel" hidden>
         <div class="card cheque-panel-card" id="chequeQueueCard">
           <div class="section-head compact-head" style="margin-bottom:12px"><div><div class="section-title">Cheques to write <span class="badge badge-amber" id="chequeQueueCount" style="display:none">0</span></div><div class="section-sub">Party sent their ledger on WhatsApp? Add the name here instantly so the cheque is never forgotten</div></div></div>
           <form id="chequeQueueForm" class="cheque-queue-form">
@@ -393,95 +393,105 @@
         </div>
         </div>
         <div id="chq-write" role="tabpanel">
-          <form class="card cheque-form-card" id="chequeForm">
-            <div class="cheque-form-heading"><div><div class="section-title">Write a cheque</div><div class="section-sub">Enter the details once &mdash; the tracker places it on the right banking day and keeps it visible until cleared.</div></div><span class="badge badge-blue">Review before save</span></div>
-            <section class="cheque-form-section">
-              <h4 class="cheque-section-label">Payment</h4>
-              <div class="form-grid">
-                <div class="field"><label>Party <span>Required</span></label><input class="input" name="party" list="partyList" autocomplete="off" required placeholder="Search or enter party name"></div>
-                <div class="field"><label>Cheque number <span>Required</span></label><input class="input" name="chequeNo" required inputmode="numeric" placeholder="e.g. 000123"><span id="chequeNoHint" class="small cheque-field-hint"></span></div>
-                <div class="field"><label>Amount <span>Required</span></label><div class="amount-input-wrap"><span>Rs</span><input class="input" name="amount" required inputmode="decimal" placeholder="0.00"></div></div>
-                <div class="field"><label>Bank</label><input class="input" name="bank" placeholder="Select or enter bank name"></div>
-                <div class="field"><label>Direction <span>Required</span></label><select class="select" name="direction" required><option value="">Choose incoming or outgoing</option><option value="incoming">Incoming &mdash; money to receive</option><option value="outgoing">Outgoing &mdash; money to pay</option><option value="unknown">Unknown &mdash; review later</option></select><span class="small cheque-field-hint">Direction is required for reliable cash-flow estimates.</span></div>
-                <div class="field"><label>Linked customer</label><input class="input" name="linkedCustomer" list="customerList" autocomplete="off" placeholder="Optional customer name or phone"></div>
+          <form class="card cheque-form-card cheque-quick-form" id="chequeForm">
+            <div class="cheque-form-heading"><div><div class="section-title">Add cheque</div><div class="section-sub">Cheque date, number and amount is all you need. Everything else is optional.</div></div><span class="badge badge-blue">Quick entry</span></div>
+            <div class="cheque-quick-row">
+              <div class="field"><label>Cheque date <span>Required</span></label><input class="input" name="chequeDate" data-bs-date-input readonly required placeholder="Select Nepali date"><span id="chequeDateHint" class="small cheque-field-hint"></span></div>
+              <div class="field"><label>Cheque no. <span>Required</span></label><input class="input" name="chequeNo" required inputmode="numeric" placeholder="e.g. 000123"><span id="chequeNoHint" class="small cheque-field-hint"></span></div>
+              <div class="field"><label>Amount <span>Required</span></label><div class="amount-input-wrap"><span>Rs</span><input class="input" name="amount" required inputmode="decimal" placeholder="0.00"></div></div>
+            </div>
+            <details class="cheque-advanced">
+              <summary>More details</summary>
+              <div class="cheque-advanced-body">
+                <section class="cheque-form-section">
+                  <h4 class="cheque-section-label">Party</h4>
+                  <div class="form-grid">
+                    <div class="field"><label>Party</label><input class="input" name="party" list="partyList" autocomplete="off" placeholder="Search or enter party name"></div>
+                    <div class="field"><label>Linked customer</label><input class="input" name="linkedCustomer" list="customerList" autocomplete="off" placeholder="Optional customer name or phone"></div>
+                    <div class="field"><label>Direction</label><select class="select" name="direction"><option value="">Not set &mdash; review later</option><option value="incoming">Incoming &mdash; money to receive</option><option value="outgoing">Outgoing &mdash; money to pay</option></select></div>
+                  </div>
+                </section>
+                <section class="cheque-form-section">
+                  <h4 class="cheque-section-label">Banking</h4>
+                  <div class="form-grid">
+                    <div class="field"><label>Bank</label><input class="input" name="bank" placeholder="Select or enter bank name"></div>
+                    <div class="field"><label>Issue date (BS)</label><input class="input" name="issueDate" data-bs-date-input data-bs-optional readonly placeholder="Optional issue date"></div>
+                  </div>
+                </section>
+                <section class="cheque-form-section">
+                  <h4 class="cheque-section-label">Tracking</h4>
+                  <div class="form-grid">
+                    <div class="field"><label>Starting status</label><select class="select" name="lifecycleStatus"><option value="on_hold" selected>On hold</option><option value="cleared">Cleared</option><option value="bounced">Bounced</option></select></div>
+                    <div class="field"><label>Assigned to</label><select class="select" name="assignedTo"><option value="">Unassigned</option></select></div>
+                    <div class="field"><label>Next action date (BS)</label><input class="input" name="nextActionAt" data-bs-date-input data-bs-optional readonly placeholder="Optional reminder date"></div>
+                  </div>
+                </section>
+                <section class="cheque-form-section">
+                  <h4 class="cheque-section-label">Additional</h4>
+                  <div class="form-grid">
+                    <div class="field span-2"><label>Internal note</label><textarea class="textarea" name="note" rows="2" placeholder="Purpose, promise, deposit instruction, or follow-up context"></textarea></div>
+                    <div class="field span-2"><label>Cheque image</label><div class="cheque-upload-row"><input class="input" id="chequeImageInput" name="chequeImage" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="chequeImageHelp"><button class="btn btn-soft" id="extractChequeBtn" type="button">Extract for review</button></div><span class="small cheque-field-hint" id="chequeImageHelp">JPG, PNG or WebP, up to 8 MB. Extraction never saves the cheque automatically.</span></div>
+                  </div>
+                </section>
               </div>
-            </section>
-            <section class="cheque-form-section">
-              <h4 class="cheque-section-label">Dates</h4>
-              <div class="form-grid">
-                <div class="field"><label>Issue date (BS) <span>Optional</span></label><input class="input" name="issueDate" data-bs-date-input data-bs-optional readonly placeholder="Optional issue date"></div>
-                <div class="field"><label>Due date (BS) <span>Required</span></label><input class="input" name="chequeDate" data-bs-date-input readonly required placeholder="Select Nepali due date"><span id="chequeDateHint" class="small cheque-field-hint"></span></div>
-                <div class="field"><label>Next action date (BS) <span>Optional</span></label><input class="input" name="nextActionAt" data-bs-date-input data-bs-optional readonly placeholder="Optional reminder date"></div>
-              </div>
-            </section>
-            <section class="cheque-form-section">
-              <h4 class="cheque-section-label">Tracking</h4>
-              <div class="form-grid">
-                <div class="field"><label>Starting status</label><select class="select" name="lifecycleStatus"><option value="on_hold" selected>On hold</option><option value="cleared">Cleared</option><option value="bounced">Bounced</option></select><span class="small cheque-field-hint">New cheques are usually On hold until they clear or bounce.</span></div>
-                <div class="field"><label>Assigned to</label><select class="select" name="assignedTo"><option value="">Unassigned</option></select></div>
-                <div class="field span-2"><label>Internal note <span>Optional</span></label><textarea class="textarea" name="note" rows="2" placeholder="Purpose, promise, deposit instruction, or follow-up context"></textarea></div>
-                <div class="field span-2"><label>Cheque image <span>Optional</span></label><div class="cheque-upload-row"><input class="input" id="chequeImageInput" name="chequeImage" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="chequeImageHelp"><button class="btn btn-soft" id="extractChequeBtn" type="button">Extract for review</button></div><span class="small cheque-field-hint" id="chequeImageHelp">JPG, PNG or WebP, up to 8 MB. Extraction never saves the cheque automatically.</span></div>
-              </div>
-            </section>
-            <div class="cheque-form-footer"><span><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 16v-4M12 8h.01"/></svg>Saving creates the record; later financial transitions require confirmation.</span><div class="cheque-save-actions"><label class="save-another"><input type="checkbox" name="saveAnother"> Save &amp; add another</label><button class="btn btn-primary cheque-save-btn" type="submit"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Save cheque</button></div></div>
+            </details>
+            <div class="cheque-form-footer"><label class="save-another"><input type="checkbox" name="saveAnother"> Save &amp; add another</label><button class="btn btn-primary cheque-save-btn" type="submit">Save cheque</button></div>
           </form>
         </div>
-        <div id="chq-planner" role="tabpanel" style="display:none">
+        <div id="chq-planner" role="tabpanel" hidden>
         <div class="card cheque-panel-card">
           <div class="section-head compact-head" style="margin-bottom:10px"><div><div class="section-title">Banking load &mdash; next 30 days</div><div class="section-sub">Closed-day amounts roll to the next configured banking day so the workload stays accurate</div></div></div>
           <div id="chequePlannerSummary"></div>
           <div class="dash-scroll" id="chequePlanner" style="max-height:420px;overflow-y:auto"></div>
         </div>
         </div>
-        <div id="chq-records" role="tabpanel" style="display:none">
+        <div id="chq-records" role="tabpanel" hidden>
         <div class="card cheque-panel-card">
-          <div class="section-head" style="margin-bottom:14px"><div><div class="section-title">Cheque records</div><div class="section-sub">Banking today and pending holds appear first. Closed-day cheques show their effective banking date without changing the original date.</div></div></div>
+          <div class="section-head" style="margin-bottom:12px"><div><div class="section-title">Cheque records</div><div class="section-sub">Closed-day cheques show their effective banking date without changing the original date.</div></div><input class="input search-input" id="chequeSearch" placeholder="Search party, cheque no., bank or amount..."></div>
           <div class="cheque-smart-views" id="chequeSmartViews" role="toolbar" aria-label="Cheque smart views">
-            <button class="cheque-view-chip active" type="button" data-cheque-view="action">Action needed <span data-view-count="action">0</span></button>
-            <button class="cheque-view-chip" type="button" data-cheque-view="today">Due today <span data-view-count="today">0</span></button>
+            <button class="cheque-view-chip active" type="button" data-cheque-view="all">All <span data-view-count="all">0</span></button>
+            <button class="cheque-view-chip" type="button" data-cheque-view="today">Today <span data-view-count="today">0</span></button>
             <button class="cheque-view-chip" type="button" data-cheque-view="upcoming">Upcoming <span data-view-count="upcoming">0</span></button>
-            <button class="cheque-view-chip" type="button" data-cheque-view="to_write">To write <span data-view-count="to_write">0</span></button>
+            <button class="cheque-view-chip" type="button" data-cheque-view="overdue">Overdue <span data-view-count="overdue">0</span></button>
             <button class="cheque-view-chip" type="button" data-cheque-view="on_hold">On hold <span data-view-count="on_hold">0</span></button>
             <button class="cheque-view-chip" type="button" data-cheque-view="cleared">Cleared <span data-view-count="cleared">0</span></button>
             <button class="cheque-view-chip" type="button" data-cheque-view="bounced">Bounced <span data-view-count="bounced">0</span></button>
-            <button class="cheque-view-chip" type="button" data-cheque-view="all">All cheques <span data-view-count="all">0</span></button>
           </div>
-          <div class="filter-strip">
-            <div class="filter-search-wrap">
-              <span class="filter-field-label">Search</span>
-              <input class="input" id="chequeSearch" placeholder="Party, cheque no, bank...">
+          <div class="cheque-view-tools">
+            <div class="cheque-tools-left">
+              <div class="menu-wrap">
+                <button class="btn btn-soft btn-sm" id="chequeFiltersBtn" type="button" aria-haspopup="true" aria-expanded="false">Filters <span class="filters-count" id="chequeFiltersCount" hidden>0</span></button>
+                <div class="menu-pop cheque-filters-panel" id="chequeFiltersPanel" hidden>
+                  <div class="form-grid">
+                    <div class="field"><label>Status</label><select class="select" id="chequeStatusFilter"><option value="">Any (chips above cover the rest)</option><option value="postponed">Postponed</option></select></div>
+                    <div class="field"><label>Direction</label><select class="select" id="chequeDirectionFilter"><option value="">Incoming &amp; outgoing</option><option value="incoming">Incoming</option><option value="outgoing">Outgoing</option><option value="unspecified">Not set</option></select></div>
+                    <div class="field"><label>Bank</label><select class="select" id="chequeBankFilter"><option value="">All banks</option></select></div>
+                    <div class="field"><label>Assigned to</label><select class="select" id="chequeAssignedFilter"><option value="">Anyone</option></select></div>
+                    <div class="field"><label>Minimum amount</label><input class="input" id="chequeAmountMin" inputmode="decimal" placeholder="Rs 0"></div>
+                    <div class="field"><label>Maximum amount</label><input class="input" id="chequeAmountMax" inputmode="decimal" placeholder="No maximum"></div>
+                    <div class="field span-2">
+                      <label>Date range (BS)</label>
+                      <div class="cheque-filter-daterange">
+                        <button class="date-field" id="chequeDateFromBtn" type="button" data-pick-bs-date="chequeDateFrom">From</button>
+                        <span aria-hidden="true">&#8594;</span>
+                        <button class="date-field" id="chequeDateToBtn" type="button" data-pick-bs-date="chequeDateTo">To</button>
+                      </div>
+                      <input class="hidden" id="chequeDateFrom"><input class="hidden" id="chequeDateTo">
+                    </div>
+                  </div>
+                  <div class="cheque-filters-footer">
+                    <button class="btn btn-soft btn-sm" id="clearChequeDateFilter" type="button">Reset</button>
+                    <button class="btn btn-primary btn-sm" id="applyChequeFiltersBtn" type="button">Apply filters</button>
+                  </div>
+                </div>
+              </div>
+              <div class="cheque-sort-group"><span>Sort by</span><select class="select" id="chequeSort"><option value="due_asc">Due date &mdash; earliest</option><option value="due_desc">Due date &mdash; latest</option><option value="amount_desc">Amount &mdash; highest</option><option value="amount_asc">Amount &mdash; lowest</option><option value="recent">Recently added</option><option value="party_az">Party A&ndash;Z</option><option value="priority">Priority &mdash; urgent first</option></select></div>
             </div>
-            <div class="filter-field-wrap">
-              <span class="filter-field-label">Show</span>
-              <select class="select" id="chequePeriodFilter"><option value="all">Any date</option><option value="today">Due today</option><option value="week">Next 7 days</option><option value="overdue">Overdue</option></select>
-            </div>
-            <div class="filter-field-wrap">
-              <span class="filter-field-label">Status</span>
-              <select class="select" id="chequeStatusFilter"><option value="">All statuses</option><option value="on_hold">On hold</option><option value="cleared">Cleared</option><option value="bounced">Bounced</option><option value="postponed">Postponed</option></select>
-            </div>
-            <div class="filter-field-wrap"><span class="filter-field-label">Direction</span><select class="select" id="chequeDirectionFilter"><option value="">Incoming &amp; outgoing</option><option value="incoming">Incoming</option><option value="outgoing">Outgoing</option><option value="unknown">Unknown</option></select></div>
-            <div class="filter-field-wrap"><span class="filter-field-label">Bank</span><select class="select" id="chequeBankFilter"><option value="">All banks</option></select></div>
-            <div class="filter-field-wrap"><span class="filter-field-label">Minimum amount</span><input class="input" id="chequeAmountMin" inputmode="decimal" placeholder="Rs 0"></div>
-            <div class="filter-field-wrap"><span class="filter-field-label">Maximum amount</span><input class="input" id="chequeAmountMax" inputmode="decimal" placeholder="No maximum"></div>
-            <div class="filter-vdivider"></div>
-            <div class="filter-field-wrap">
-              <span class="filter-field-label">From (BS)</span>
-              <button class="date-field" id="chequeDateFromBtn" type="button" data-pick-bs-date="chequeDateFrom">Pick date</button>
-              <input class="hidden" id="chequeDateFrom">
-            </div>
-            <span class="filter-arrow">&#8594;</span>
-            <div class="filter-field-wrap">
-              <span class="filter-field-label">To (BS)</span>
-              <button class="date-field" id="chequeDateToBtn" type="button" data-pick-bs-date="chequeDateTo">Pick date</button>
-              <input class="hidden" id="chequeDateTo">
-            </div>
-            <div class="filter-clear-wrap">
-              <button class="btn btn-soft btn-sm" id="clearChequeDateFilter" type="button">Clear filters</button>
-            </div>
+            <div class="bulk-action-bar" id="chequeBulkBar" hidden><b><span id="chequeBulkCount">0</span> selected</b><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="assign">Assign</button><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="followup">Schedule follow-up</button><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="export">Export</button></div>
           </div>
-          <div class="cheque-view-tools"><div class="cheque-tools-left"><div class="cheque-sort-group"><span>Sort by</span><select class="select" id="chequeSort"><option value="due_asc">Due date &mdash; earliest first</option><option value="due_desc">Due date &mdash; latest first</option><option value="priority">Priority &mdash; urgent first</option><option value="amount_desc">Amount &mdash; high to low</option><option value="amount_asc">Amount &mdash; low to high</option></select></div><div class="saved-view-group"><span>Saved views</span><button class="btn btn-soft btn-sm" id="saveChequeViewBtn" type="button">Save current view</button><select class="select" id="savedChequeView"><option value="">Choose a saved view</option></select></div></div><div class="bulk-action-bar" id="chequeBulkBar" hidden><b><span id="chequeBulkCount">0</span> selected</b><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="assign">Assign</button><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="followup">Schedule follow-up</button><button class="btn btn-soft btn-sm" type="button" data-bulk-cheque="export">Export selected</button></div></div>
-          <div class="cheque-record-summary" id="chequeRecordTotals" aria-live="polite"></div>
-          <div class="table-wrap cheque-table-wrap"><table class="cheque-table"><thead><tr><th><input type="checkbox" id="selectAllCheques" aria-label="Select all visible cheques"></th><th>Customer / supplier</th><th>Bank / cheque no.</th><th>Amount</th><th>Issue / due date</th><th>Status / risk</th><th>Owner / next action</th><th>File</th><th>Actions</th></tr></thead><tbody id="chequeRows"></tbody></table></div><div class="cheque-card-list" id="chequeCardList"></div><div id="chequesPagination" style="padding:4px 8px 2px"></div>
+          <div class="filter-pills" id="chequeFilterPills" hidden></div>
+          <div class="cheque-results-summary" id="chequeRecordTotals" aria-live="polite"></div>
+          <div class="table-wrap cheque-table-wrap"><table class="cheque-table"><thead><tr><th><input type="checkbox" id="selectAllCheques" aria-label="Select all visible cheques"></th><th>Party</th><th>Cheque</th><th>Amount</th><th>Cheque date</th><th>Status</th><th>Bank</th><th>Next action</th><th></th></tr></thead><tbody id="chequeRows"></tbody></table></div><div class="cheque-card-list" id="chequeCardList"></div><div id="chequesPagination" style="padding:4px 8px 2px"></div>
         </div>
         </div>
       </section>
@@ -681,7 +691,7 @@
 <script src="assets/martai-push-config.js"></script>
 <script src="assets/martai-date.js?v=1"></script>
 <script src="assets/martai-ui.js?v=1"></script>
-<script src="assets/martai-store.js?v=30"></script>
+<script src="assets/martai-store.js?v=31"></script>
 <script src="assets/martai-notifications.js?v=1"></script>
 <script src="assets/martai-cheques.js?v=1"></script>
 <script src="assets/martai-intelligence.js?v=1"></script>
@@ -979,43 +989,13 @@ function chqTab(t){
   if(chequeTabsController){const idx=['write','records','planner','queue'].indexOf(t);if(idx>=0)chequeTabsController.activate(idx,{focus:false});return}
   ['write','records','planner','queue'].forEach(k=>{const el=$('chq-'+k);if(el){el.style.display=k===t?'':'none';el.setAttribute('aria-hidden',k===t?'false':'true')}});document.querySelectorAll('[data-chq-tab]').forEach(b=>{const active=b.dataset.chqTab===t;if(b.getAttribute('role')==='tab'){b.classList.toggle('btn-primary',active);b.classList.toggle('btn-soft',!active);b.setAttribute('aria-selected',active?'true':'false')}})
 }
-function renderChequeMetrics(d){const el=$('chequeMetrics');if(!el)return;const t=A.today();const todayC=d.cheques.filter(x=>String(x.chequeDate||'').slice(0,10)===t);const tSum=todayC.reduce((s,x)=>s+A.num(x.amount),0);const holds=d.cheques.filter(x=>x.status==='hold');const hSum=holds.reduce((s,x)=>s+A.num(x.amount),0);const lim=addDaysIso(t,7);const wk=holds.filter(x=>x.chequeDate&&String(x.chequeDate).slice(0,10)<=lim);const wSum=wk.reduce((s,x)=>s+A.num(x.amount),0);const qn=(d.chequeQueue||[]).length;el.innerHTML=[metric('Today',todayC.length?A.money(tSum):0,`${todayC.length} cheque${todayC.length!==1?'s':''} dated today`,'rgba(6,182,212,.20)'),metric('Pending on hold',holds.length?A.money(hSum):0,`${holds.length} cheque${holds.length!==1?'s':''} till cleared${holds.filter(isPostponed).length?` &middot; ${holds.filter(isPostponed).length} postponed`:''}`,'rgba(245,158,11,.20)'),metric('Need in 7 days',wk.length?A.money(wSum):0,`${wk.length} hold cheque${wk.length!==1?'s':''} due or overdue`,'rgba(239,68,68,.18)'),metric('To write',qn,qn?'waiting in the queue':'queue is empty','rgba(124,58,237,.19)')].join('');const tc=$('chqQueueTabCount');if(tc)tc.textContent=qn?`(${qn})`:''}
 function isPostponed(x){return /postponed/i.test(String(x.note||''))}
 function postponedBadge(x){return isPostponed(x)?` <span class="badge badge-purple" title="${A.esc(x.note)}">Postponed</span>`:''}
 function chequesOnDate(d,ad){return d.cheques.filter(x=>String(x.chequeDate||'').slice(0,10)===ad&&x.status!=='bounce')}
-function renderChequePlanner(d){
-  const el=$('chequePlanner');if(!el)return;
-  const days=[];for(let i=0;i<30;i++){const ad=addDaysIso(A.today(),i);const rows=chequesOnDate(d,ad);days.push({ad,rows,total:rows.reduce((s,x)=>s+A.num(x.amount),0),i})}
-  const monthTotal=days.reduce((s,x)=>s+x.total,0);
-  const chequeCount=days.reduce((s,x)=>s+x.rows.length,0);
-  const freeDays=days.filter(x=>!x.rows.length).length;
-  const max=Math.max(1,...days.map(x=>x.total));
-  const heavy=days.reduce((a,b)=>b.total>a.total?b:a,days[0]);
-  const sum=$('chequePlannerSummary');
-  if(sum)sum.innerHTML=`<div class="small" style="padding:8px 12px;margin-bottom:10px;border:1px solid rgba(6,182,212,.3);border-radius:10px;background:rgba(6,182,212,.08)"><b>Next 30 days: ${A.money(monthTotal)}</b> in ${chequeCount} cheque${chequeCount!==1?'s':''} &middot; <b class="amount-green">${freeDays} free days</b>${heavy.total>0?` &middot; heaviest day ${npDate(heavy.ad)} (${A.money(heavy.total)})`:''}</div>`;
-  el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Date</th><th>Cheques</th><th>Total</th><th>Parties</th><th></th></tr></thead><tbody>`+days.map(({ad,rows,total,i})=>{
-    const cls=total>0&&total>=max*.66?'amount-red':total===0?'amount-green':'';
-    const parties=rows.slice(0,2).map(x=>A.esc(x.party)).join(', ')+(rows.length>2?' +'+(rows.length-2)+' more':'');
-    return `<tr><td>${npDate(ad)}${i===0?'<div style="margin-top:2px"><span class="badge badge-amber">Today</span></div>':''}</td><td>${rows.length||''}</td><td>${total?`<b class="${cls}">${A.money(total)}</b>`:'<span class="badge badge-green">Free</span>'}</td><td><span class="small">${parties||'—'}</span></td><td><button class="btn btn-soft btn-sm" data-plan-date="${ad}">Write</button></td></tr>`}).join('')+'</tbody></table></div>';
-}
 function updateChequeNoHint(){const el=$('chequeNoHint');if(!el)return;const v=String(document.querySelector('#chequeForm [name="chequeNo"]')?.value||'').trim();if(!v){el.textContent='';return}const dup=sdb().cheques.find(x=>String(x.chequeNo).trim()===v);el.innerHTML=dup?`⚠ Cheque no already used: ${A.esc(dup.party)} ${A.money(dup.amount)} (${npDate(dup.chequeDate)})`:''}
 function updateChequeDateHint(){const el=$('chequeDateHint');if(!el)return;const inp=document.querySelector('#chequeForm [name="chequeDate"]');const ad=adFromBsKey(inp?.value);if(!ad){el.textContent='';return}const rows=chequesOnDate(sdb(),ad);const total=rows.reduce((s,x)=>s+A.num(x.amount),0);el.innerHTML=rows.length?`⚠ ${rows.length} cheque${rows.length!==1?'s':''} already on this date = <b>${A.money(total)}</b> (${rows.slice(0,3).map(x=>A.esc(x.party)).join(', ')}${rows.length>3?' +'+(rows.length-3):''})`:'✓ No other cheques on this date — light day.'}
 function queueAgeBadge(createdAt){const age=daysBetween(String(createdAt).slice(0,10),A.today());if(age>=7)return `<span class="badge badge-red">Waiting ${age}d</span>`;if(age>=3)return `<span class="badge badge-amber">Waiting ${age}d</span>`;if(age>=1)return `<span class="badge badge-blue">Waiting ${age}d</span>`;return '<span class="badge badge-blue">Added today</span>'}
 function renderChequeQueue(d){const el=$('chequeQueueList');if(!el)return;const items=(d.chequeQueue||[]).slice().sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));const cnt=$('chequeQueueCount');if(cnt){cnt.style.display=items.length?'':'none';cnt.textContent=items.length+' waiting'}el.innerHTML=items.length?items.map(x=>`<div class="history-card"><div><b>${A.esc(x.party)}</b><div class="small">${x.note?A.esc(x.note)+' &middot; ':''}Added ${npDateTime(x.createdAt)}</div><div style="margin-top:6px">${queueAgeBadge(x.createdAt)}</div></div><div style="text-align:right"><b>${A.num(x.amount)>0?A.money(x.amount):''}</b><div style="margin-top:6px"><button class="btn btn-primary btn-sm" data-queue-write="${A.esc(x.id)}">Write cheque</button> <button class="btn btn-green btn-sm" data-queue-done="${A.esc(x.id)}">Done &#10003;</button></div></div></div>`).join(''):'<div class="empty">Queue is empty. When a party sends their ledger, add their name here so the cheque is not forgotten.</div>'}
-function renderCheques(){const d=sdb();renderChequeMetrics(d);renderChequeQueue(d);const q=($('chequeSearch')?.value||'').toLowerCase();const from=cleanBsDate($('chequeDateFrom')?.value);const to=cleanBsDate($('chequeDateTo')?.value);renderChequePlanner(d);updateChequeDateHint();const stF=$('chequeStatusFilter')?.value||'';const pf=$('chequePeriodFilter')?.value||'today';const pfBypass=!!(q||from||to);const allCheq=d.cheques.filter(x=>(x.party+' '+x.chequeNo+' '+x.bank).toLowerCase().includes(q)).filter(x=>{const bs=bsKey(x.chequeDate);return(!from||bs>=from)&&(!to||bs<=to)}).filter(x=>{
-  // Default view: today's cheques + every pending hold — full history on demand
-  if(pfBypass||pf==='all')return true;
-  if(x.status==='hold')return true;
-  const cd=String(x.chequeDate||'').slice(0,10);
-  return pf==='today'?cd===A.today():(cd>=A.today()&&cd<=addDaysIso(A.today(),7));
-}).filter(x=>{if(!stF)return true;if(stF==='postponed')return isPostponed(x);return String(x.status||'hold')===stF}).sort((a,b)=>{
-  // Hold cheques pinned on top in ascending date order (nearest to hit the bank
-  // first); cleared/bounced history follows, most recent first.
-  const ah=a.status==='hold',bh=b.status==='hold';
-  if(ah!==bh)return ah?-1:1;
-  const ad=String(a.chequeDate||a.createdAt||''),bd=String(b.chequeDate||b.createdAt||'');
-  return ah?ad.localeCompare(bd):bd.localeCompare(ad);
-});const tpCh=Math.ceil(allCheq.length/PER_PAGE)||1;const pgCh=pgState.cheques=Math.max(1,Math.min(pgState.cheques,tpCh));const rows=allCheq.slice((pgCh-1)*PER_PAGE,pgCh*PER_PAGE);$('chequeRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${A.esc(x.party)}</td><td>${A.esc(x.chequeNo)}</td><td><b>${A.money(x.amount)}</b></td><td>${A.esc(x.bank||'-')}</td><td>${npDate(x.chequeDate)}</td><td>${statusBadge(x.status)}${postponedBadge(x)}</td><td><div class="row-actions">${x.status!=='clear'?`<button class="btn btn-green btn-sm" data-cheque-status="clear" data-id="${x.id}">Clear</button>`:''}${x.status==='hold'?`<button class="btn btn-soft btn-sm" data-postpone="${x.id}">Postpone</button>`:''}<details class="row-menu"><summary aria-label="More actions for cheque ${A.esc(x.chequeNo)}" title="More actions">&#8943;</summary><div class="row-menu-pop">${x.status!=='hold'?`<button class="btn btn-amber btn-sm" data-cheque-status="hold" data-id="${x.id}">Mark hold</button>`:''}${x.status!=='bounce'?`<button class="btn btn-red btn-sm" data-cheque-status="bounce" data-id="${x.id}">Mark bounced</button>`:''}<button class="btn btn-red btn-sm" data-delete-cheque="${x.id}">Delete</button></div></details></div></td></tr>`).join(''):`<tr><td colspan="7"><div class="empty">${q||from||to?'No cheques found for this search or BS date filter.':'No cheques saved yet.'}</div></td></tr>`;if($('chequesPagination'))$('chequesPagination').innerHTML=paginationHTML('cheques',pgCh,allCheq.length,PER_PAGE)}
 /* Nepal banking calendar: closed weekdays and holidays are configurable.
    The written date is preserved while a separate action date is calculated. */
 function chequeDateIso(x){return String(typeof x==='string'?x:(x?.chequeDate||'')).slice(0,10)}
@@ -1024,6 +1004,7 @@ function isBankClosedDate(value){const iso=chequeDateIso(value);if(!isoParts(iso
 function chequeBankDate(value){const iso=chequeDateIso(value);if(!isoParts(iso))return iso;if(DateTools)return DateTools.bankEffectiveDate(iso,bankCalendarOptions());let d=iso,guard=0;while((isoDay(d)===0||isoDay(d)===6)&&guard++<14)d=addDaysIso(d,1);return d}
 function bankFocusDate(value=A.today()){return chequeBankDate(value)}
 function weekdayName(value){const iso=chequeDateIso(value);if(!isoParts(iso))return'';return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][isoDay(iso)]}
+function renderBankCalendarState(){const el=$('bankCalendarState');if(!el)return;const names=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];const closed=bankCalendarOptions().weekendDays.slice().sort().map(d=>names[d]).join(' & ');el.textContent=closed?closed+' closed':'No closed days set'}
 function isWeekendCarry(x){return chequeBankDate(x)!==chequeDateIso(x)}
 function bankingChequesOnDate(d,ad){return d.cheques.filter(x=>chequeBankDate(x)===ad&&x.status!=='bounce')}
 function sumCheques(rows){return rows.reduce((sum,x)=>sum+A.num(x.amount),0)}
@@ -1080,33 +1061,68 @@ function updateChequeDateHint(){
 }
 function renderChequeRecordTotals(rows){
   const el=$('chequeRecordTotals');if(!el)return;
-  const sum=list=>list.reduce((s,x)=>s+A.num(x.amount),0);
-  const holds=rows.filter(x=>x.status==='hold'),cleared=rows.filter(x=>x.status==='cleared'),overdue=rows.filter(x=>x.isOverdue);
-  el.innerHTML=`<div><span>Filtered total</span><b>${A.money(sum(rows))}</b><small>${rows.length} record${rows.length!==1?'s':''}</small></div><div><span>Pending on hold</span><b>${A.money(sum(holds))}</b><small>${holds.length} on hold</small></div><div><span>Cleared amount</span><b>${A.money(sum(cleared))}</b><small>${cleared.length} cleared</small></div><div><span>Overdue</span><b class="${overdue.length?'amount-red':''}">${A.money(sum(overdue))}</b><small>${overdue.length} overdue</small></div>`;
+  if(!rows.length){el.innerHTML='';return}
+  const total=rows.reduce((s,x)=>s+A.num(x.amount),0),overdue=rows.filter(x=>x.isOverdue).length;
+  const parts=[`${rows.length} result${rows.length!==1?'s':''}`,`${A.money(total)} total`];
+  if(overdue)parts.push(`<b class="amount-red">${overdue} overdue</b>`);
+  el.innerHTML=parts.join(' <span class="results-sep" aria-hidden="true">&middot;</span> ');
 }
 /* Cheque records are driven by the tested MartAICheques engine: smart views,
    compound filters, sorting, pagination and safe CSV all come from one place.
    The UI never mutates a cheque directly — every status change is a confirmed,
-   audited transition through the data layer. */
-const CHQ_VIEW_MAP=Object.freeze({action:'action_needed',today:'due_today',upcoming:'upcoming',to_write:'to_write',deposited:'deposited',on_hold:'hold',cleared:'cleared',bounced:'bounced',all:'all'});
-let chequeView='action',chequeSort='due_asc',chequeSelected=new Set(),chequeFilteredCache=[],chequeDrawerId='';
+   audited transition through the data layer. "Overdue" has no native smart
+   view in the engine (it's a cross-status flag, not a lifecycle bucket), so
+   it's handled separately below via queryRecords' own settings.overdue flag. */
+const CHQ_VIEW_MAP=Object.freeze({all:'all',today:'due_today',upcoming:'upcoming',on_hold:'hold',cleared:'cleared',bounced:'bounced'});
+let chequeView='all',chequeSort='due_asc',chequeSelected=new Set(),chequeFilteredCache=[],chequeDrawerId='';
 function chequePopulateBankFilter(d){const sel=$('chequeBankFilter');if(!sel)return;const banks=[...new Set(d.cheques.map(x=>String(x.bank||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));const old=sel.value;sel.innerHTML='<option value="">All banks</option>'+banks.map(b=>`<option value="${A.esc(b)}">${A.esc(b)}</option>`).join('');if(banks.some(b=>b.toLowerCase()===old.toLowerCase()))sel.value=old}
 function chequePopulateAssignee(d){const sel=document.querySelector('#chequeForm [name="assignedTo"]');if(!sel)return;const staff=(d.staffAccounts||[]).filter(s=>s.active!==false);const old=sel.value;sel.innerHTML='<option value="">Unassigned</option>'+staff.map(s=>`<option value="${A.esc(s.email)}">${A.esc(s.name||s.email)}</option>`).join('');if([...sel.options].some(o=>o.value===old))sel.value=old}
+function chequePopulateAssignedFilter(d){const sel=$('chequeAssignedFilter');if(!sel)return;const staff=(d.staffAccounts||[]).filter(s=>s.active!==false);const old=sel.value;sel.innerHTML='<option value="">Anyone</option>'+staff.map(s=>`<option value="${A.esc(s.email)}">${A.esc(s.name||s.email)}</option>`).join('');if([...sel.options].some(o=>o.value===old))sel.value=old}
 function buildChequeQuery(){
   const d=sdb();const stF=$('chequeStatusFilter')?.value||'';
   let source=d.cheques;if(stF==='postponed')source=source.filter(isPostponed);
-  const fromBs=cleanBsDate($('chequeDateFrom')?.value),toBs=cleanBsDate($('chequeDateTo')?.value),pf=$('chequePeriodFilter')?.value||'',today=A.today();
+  const fromBs=cleanBsDate($('chequeDateFrom')?.value),toBs=cleanBsDate($('chequeDateTo')?.value),today=A.today();
   const q={today,view:CHQ_VIEW_MAP[chequeView]||'all',search:($('chequeSearch')?.value||'').trim(),sortBy:'priority',order:'asc'};
+  if(chequeView==='overdue')q.overdue=true;
   if(stF&&stF!=='postponed')q.statuses=[stF];
   const dir=$('chequeDirectionFilter')?.value||'';if(dir)q.directions=[dir];
   const bank=$('chequeBankFilter')?.value||'';if(bank)q.banks=[bank];
+  const assignee=$('chequeAssignedFilter')?.value||'';if(assignee)q.assignedTo=[assignee];
   const min=$('chequeAmountMin')?.value||'';if(String(min).trim())q.amountMin=min;
   const max=$('chequeAmountMax')?.value||'';if(String(max).trim())q.amountMax=max;
-  if(fromBs||toBs){if(fromBs)q.dateFrom=adFromBsKey(fromBs);if(toBs)q.dateTo=adFromBsKey(toBs);}
-  else if(pf==='today'){q.dateFrom=today;q.dateTo=today;}
-  else if(pf==='week'){q.dateFrom=today;q.dateTo=addDaysIso(today,7);}
-  if(pf==='overdue')q.overdue=true;
+  if(fromBs)q.dateFrom=adFromBsKey(fromBs);
+  if(toBs)q.dateTo=adFromBsKey(toBs);
   return {q,source};
+}
+/* Advanced filters (status/direction/bank/assignee/amount/date-range) live
+   inside the Filters popover; the smart-view chips and search box are the
+   "always visible" controls and are not counted here. */
+function chequeActiveFilters(){
+  const out=[];
+  const stF=$('chequeStatusFilter')?.value||'';if(stF)out.push({key:'status',label:'Status: '+(stF==='postponed'?'Postponed':CQ.statusLabel(stF))});
+  const dir=$('chequeDirectionFilter')?.value||'';if(dir)out.push({key:'direction',label:'Direction: '+(dir==='incoming'?'Incoming':dir==='outgoing'?'Outgoing':'Not set')});
+  const bank=$('chequeBankFilter')?.value||'';if(bank)out.push({key:'bank',label:'Bank: '+bank});
+  const assignee=$('chequeAssignedFilter');if(assignee&&assignee.value)out.push({key:'assignee',label:'Assigned: '+(assignee.selectedOptions[0]?.textContent||assignee.value)});
+  const min=$('chequeAmountMin')?.value||'';if(String(min).trim())out.push({key:'amountMin',label:'Min '+A.money(min)});
+  const max=$('chequeAmountMax')?.value||'';if(String(max).trim())out.push({key:'amountMax',label:'Max '+A.money(max)});
+  const from=$('chequeDateFrom')?.value||'',to=$('chequeDateTo')?.value||'';
+  if(from||to)out.push({key:'dateRange',label:(from&&to)?(bsKeyToDisplay(from)+' → '+bsKeyToDisplay(to)):(from?'From '+bsKeyToDisplay(from):'To '+bsKeyToDisplay(to))});
+  return out;
+}
+function clearChequeFilterField(key){
+  if(key==='status'&&$('chequeStatusFilter'))$('chequeStatusFilter').value='';
+  else if(key==='direction'&&$('chequeDirectionFilter'))$('chequeDirectionFilter').value='';
+  else if(key==='bank'&&$('chequeBankFilter'))$('chequeBankFilter').value='';
+  else if(key==='assignee'&&$('chequeAssignedFilter'))$('chequeAssignedFilter').value='';
+  else if(key==='amountMin'&&$('chequeAmountMin'))$('chequeAmountMin').value='';
+  else if(key==='amountMax'&&$('chequeAmountMax'))$('chequeAmountMax').value='';
+  else if(key==='dateRange'){if($('chequeDateFrom'))$('chequeDateFrom').value='';if($('chequeDateTo'))$('chequeDateTo').value='';syncDateButtons()}
+  pgState.cheques=1;renderAll();
+}
+function renderChequeFilterBar(){
+  const active=chequeActiveFilters();
+  const countEl=$('chequeFiltersCount');if(countEl){countEl.hidden=!active.length;countEl.textContent=active.length}
+  const pillsEl=$('chequeFilterPills');if(pillsEl){pillsEl.hidden=!active.length;pillsEl.innerHTML=active.map(f=>`<button type="button" class="filter-pill" data-clear-chq-filter="${f.key}">${A.esc(f.label)} <span aria-hidden="true">&times;</span></button>`).join('')}
 }
 function chequeDirChip(dir){return dir==='incoming'?'<span class="badge badge-green" title="Incoming — money to receive">In</span>':dir==='outgoing'?'<span class="badge badge-amber" title="Outgoing — money to pay">Out</span>':'<span class="badge badge-blue" title="Direction not set — review">Dir?</span>'}
 function chequeRiskBadge(item){if(!item.riskLevel)return'';const tone={low:'green',medium:'amber',high:'red',critical:'red'}[item.riskLevel]||'blue';return ` <span class="badge badge-${tone}" title="Deterministic review priority${item.riskScore!=null?' · score '+item.riskScore:''}">${A.esc(item.riskLevel)} risk</span>`}
@@ -1119,13 +1135,13 @@ function chequeActionButtons(item){
   const primaryBtn=primary?`<button class="btn ${primary==='cleared'?'btn-green':'btn-primary'} btn-sm" data-cheque-status="${primary}" data-id="${item.id}">${A.esc(CQ.statusLabel(primary))}</button>`:'';
   const others=targets.filter(t=>t!==primary).map(t=>`<button class="btn btn-soft btn-sm" data-cheque-status="${t}" data-id="${item.id}">Mark ${A.esc(CQ.statusLabel(t))}</button>`).join('');
   const bounce=CQ.canTransition(item.status,'bounced',{direction:item.direction})&&primary!=='bounced'&&targets.indexOf('bounced')<0?`<button class="btn btn-red btn-sm" data-cheque-status="bounced" data-id="${item.id}">Mark Bounced</button>`:'';
-  return `<div class="row-actions">${primaryBtn}<details class="row-menu"><summary aria-label="More actions for cheque ${A.esc(item.chequeNo)}" title="More actions">&#8943;</summary><div class="row-menu-pop"><button class="btn btn-soft btn-sm" data-cheque-detail="${item.id}">View details</button>${others}${bounce}<button class="btn btn-soft btn-sm" data-postpone="${item.id}">Postpone</button><button class="btn btn-red btn-sm" data-delete-cheque="${item.id}">Cancel &amp; remove</button></div></details></div>`;
+  return `<div class="row-actions">${primaryBtn}<details class="row-menu"><summary aria-label="More actions for cheque ${A.esc(item.chequeNo)}" title="More actions">&#8943;</summary><div class="row-menu-pop"><button class="btn btn-soft btn-sm" data-cheque-detail="${item.id}">View details</button><button class="btn btn-soft btn-sm" data-edit-cheque="${item.id}">Edit</button>${others}${bounce}<button class="btn btn-soft btn-sm" data-postpone="${item.id}">Postpone</button><button class="btn btn-red btn-sm" data-delete-cheque="${item.id}">Delete</button></div></details></div>`;
 }
 function chequeOwnerCell(item){return `${item.assignedTo?A.esc(item.assignedTo):'<span class="small" style="opacity:.55">Unassigned</span>'}${item.nextActionAt?`<div class="small">Next: ${npDate(item.nextActionAt)}</div>`:''}`}
 function chequeDatesCell(item){const shim={chequeDate:item.dueDate};return `${item.issueDate?`<div class="small">Issued ${npDate(item.issueDate)}</div>`:''}${item.dueDate?chequeDateCell(shim):'<span class="small" style="opacity:.55">No due date</span>'}`}
 function renderChequeRows(items){
   const el=$('chequeRows');if(!el)return;
-  el.innerHTML=items.length?items.map(x=>`<tr class="${x.isOverdue?'cheque-weekend-row':''}"><td><input type="checkbox" class="cheque-select" data-cheque-select="${x.id}" aria-label="Select cheque ${A.esc(x.chequeNo)}" ${chequeSelected.has(x.id)?'checked':''}></td><td><button type="button" class="cheque-party-link" data-cheque-detail="${x.id}"><b>${A.esc(x.party||'Unknown party')}</b></button> ${chequeDirChip(x.direction)}${x.note?`<div class="small cheque-note" title="${A.esc(x.note)}">${A.esc(x.note)}</div>`:''}</td><td>${A.esc(x.bank||'-')}<div class="small">No. ${A.esc(x.chequeNo||'—')}</div></td><td style="text-align:right"><b>${A.money(x.amount)}</b></td><td>${chequeDatesCell(x)}</td><td>${chequeStatusBadges(x)}</td><td>${chequeOwnerCell(x)}</td><td style="text-align:center">${chequeFileCell(x)}</td><td>${chequeActionButtons(x)}</td></tr>`).join(''):`<tr><td colspan="9"><div class="empty">No cheque records match this view. Adjust the filters or add a cheque.</div></td></tr>`;
+  el.innerHTML=items.length?items.map(x=>`<tr class="${x.isOverdue?'cheque-weekend-row':''}"><td><input type="checkbox" class="cheque-select" data-cheque-select="${x.id}" aria-label="Select cheque ${A.esc(x.chequeNo)}" ${chequeSelected.has(x.id)?'checked':''}></td><td><button type="button" class="cheque-party-link" data-cheque-detail="${x.id}"><b>${A.esc(x.party||'Unknown party')}</b></button> ${chequeDirChip(x.direction)}${x.note?`<div class="small cheque-note" title="${A.esc(x.note)}">${A.esc(x.note)}</div>`:''}</td><td>No. ${A.esc(x.chequeNo||'—')}</td><td style="text-align:right"><b>${A.money(x.amount)}</b></td><td>${chequeDatesCell(x)}</td><td>${chequeStatusBadges(x)}</td><td>${A.esc(x.bank||'—')}</td><td>${chequeOwnerCell(x)}</td><td>${chequeActionButtons(x)}</td></tr>`).join(''):`<tr><td colspan="9"><div class="empty">No cheque records match this view. Adjust the filters or add a cheque.</div></td></tr>`;
 }
 function renderChequeCards(items){
   const el=$('chequeCardList');if(!el)return;
@@ -1134,6 +1150,8 @@ function renderChequeCards(items){
 function renderChequeSmartCounts(d){
   const counts=CQ.smartViewCounts(d.cheques,{today:A.today()});
   Object.keys(CHQ_VIEW_MAP).forEach(chip=>{const el=document.querySelector(`[data-view-count="${chip}"]`);if(el)el.textContent=counts[CHQ_VIEW_MAP[chip]]||0});
+  const overdueCount=d.cheques.filter(x=>{try{return CQ.normalizeRecord(x,{today:A.today()}).isOverdue}catch(e){return false}}).length;
+  const oc=document.querySelector('[data-view-count="overdue"]');if(oc)oc.textContent=overdueCount;
   $$('.cheque-view-chip').forEach(b=>b.classList.toggle('active',b.dataset.chequeView===chequeView));
 }
 function renderChequeBulkBar(){
@@ -1147,11 +1165,13 @@ function sortChequeCache(rows){
   else if(s==='due_desc')arr.sort((a,b)=>byDue(a,b,-1)||(b.amount||0)-(a.amount||0));
   else if(s==='amount_desc')arr.sort((a,b)=>(b.amount||0)-(a.amount||0));
   else if(s==='amount_asc')arr.sort((a,b)=>(a.amount||0)-(b.amount||0));
+  else if(s==='recent')arr.sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  else if(s==='party_az')arr.sort((a,b)=>String(a.party||'').toLowerCase().localeCompare(String(b.party||'').toLowerCase()));
   else return rows;
   return arr;
 }
 function renderCheques(){
-  const d=sdb();renderChequeMetrics(d);renderChequeQueue(d);renderChequePlanner(d);updateChequeDateHint();chequePopulateBankFilter(d);chequePopulateAssignee(d);renderChequeSmartCounts(d);
+  const d=sdb();renderBankCalendarState();renderChequeMetrics(d);renderChequeQueue(d);renderChequePlanner(d);updateChequeDateHint();chequePopulateBankFilter(d);chequePopulateAssignee(d);chequePopulateAssignedFilter(d);renderChequeSmartCounts(d);renderChequeFilterBar();
   const {q,source}=buildChequeQuery();
   const all=CQ.queryRecords(source,{...q,page:1,pageSize:100000});
   chequeFilteredCache=sortChequeCache(all.items.map(it=>({...it,bsDate:it.dueDate?bsKey(it.dueDate):''})));
@@ -1161,16 +1181,6 @@ function renderCheques(){
   renderChequeRows(pageItems);renderChequeCards(pageItems);renderChequeBulkBar();
   const sa=$('selectAllCheques');if(sa)sa.checked=pageItems.length>0&&pageItems.every(x=>chequeSelected.has(x.id));
   if($('chequesPagination'))$('chequesPagination').innerHTML=paginationHTML('cheques',pgCh,total,PER_PAGE);
-}
-function renderDashboardBankingCheques(d){
-  const today=A.today(),focus=bankFocusDate(today),closed=isBankClosedDate(today),focusRows=bankingChequesOnDate(d,focus),focusTotal=sumCheques(focusRows),carried=focusRows.filter(isWeekendCarry);
-  const metricCard=$('metricCards')?.querySelector('.metric:nth-child(3)');if(metricCard){metricCard.querySelector('.metric-label').textContent=closed?'Monday bank cheques':'Banking today';metricCard.querySelector('.metric-value').textContent=A.money(focusTotal);metricCard.querySelector('.metric-sub').innerHTML=`${focusRows.length} cheque${focusRows.length!==1?'s':''}${carried.length?` &middot; ${carried.length} from weekend`:''}`}
-  const balances=allCustomerBalances(d),creditPending=balances.reduce((s,x)=>s+x.balance,0),dailyToday=d.dailySales.filter(x=>x.date===today).reduce((s,x)=>s+totalDaily(x),0),pendingPR=(d.paymentRequests||[]).filter(x=>x.status==='pending').length;
-  $('dashboardBrief').textContent=`${d.customers.length} customers · ${A.money(creditPending)} credit pending · ${A.money(dailyToday)} sales today.`+(focusRows.length?` ${closed?'Monday banking':'Banking today'}: ${focusRows.length} cheque${focusRows.length!==1?'s':''}, ${A.money(focusTotal)}.`:'')+(pendingPR?` ${pendingPR} payment report${pendingPR!==1?'s':''} waiting.`:'');
-  const queue=(d.chequeQueue||[]).slice().sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt))).slice(0,3);
-  const action=[...new Map(d.cheques.filter(x=>x.status==='hold'||chequeBankDate(x)===focus).map(x=>[x.id,x])).values()].sort((a,b)=>chequeBankDate(a).localeCompare(chequeBankDate(b))).slice(0,6);
-  const summary=`<div class="banking-summary-line"><b>${closed?'Next open day: Monday':'Banking today'} &middot; ${A.money(focusTotal)}</b><span>${focusRows.length} cheque${focusRows.length!==1?'s':''}</span>${carried.length?`<span>${carried.length} carried from weekend</span>`:''}</div>`;
-  $('todayChequeList').innerHTML=summary+queue.map(x=>`<div class="history-card"><div><b>${A.esc(x.party)}</b><div class="small">To write &middot; ${npDateTime(x.createdAt)}</div></div><div class="cheque-list-amount"><b>${A.num(x.amount)>0?A.money(x.amount):''}</b><button class="btn btn-primary btn-sm" data-queue-write="${A.esc(x.id)}">Write</button></div></div>`).join('')+action.map(x=>`<div class="history-card ${isWeekendCarry(x)?'cheque-weekend-row':''}"><div><b>${A.esc(x.party)}</b><div class="small">Cheque ${A.esc(x.chequeNo)} &middot; ${npDate(x.chequeDate)}${isWeekendCarry(x)?` &middot; bank Monday ${npDate(chequeBankDate(x))}`:''}</div></div><div class="cheque-list-amount"><b>${A.money(x.amount)}</b><div>${statusBadge(x.status)}${bankCarryBadge(x)}${bankTimingBadge(x)}</div></div></div>`).join('')+(!queue.length&&!action.length?'<div class="empty">No cheque action is pending.</div>':'');
 }
 function renderBankingWeekReport(d){
   const start=bankFocusDate(),end=addDaysIso(start,7),rows=d.cheques.filter(x=>{const bd=chequeBankDate(x);return x.status!=='bounce'&&bd>=start&&bd<=end}).sort((a,b)=>chequeBankDate(a).localeCompare(chequeBankDate(b)));
@@ -1544,7 +1554,7 @@ $('restoreLatestAutoBackupBtn')?.addEventListener('click',async e=>{
 $('backupNowBtn')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();if(!isMainAdmin())return;const button=e.currentTarget,old=button.textContent;button.disabled=true;button.textContent='Backing up...';runAutoBackupCheck({force:true,quiet:false}).finally(()=>{button.disabled=false;button.textContent=old})});
 $('dismissReminderBtn')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();localStorage.setItem(BACKUP_DISMISS_KEY+backupScopeId(),A.today());$('backupReminderBanner').style.display='none'});
 window.addEventListener('khata-backup-status',()=>{if(currentPage==='settings')refreshAutoBackupStatus()});
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.pickBsDate){const inp=$(b.dataset.pickBsDate);if(inp)BSP.open(inp,b);return}if(b.dataset.page){nav(b.dataset.page)}if(b.dataset.close){closeModal(b.dataset.close)}if(b.id==='bulkWaBtn'){openWaReminder();return}if(b.id==='bulkSmsBtn'){openSmsReminder();return}if(b.id==='showPortalQrBtn'){openQrModal(getPortalUrl(),'Customer Portal QR');return}if(b.dataset.qr){const c=A.customerById(db(),b.dataset.qr);if(c)openQrModal(getPortalUrl()+'?phone='+A.phoneClean(c.phone),'QR for '+c.name);return}if(b.id==='backupNowBtn'){backupJson();return}if(b.id==='dismissReminderBtn'){localStorage.setItem(BACKUP_DISMISS_KEY,A.today());$('backupReminderBanner').style.display='none';return}if(b.dataset.pg&&b.dataset.pgDir){pgState[b.dataset.pg]=Math.max(1,(pgState[b.dataset.pg]||1)+Number(b.dataset.pgDir));renderAll();return}if(b.id==='smsSendNextBtn'){if(!smsReminderQueue.length)return;if(smsReminderIdx>=smsReminderQueue.length){toast('All SMS sent! Restarting.');smsReminderIdx=0;renderSmsReminderList();$('smsReminderCount').textContent=`${smsReminderQueue.length} customer${smsReminderQueue.length!==1?'s':''} with pending credit`;return}const sx=smsReminderQueue[smsReminderIdx];const dx=db();sendSms(sx.customer.phone,buildWaMsg($('smsTemplate').value,sx.customer.name,A.money(sx.balance),dx.settings.martName||'RD MART',customerPortalLink(sx.customer.phone)));smsReminderIdx++;renderSmsReminderList();$('smsReminderCount').textContent=smsReminderIdx>=smsReminderQueue.length?`All ${smsReminderQueue.length} sent! Click again to restart.`:`Sent ${smsReminderIdx} of ${smsReminderQueue.length} — click Send Next for more`;return}if('smsSend' in b.dataset){const si=Number(b.dataset.smsSend);const sx=smsReminderQueue[si];if(!sx)return;const dx=db();sendSms(sx.customer.phone,buildWaMsg($('smsTemplate').value,sx.customer.name,A.money(sx.balance),dx.settings.martName||'RD MART',customerPortalLink(sx.customer.phone)));if(smsReminderIdx<=si)smsReminderIdx=si+1;renderSmsReminderList();$('smsReminderCount').textContent=`Sent ${smsReminderIdx} of ${smsReminderQueue.length}`;return}if(b.dataset.sms){submitWrap(()=>{const d=db();const c=A.customerById(d,b.dataset.sms);const bal=A.customerBalance(d,c.id).balance;sendSms(c.phone,`Namaste ${c.name} ji, ${d.settings.martName} ma Rs. ${A.money(bal)} credit pending xa. Payment garnu hola.`)});return}if(b.id==='waSendNextBtn'){if(!waReminderQueue.length)return;if(waReminderIdx>=waReminderQueue.length){toast('All reminders sent! Restarting.');waReminderIdx=0;renderWaReminderList();$('waReminderCount').textContent=`${waReminderQueue.length} customer${waReminderQueue.length!==1?'s':''} with pending credit`;return}const wx=waReminderQueue[waReminderIdx];const dx=db();A.wa(wx.customer.phone,buildWaMsg($('waTemplate').value,wx.customer.name,A.money(wx.balance),dx.settings.martName||'RD MART',customerPortalLink(wx.customer.phone)));waReminderIdx++;renderWaReminderList();$('waReminderCount').textContent=waReminderIdx>=waReminderQueue.length?`All ${waReminderQueue.length} sent! Click again to restart.`:`Sent ${waReminderIdx} of ${waReminderQueue.length} — click Send Next for more`;return}if('waSend' in b.dataset){const wi=Number(b.dataset.waSend);const wx=waReminderQueue[wi];if(!wx)return;const dx=db();A.wa(wx.customer.phone,buildWaMsg($('waTemplate').value,wx.customer.name,A.money(wx.balance),dx.settings.martName||'RD MART',customerPortalLink(wx.customer.phone)));if(waReminderIdx<=wi)waReminderIdx=wi+1;renderWaReminderList();$('waReminderCount').textContent=`Sent ${waReminderIdx} of ${waReminderQueue.length}`;return}if(b.dataset.staffActive){asyncWrap(()=>A.setStaffActive(db(),b.dataset.staffActive,b.dataset.active==='true'));return}if(b.dataset.deleteStore){asyncWrap(async()=>{if(!confirm('Delete this store and all data inside this store?'))return;await A.deleteStore(db(),b.dataset.deleteStore);toast('Store deleted')});return}if(b.dataset.editStore){const stores=A.getStores?A.getStores():db().stores||[];const s=stores.find(x=>x.id===b.dataset.editStore);if(s){const f=$('editStoreForm');f.elements.id.value=s.id;f.elements.name.value=s.name;f.elements.phone.value=s.phone||'';openModal('editStoreModal')}return}if(b.dataset.editCustomer){const c=A.customerById(db(),b.dataset.editCustomer);if(c){const f=$('editCustomerForm');f.elements.id.value=c.id;f.elements.name.value=c.name;f.elements.phone.value=c.phone;f.elements.pin.value='';f.elements.email.value=c.email||'';f.elements.address.value=c.address||'';f.elements.notes.value=c.notes||'';if(f.elements.creditLimit)f.elements.creditLimit.value=c.creditLimit||0;openModal('editCustomerModal')}}if(b.dataset.pay){const c=A.customerById(db(),b.dataset.pay);if(c){const f=$('quickPayForm');f.elements.customerId.value=c.id;f.elements.customerName.value=c.name+' - '+c.phone;f.elements.amount.value='';f.elements.note.value='';openModal('quickPayModal')}}if(b.dataset.wa){submitWrap(()=>{const d=db();const c=A.customerById(d,b.dataset.wa);const bal=A.customerBalance(d,c.id).balance;A.wa(c.phone,`Namaste ${c.name} ji, your pending credit balance is ${A.money(bal)}.\n\nCheck your balance anytime: ${customerPortalLink(c.phone)}\nLogin with your phone number and the default PIN 1234 — please change your PIN after login.\n\nThank you! - ${d.settings.martName}`)})}if(isStaff()&&(b.dataset.deleteCustomer||b.dataset.deleteCredit||b.dataset.deleteDaily||b.dataset.deletePayment||b.dataset.deleteCheque))return toast('Staff cannot delete records','err');if(b.dataset.deleteCustomer){submitWrap(()=>{if(confirm('Delete this customer?'))A.deleteCustomer(db(),b.dataset.deleteCustomer)})}if(b.dataset.deleteCredit){submitWrap(()=>{if(confirm('Delete this credit record?'))A.deleteCredit(db(),b.dataset.deleteCredit)})}if(b.dataset.deleteDaily){submitWrap(()=>{if(confirm('Delete this daily entry?'))A.deleteDaily(db(),b.dataset.deleteDaily)})}if(b.dataset.deletePayment){submitWrap(()=>{if(confirm('Delete this payment?'))A.deletePartyPayment(db(),b.dataset.deletePayment)})}if(b.dataset.deleteCheque){openChequeTransition(b.dataset.deleteCheque,'cancelled','delete');return}if(b.dataset.deleteParty){submitWrap(()=>{if(confirm('Delete this party account? Old records keep their name.'))A.deleteParty(db(),b.dataset.deleteParty)})}if(b.dataset.postpone){const ch=sdb().cheques.find(x=>x.id===b.dataset.postpone);if(ch){const f=$('postponeForm');f.elements.id.value=ch.id;f.elements.label.value=ch.party+' · No. '+ch.chequeNo+' · '+A.money(ch.amount)+' · now '+npDate(ch.chequeDate);f.elements.newDate.value='';f.elements.reason.value='';openModal('postponeModal')}return}if(b.dataset.chequeStatus){openChequeTransition(b.dataset.id,b.dataset.chequeStatus,'status');return}if(b.dataset.addMonthRent){submitWrap(()=>{const d=sdb();const bp=bsParts(A.today());const label='Rent - '+BS_MONTH_NAMES[Number(bp.month)-1]+' '+bp.year;const pref=bsKey(A.today()).slice(0,7);let added=0;for(let n=1;n<=4;n++){const c=roomCustomer(d,n);if(!c)continue;const rows=A.customerBalance(d,c.id).rows;if(rows.some(r=>/^rent/i.test(r.items||'')&&bsKey(r.date).startsWith(pref)))continue;const last=rows.filter(r=>/^rent/i.test(r.items||'')).sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0];if(!last)continue;A.addCredit(db(),{customerId:c.id,date:A.today(),amount:A.num(last.amount),items:label,note:'Monthly rent (auto)'});added++}if(!added)throw new Error('No rooms with a previous rent amount to copy');toast(label+' added for '+added+' room'+(added!==1?'s':''))});return}if(b.dataset.estimateCredit){submitWrap(()=>{const d=db();const est=(d.estimateBills||[]).find(x=>x.id===b.dataset.estimateCredit);if(!est)return;let c=est.phone?findCustomerByText(est.phone,true):null;if(!c||c==='AMBIGUOUS')c=findCustomerByText(est.customer,true);if(c==='AMBIGUOUS')throw new Error('More than one customer matches "'+est.customer+'" — check in Customers first');if(!c)throw new Error('No customer account for "'+est.customer+'". Add the customer first, then convert.');if(!confirm('Add credit of '+A.money(est.amount)+' to '+c.name+' from this estimate?'))return;A.addCredit(db(),{customerId:c.id,date:A.today(),amount:est.amount,items:est.items||('Estimate: '+est.customer),note:'From estimate bill'});A.updateEstimateStatus(db(),est.id,'approved');toast('Credit added to '+c.name+' — estimate marked approved')});return}if(b.dataset.queueDone){const q=(db().chequeQueue||[]).find(x=>x.id===b.dataset.queueDone);if(q&&confirm('Cheque written for '+q.party+'? This removes it from the queue.'))submitWrap(()=>{A.deleteChequeQueue(db(),q.id);toast('Removed from queue')});return}if(b.dataset.planDate){chqTab('write');const f=$('chequeForm');const inp=f.querySelector('[name="chequeDate"]');inp.value=bsKey(b.dataset.planDate);updateChequeDateHint();f.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>f.elements.party.focus(),350);toast('Cheque date set to '+npDate(b.dataset.planDate));return}if(b.dataset.queueWrite){const q=(db().chequeQueue||[]).find(x=>x.id===b.dataset.queueWrite);if(!q)return;if(currentPage!=='cheques')nav('cheques');chqTab('write');const f=$('chequeForm');f.elements.party.value=q.party;if(A.num(q.amount)>0)f.elements.amount.value=A.num(q.amount);chequeQueuePrefill={id:q.id};f.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>f.elements.chequeNo.focus(),350);toast('Party filled — enter cheque number and save');return}});
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.pickBsDate){const inp=$(b.dataset.pickBsDate);if(inp)BSP.open(inp,b);return}if(b.dataset.page){nav(b.dataset.page)}if(b.dataset.close){closeModal(b.dataset.close)}if(b.id==='bulkWaBtn'){openWaReminder();return}if(b.id==='bulkSmsBtn'){openSmsReminder();return}if(b.id==='showPortalQrBtn'){openQrModal(getPortalUrl(),'Customer Portal QR');return}if(b.dataset.qr){const c=A.customerById(db(),b.dataset.qr);if(c)openQrModal(getPortalUrl()+'?phone='+A.phoneClean(c.phone),'QR for '+c.name);return}if(b.id==='backupNowBtn'){backupJson();return}if(b.id==='dismissReminderBtn'){localStorage.setItem(BACKUP_DISMISS_KEY,A.today());$('backupReminderBanner').style.display='none';return}if(b.dataset.pg&&b.dataset.pgDir){pgState[b.dataset.pg]=Math.max(1,(pgState[b.dataset.pg]||1)+Number(b.dataset.pgDir));renderAll();return}if(b.id==='smsSendNextBtn'){if(!smsReminderQueue.length)return;if(smsReminderIdx>=smsReminderQueue.length){toast('All SMS sent! Restarting.');smsReminderIdx=0;renderSmsReminderList();$('smsReminderCount').textContent=`${smsReminderQueue.length} customer${smsReminderQueue.length!==1?'s':''} with pending credit`;return}const sx=smsReminderQueue[smsReminderIdx];const dx=db();sendSms(sx.customer.phone,buildWaMsg($('smsTemplate').value,sx.customer.name,A.money(sx.balance),dx.settings.martName||'RD MART',customerPortalLink(sx.customer.phone)));smsReminderIdx++;renderSmsReminderList();$('smsReminderCount').textContent=smsReminderIdx>=smsReminderQueue.length?`All ${smsReminderQueue.length} sent! Click again to restart.`:`Sent ${smsReminderIdx} of ${smsReminderQueue.length} — click Send Next for more`;return}if('smsSend' in b.dataset){const si=Number(b.dataset.smsSend);const sx=smsReminderQueue[si];if(!sx)return;const dx=db();sendSms(sx.customer.phone,buildWaMsg($('smsTemplate').value,sx.customer.name,A.money(sx.balance),dx.settings.martName||'RD MART',customerPortalLink(sx.customer.phone)));if(smsReminderIdx<=si)smsReminderIdx=si+1;renderSmsReminderList();$('smsReminderCount').textContent=`Sent ${smsReminderIdx} of ${smsReminderQueue.length}`;return}if(b.dataset.sms){submitWrap(()=>{const d=db();const c=A.customerById(d,b.dataset.sms);const bal=A.customerBalance(d,c.id).balance;sendSms(c.phone,`Namaste ${c.name} ji, ${d.settings.martName} ma Rs. ${A.money(bal)} credit pending xa. Payment garnu hola.`)});return}if(b.id==='waSendNextBtn'){if(!waReminderQueue.length)return;if(waReminderIdx>=waReminderQueue.length){toast('All reminders sent! Restarting.');waReminderIdx=0;renderWaReminderList();$('waReminderCount').textContent=`${waReminderQueue.length} customer${waReminderQueue.length!==1?'s':''} with pending credit`;return}const wx=waReminderQueue[waReminderIdx];const dx=db();A.wa(wx.customer.phone,buildWaMsg($('waTemplate').value,wx.customer.name,A.money(wx.balance),dx.settings.martName||'RD MART',customerPortalLink(wx.customer.phone)));waReminderIdx++;renderWaReminderList();$('waReminderCount').textContent=waReminderIdx>=waReminderQueue.length?`All ${waReminderQueue.length} sent! Click again to restart.`:`Sent ${waReminderIdx} of ${waReminderQueue.length} — click Send Next for more`;return}if('waSend' in b.dataset){const wi=Number(b.dataset.waSend);const wx=waReminderQueue[wi];if(!wx)return;const dx=db();A.wa(wx.customer.phone,buildWaMsg($('waTemplate').value,wx.customer.name,A.money(wx.balance),dx.settings.martName||'RD MART',customerPortalLink(wx.customer.phone)));if(waReminderIdx<=wi)waReminderIdx=wi+1;renderWaReminderList();$('waReminderCount').textContent=`Sent ${waReminderIdx} of ${waReminderQueue.length}`;return}if(b.dataset.staffActive){asyncWrap(()=>A.setStaffActive(db(),b.dataset.staffActive,b.dataset.active==='true'));return}if(b.dataset.deleteStore){asyncWrap(async()=>{if(!confirm('Delete this store and all data inside this store?'))return;await A.deleteStore(db(),b.dataset.deleteStore);toast('Store deleted')});return}if(b.dataset.editStore){const stores=A.getStores?A.getStores():db().stores||[];const s=stores.find(x=>x.id===b.dataset.editStore);if(s){const f=$('editStoreForm');f.elements.id.value=s.id;f.elements.name.value=s.name;f.elements.phone.value=s.phone||'';openModal('editStoreModal')}return}if(b.dataset.editCustomer){const c=A.customerById(db(),b.dataset.editCustomer);if(c){const f=$('editCustomerForm');f.elements.id.value=c.id;f.elements.name.value=c.name;f.elements.phone.value=c.phone;f.elements.pin.value='';f.elements.email.value=c.email||'';f.elements.address.value=c.address||'';f.elements.notes.value=c.notes||'';if(f.elements.creditLimit)f.elements.creditLimit.value=c.creditLimit||0;openModal('editCustomerModal')}}if(b.dataset.pay){const c=A.customerById(db(),b.dataset.pay);if(c){const f=$('quickPayForm');f.elements.customerId.value=c.id;f.elements.customerName.value=c.name+' - '+c.phone;f.elements.amount.value='';f.elements.note.value='';openModal('quickPayModal')}}if(b.dataset.wa){submitWrap(()=>{const d=db();const c=A.customerById(d,b.dataset.wa);const bal=A.customerBalance(d,c.id).balance;A.wa(c.phone,`Namaste ${c.name} ji, your pending credit balance is ${A.money(bal)}.\n\nCheck your balance anytime: ${customerPortalLink(c.phone)}\nLogin with your phone number and the default PIN 1234 — please change your PIN after login.\n\nThank you! - ${d.settings.martName}`)})}if(isStaff()&&(b.dataset.deleteCustomer||b.dataset.deleteCredit||b.dataset.deleteDaily||b.dataset.deletePayment||b.dataset.deleteCheque))return toast('Staff cannot delete records','err');if(b.dataset.deleteCustomer){submitWrap(()=>{if(confirm('Delete this customer?'))A.deleteCustomer(db(),b.dataset.deleteCustomer)})}if(b.dataset.deleteCredit){submitWrap(()=>{if(confirm('Delete this credit record?'))A.deleteCredit(db(),b.dataset.deleteCredit)})}if(b.dataset.deleteDaily){submitWrap(()=>{if(confirm('Delete this daily entry?'))A.deleteDaily(db(),b.dataset.deleteDaily)})}if(b.dataset.deletePayment){submitWrap(()=>{if(confirm('Delete this payment?'))A.deletePartyPayment(db(),b.dataset.deletePayment)})}if(b.dataset.deleteCheque){openChequeTransition(b.dataset.deleteCheque,'cancelled','delete');return}if(b.dataset.editCheque){startEditCheque(b.dataset.editCheque);return}if(b.dataset.deleteParty){submitWrap(()=>{if(confirm('Delete this party account? Old records keep their name.'))A.deleteParty(db(),b.dataset.deleteParty)})}if(b.dataset.postpone){const ch=sdb().cheques.find(x=>x.id===b.dataset.postpone);if(ch){const f=$('postponeForm');f.elements.id.value=ch.id;f.elements.label.value=ch.party+' · No. '+ch.chequeNo+' · '+A.money(ch.amount)+' · now '+npDate(ch.chequeDate);f.elements.newDate.value='';f.elements.reason.value='';openModal('postponeModal')}return}if(b.dataset.chequeStatus){openChequeTransition(b.dataset.id,b.dataset.chequeStatus,'status');return}if(b.dataset.addMonthRent){submitWrap(()=>{const d=sdb();const bp=bsParts(A.today());const label='Rent - '+BS_MONTH_NAMES[Number(bp.month)-1]+' '+bp.year;const pref=bsKey(A.today()).slice(0,7);let added=0;for(let n=1;n<=4;n++){const c=roomCustomer(d,n);if(!c)continue;const rows=A.customerBalance(d,c.id).rows;if(rows.some(r=>/^rent/i.test(r.items||'')&&bsKey(r.date).startsWith(pref)))continue;const last=rows.filter(r=>/^rent/i.test(r.items||'')).sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0];if(!last)continue;A.addCredit(db(),{customerId:c.id,date:A.today(),amount:A.num(last.amount),items:label,note:'Monthly rent (auto)'});added++}if(!added)throw new Error('No rooms with a previous rent amount to copy');toast(label+' added for '+added+' room'+(added!==1?'s':''))});return}if(b.dataset.estimateCredit){submitWrap(()=>{const d=db();const est=(d.estimateBills||[]).find(x=>x.id===b.dataset.estimateCredit);if(!est)return;let c=est.phone?findCustomerByText(est.phone,true):null;if(!c||c==='AMBIGUOUS')c=findCustomerByText(est.customer,true);if(c==='AMBIGUOUS')throw new Error('More than one customer matches "'+est.customer+'" — check in Customers first');if(!c)throw new Error('No customer account for "'+est.customer+'". Add the customer first, then convert.');if(!confirm('Add credit of '+A.money(est.amount)+' to '+c.name+' from this estimate?'))return;A.addCredit(db(),{customerId:c.id,date:A.today(),amount:est.amount,items:est.items||('Estimate: '+est.customer),note:'From estimate bill'});A.updateEstimateStatus(db(),est.id,'approved');toast('Credit added to '+c.name+' — estimate marked approved')});return}if(b.dataset.queueDone){const q=(db().chequeQueue||[]).find(x=>x.id===b.dataset.queueDone);if(q&&confirm('Cheque written for '+q.party+'? This removes it from the queue.'))submitWrap(()=>{A.deleteChequeQueue(db(),q.id);toast('Removed from queue')});return}if(b.dataset.planDate){chqTab('write');const f=$('chequeForm');const inp=f.querySelector('[name="chequeDate"]');inp.value=bsKey(b.dataset.planDate);updateChequeDateHint();f.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>f.elements.chequeNo.focus(),350);toast('Cheque date set to '+npDate(b.dataset.planDate));return}if(b.dataset.queueWrite){const q=(db().chequeQueue||[]).find(x=>x.id===b.dataset.queueWrite);if(!q)return;if(currentPage!=='cheques')nav('cheques');chqTab('write');const f=$('chequeForm');f.elements.party.value=q.party;if(A.num(q.amount)>0)f.elements.amount.value=A.num(q.amount);const adv=f.querySelector('.cheque-advanced');if(adv&&q.party)adv.open=true;chequeQueuePrefill={id:q.id};f.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>f.elements.chequeNo.focus(),350);toast('Party filled — enter cheque number and save');return}});
 $('customerForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.addCustomer(db(),formData(e.target));e.target.reset();toast('Customer saved. Customer can login now.')})});
 $('editCustomerForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{const data=formData(e.target);A.updateCustomer(db(),data.id,data);closeModal('editCustomerModal');toast('Customer updated')})});
 $('creditForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{const data=formData(e.target);const c=resolveCustomerOrThrow(data.customerName);A.addCredit(db(),{...data,customerId:c.id});e.target.reset();toast('Credit saved for '+c.name)})});
@@ -1651,14 +1661,20 @@ document.querySelector('#dailyForm [name="date"]')?.addEventListener('input',upd
 document.addEventListener('reset',()=>setTimeout(setTodayInputs,0));
 $('clearCreditDateFilter')?.addEventListener('click',()=>{$('creditDateFrom').value='';$('creditDateTo').value='';syncDateButtons();pgState.creditHistory=1;renderAll()});
 $('clearDailyDateFilter')?.addEventListener('click',()=>{$('dailyDateFrom').value='';$('dailyDateTo').value='';if($('dailySearch'))$('dailySearch').value='';if($('dailyMethodFilter'))$('dailyMethodFilter').value='';syncDateButtons();pgState.daily=1;renderAll()});
-$('clearChequeDateFilter')?.addEventListener('click',()=>{['chequeSearch','chequeDateFrom','chequeDateTo','chequeAmountMin','chequeAmountMax'].forEach(id=>{if($(id))$(id).value=''});['chequeStatusFilter','chequeDirectionFilter','chequeBankFilter'].forEach(id=>{if($(id))$(id).value=''});if($('chequePeriodFilter'))$('chequePeriodFilter').value='all';chequeView='action';chequeSelected=new Set();syncDateButtons();pgState.cheques=1;renderAll()});
+/* "Reset" inside the Filters popover only clears the advanced fields it
+   contains - the search box, active view chip and any row selection are
+   separate controls now and are left alone (matches how every other
+   Reset/Clear button in this app scopes itself to its own filter group). */
+$('clearChequeDateFilter')?.addEventListener('click',()=>{['chequeDateFrom','chequeDateTo','chequeAmountMin','chequeAmountMax'].forEach(id=>{if($(id))$(id).value=''});['chequeStatusFilter','chequeDirectionFilter','chequeBankFilter','chequeAssignedFilter'].forEach(id=>{if($(id))$(id).value=''});syncDateButtons();pgState.cheques=1;renderAll()});
+$('applyChequeFiltersBtn')?.addEventListener('click',()=>{$('chequeFiltersPanel').hidden=true;$('chequeFiltersBtn')?.setAttribute('aria-expanded','false')});
+$('chequeFilterPills')?.addEventListener('click',e=>{const b=e.target.closest('[data-clear-chq-filter]');if(!b)return;clearChequeFilterField(b.dataset.clearChqFilter)});
 $('chequeStatusFilter')?.addEventListener('change',()=>{pgState.cheques=1;renderAll()});
 $('chequeSort')?.addEventListener('change',()=>{chequeSort=$('chequeSort').value;pgState.cheques=1;renderCheques()});
-$('chequePeriodFilter')?.addEventListener('change',()=>{pgState.cheques=1;renderAll()});
-['chequeDirectionFilter','chequeBankFilter'].forEach(id=>$(id)?.addEventListener('change',()=>{pgState.cheques=1;renderAll()}));
+['chequeDirectionFilter','chequeBankFilter','chequeAssignedFilter'].forEach(id=>$(id)?.addEventListener('change',()=>{pgState.cheques=1;renderAll()}));
 ['chequeAmountMin','chequeAmountMax'].forEach(id=>$(id)?.addEventListener('input',()=>{pgState.cheques=1;renderAll()}));
 /* Smart-view chips, row selection and bulk actions. */
 $('chequeSmartViews')?.addEventListener('click',e=>{const b=e.target.closest('[data-cheque-view]');if(!b)return;chequeView=b.dataset.chequeView;pgState.cheques=1;renderAll()});
+document.addEventListener('keydown',e=>{if(e.key!=='/'||e.ctrlKey||e.metaKey||e.altKey)return;const tag=(e.target.tagName||'').toLowerCase();if(tag==='input'||tag==='textarea'||tag==='select'||e.target.isContentEditable)return;if(currentPage!=='cheques'||!$('chq-records')||$('chq-records').hidden)return;e.preventDefault();$('chequeSearch')?.focus()});
 $('selectAllCheques')?.addEventListener('change',e=>{const pageIds=chequeFilteredCache.slice((pgState.cheques-1)*PER_PAGE,pgState.cheques*PER_PAGE).map(x=>x.id);if(e.target.checked)pageIds.forEach(id=>chequeSelected.add(id));else pageIds.forEach(id=>chequeSelected.delete(id));renderCheques()});
 document.addEventListener('change',e=>{const cb=e.target.closest('[data-cheque-select]');if(!cb)return;if(cb.checked)chequeSelected.add(cb.dataset.chequeSelect);else chequeSelected.delete(cb.dataset.chequeSelect);renderChequeBulkBar();const sa=$('selectAllCheques');if(sa){const pageItems=chequeFilteredCache.slice((pgState.cheques-1)*PER_PAGE,pgState.cheques*PER_PAGE);sa.checked=pageItems.length>0&&pageItems.every(x=>chequeSelected.has(x.id))}});
 $('chequeBulkBar')?.addEventListener('click',e=>{const b=e.target.closest('[data-bulk-cheque]');if(!b)return;const ids=[...chequeSelected];if(!ids.length)return toast('Select at least one cheque first','err');if(b.dataset.bulkCheque==='export'){const rows=chequeFilteredCache.filter(x=>ids.includes(x.id));const csv=CQ.serializeCsv(rows,{includeBom:true,today:A.today(),columns:['party','direction','bank','chequeNo','amount','issueDate','dueDate','bsDate','status','riskLevel','assignedTo','nextActionAt','attachment','note']});A.download('cheques-selected.csv',csv);toast(`Exported ${rows.length} selected cheque${rows.length!==1?'s':''}`)}else{toast('Open a cheque from the list to assign an owner or schedule a follow-up.','ok')}});
@@ -1699,8 +1715,9 @@ function renderChequeDrawer(id){
   const nf=$('chequeNoteForm');if(nf)nf.dataset.id=id;const ff=$('chequeFollowupForm');if(ff)ff.dataset.id=id;
 }
 $('chequeNoteForm')?.addEventListener('submit',e=>{e.preventDefault();const id=e.target.dataset.id;submitWrap(()=>{A.addChequeNote(db(),id,formData(e.target).note);e.target.reset();if(chequeDrawerId===id)renderChequeDrawer(id);toast('Note added')})});
-$('chequeFollowupForm')?.addEventListener('submit',e=>{e.preventDefault();const id=e.target.dataset.id,data=formData(e.target);submitWrap(()=>{A.scheduleChequeFollowUp(db(),id,{date:data.date?adFromBsKey(data.date):'',note:data.note});e.target.reset();if(chequeDrawerId===id)renderChequeDrawer(id);toast('Follow-up scheduled')})});
-$('editChequeBtn')?.addEventListener('click',()=>{const id=chequeDrawerId,ch=sdb().cheques.find(x=>x.id===id);if(!ch)return;closeModal('chequeDrawer');chqTab('write');const f=$('chequeForm');f.elements.party.value=ch.party||'';f.elements.chequeNo.value=ch.chequeNo||'';f.elements.amount.value=ch.amount||'';if(f.elements.bank)f.elements.bank.value=ch.bank||'';if(f.elements.direction)f.elements.direction.value=ch.direction==='unspecified'?'unknown':(ch.direction||'');f.scrollIntoView({behavior:'smooth',block:'start'});toast('Editing creates a new record; the original stays in history. Adjust details and save.','ok')});
+$('chequeFollowupForm')?.addEventListener('submit',e=>{e.preventDefault();const id=e.target.dataset.id,data=formData(e.target);submitWrap(()=>{A.scheduleChequeFollowUp(db(),id,{date:data.date,note:data.note});e.target.reset();if(chequeDrawerId===id)renderChequeDrawer(id);toast('Follow-up scheduled')})});
+function startEditCheque(id){const ch=sdb().cheques.find(x=>x.id===id);if(!ch)return;closeModal('chequeDrawer');chqTab('write');const f=$('chequeForm');f.elements.chequeNo.value=ch.chequeNo||'';f.elements.amount.value=ch.amount||'';if(f.elements.party)f.elements.party.value=ch.party||'';if(f.elements.bank)f.elements.bank.value=ch.bank||'';if(f.elements.direction)f.elements.direction.value=['incoming','outgoing'].includes(ch.direction)?ch.direction:'';const adv=f.querySelector('.cheque-advanced');if(adv&&(ch.party||ch.bank||ch.direction&&ch.direction!=='unspecified'))adv.open=true;f.scrollIntoView({behavior:'smooth',block:'start'});toast('Editing creates a new record; the original stays in history. Adjust details and save.','ok')}
+$('editChequeBtn')?.addEventListener('click',()=>startEditCheque(chequeDrawerId));
 $('explainRiskBtn')?.addEventListener('click',()=>{const ch=sdb().cheques.find(x=>x.id===chequeDrawerId);if(!ch)return;const item=CQ.normalizeRecord(ch,{today:A.today()});toast(item.riskLevel?`Risk ${item.riskLevel}${item.riskScore!=null?' (score '+item.riskScore+')':''}. ${(item.riskFactors||[]).join('; ')||'Deterministic factors only.'}`:'No risk score yet. Enable the intelligence layer to score risk deterministically.','ok')});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cheque-detail]');if(!b)return;openChequeDetail(b.dataset.chequeDetail)});
 /* Smart Insights: deterministic priority queue, risk transparency, cash-flow
@@ -1844,12 +1861,13 @@ MartAI.ready.then(async()=>{
       else if(e.key==='Escape'){setOpen(false);btn.focus()}
     });
     menu.addEventListener('click',e=>{if(e.target.closest('.menu-item,.notification-item,[data-page]'))setOpen(false)});
-    document.addEventListener('click',e=>{if(!menu.hidden&&!menu.contains(e.target)&&e.target!==btn&&!btn.contains(e.target))setOpen(false)});
+    document.addEventListener('click',e=>{if(!menu.hidden&&!menu.contains(e.target)&&e.target!==btn&&!btn.contains(e.target)&&!e.target.closest('#bspWrap'))setOpen(false)});
     return{setOpen};
   }
   dropdown('quickAddBtn','quickAddMenu');
   dropdown('notificationBtn','notificationMenu');
   dropdown('userMenuBtn','userMenu');
+  dropdown('chequeFiltersBtn','chequeFiltersPanel');
 
   /* Table row overflow menus: only one open, close on outside click or after an action */
   document.addEventListener('click',e=>{

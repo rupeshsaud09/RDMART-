@@ -828,16 +828,13 @@ tr:hover td{background:var(--surface-2)}
 
 /* ---------- 19. CHEQUE BANKING WORKFLOW ---------- */
 .bank-calendar-note{
-  display:flex;align-items:center;gap:12px;padding:12px 14px;margin-top:2px;
-  border:1px solid color-mix(in srgb,var(--brand) 34%,var(--line));border-radius:var(--radius);
-  background:linear-gradient(110deg,var(--brand-soft),var(--surface));color:var(--text-2);
+  display:flex;align-items:center;gap:9px;padding:8px 13px;margin-top:2px;
+  border:1px solid color-mix(in srgb,var(--brand) 20%,var(--line));border-radius:10px;
+  background:color-mix(in srgb,var(--brand-soft) 46%,var(--surface));color:var(--text-2);
 }
-.bank-calendar-icon{
-  width:34px;height:34px;display:grid;place-items:center;flex:none;border-radius:10px;
-  background:var(--brand);color:#fff;font-size:13px;font-weight:800;
-}
-.bank-calendar-note b{display:block;color:var(--text);font-size:13px}
-.bank-calendar-note span:not(.bank-calendar-icon){display:block;margin-top:1px;font-size:12px;line-height:1.5}
+.bank-calendar-icon{flex:none;color:var(--green-strong,var(--brand));font-size:13px;font-weight:800}
+.bank-calendar-note .bank-calendar-text{flex:1;min-width:0;font-size:11.5px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bank-calendar-note .bank-calendar-state{flex:none;display:block;margin:0;padding:3px 9px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--brand-soft-text);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;line-height:1.4;white-space:nowrap}
 .banking-summary-line{
   display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;padding:10px 12px;margin-bottom:10px;
   border:1px solid color-mix(in srgb,var(--brand) 30%,var(--line));border-radius:10px;background:var(--brand-soft);
@@ -865,7 +862,6 @@ tr:hover td{background:var(--surface-2)}
 .cheque-planner-table td{vertical-align:middle}
 
 @media(max-width:700px){
-  .bank-calendar-note{align-items:flex-start}
   .cheque-record-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .banking-summary-line{align-items:flex-start;flex-direction:column;gap:4px}
 }
@@ -1016,16 +1012,12 @@ button.metric:hover .metric-open{color:var(--brand);border-color:color-mix(in sr
 .cheque-page-head .page-title{font-size:25px;letter-spacing:-.65px;margin-top:2px}
 .cheque-page-head .page-sub{font-size:13px;margin-top:5px}
 .cheque-page-head .section-head-actions{flex-wrap:nowrap}
-.bank-calendar-note{position:relative;padding:14px 16px;border-radius:15px;margin:0;background:color-mix(in srgb,var(--brand-soft) 58%,var(--surface));box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
-.bank-calendar-icon{width:40px;height:40px;border-radius:12px;box-shadow:0 7px 17px color-mix(in srgb,var(--brand) 20%,transparent)}
-.bank-calendar-icon svg{width:20px;height:20px}
-.bank-calendar-state{margin:0 0 0 auto!important;padding:5px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--brand-soft-text)!important;font-size:10.5px!important;font-weight:750;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
-.cheque-metric-grid{gap:14px;margin-top:14px}
-.cheque-metric-grid .metric{min-height:126px;padding:18px 19px;border-radius:15px;box-shadow:none}
-.cheque-metric-grid .metric::before{content:"";position:absolute;left:18px;right:18px;top:0;height:3px;border-radius:0 0 3px 3px;background:var(--m)}
-.cheque-metric-grid .metric-label{padding-top:4px;text-transform:uppercase;letter-spacing:.05em;font-size:11px}
+.cheque-metric-grid{gap:12px;margin-top:12px}
+.cheque-metric-grid .metric{min-height:88px;padding:13px 15px;border-radius:13px;box-shadow:none}
+.cheque-metric-grid .metric::before{content:"";position:absolute;left:15px;right:15px;top:0;height:3px;border-radius:0 0 3px 3px;background:var(--m)}
+.cheque-metric-grid .metric-label{padding-top:2px;text-transform:uppercase;letter-spacing:.05em;font-size:10.5px}
 .cheque-metric-grid .metric-label::before{display:none}
-.cheque-metric-grid .metric-value{font-size:25px;margin-top:9px}
+.cheque-metric-grid .metric-value{font-size:20px;margin-top:6px}
 .cheque-tabs{display:flex;align-items:center;gap:6px;margin-top:18px;padding:5px;width:max-content;max-width:100%;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:var(--shadow-sm);overflow-x:auto}
 .cheque-tabs .btn{position:relative;min-height:40px;padding:8px 14px;border:0;box-shadow:none}
 .cheque-tabs .btn-soft{background:transparent;color:var(--muted)}
@@ -1052,11 +1044,19 @@ button.metric:hover .metric-open{color:var(--brand);border-color:color-mix(in sr
 .amount-input-wrap>span{position:absolute;left:13px;top:50%;z-index:1;transform:translateY(-50%);padding-right:10px;border-right:1px solid var(--line);color:var(--muted);font-size:12px;font-weight:750}
 .amount-input-wrap .input{padding-left:54px;font-weight:680;font-variant-numeric:tabular-nums}
 .cheque-form-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px;padding-top:17px;border-top:1px solid var(--line)}
-.cheque-form-footer>span{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11.5px}
 .cheque-save-btn{min-width:166px}
+.cheque-quick-row{display:flex;gap:14px}
+.cheque-quick-row .field{flex:1;min-width:0;margin-bottom:0}
+.cheque-advanced{margin-top:16px}
+.cheque-advanced>summary{display:flex;align-items:center;gap:6px;list-style:none;cursor:pointer;padding:9px 1px;color:var(--muted);font-size:12px;font-weight:650;user-select:none}
+.cheque-advanced>summary::-webkit-details-marker{display:none}
+.cheque-advanced>summary::before{content:"\25B8";display:inline-block;font-size:10px;transition:transform .18s ease}
+.cheque-advanced[open]>summary::before{transform:rotate(90deg)}
+.cheque-advanced>summary:hover{color:var(--text)}
+.cheque-advanced-body{padding-top:8px}
+.cheque-advanced-body .cheque-form-section:first-child{margin-top:0;padding-top:0;border-top:0}
 .cheque-queue-form{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:13px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2)}
 .cheque-queue-form .input{background:var(--surface)}
-#chq-records .filter-strip{border-radius:14px;background:var(--surface-2)}
 #chq-records .table-wrap,#chq-planner .table-wrap{border-radius:13px;border:1px solid var(--line)}
 #chq-records .table-wrap table,#chq-planner .table-wrap table{border-collapse:separate;border-spacing:0}
 #chq-records thead th,#chq-planner thead th{position:sticky;top:0;z-index:1;background:var(--surface-2);font-size:10.5px;text-transform:uppercase;letter-spacing:.045em}
@@ -1066,22 +1066,16 @@ button.metric:hover .metric-open{color:var(--brand);border-color:color-mix(in sr
 
 body[data-theme="dark"] .dashboard-hero{background-image:linear-gradient(125deg,#1E1B4B 0%,#3730A3 40%,#1D4ED8 68%,#3730A3 100%)}
 body[data-theme="dark"] .dashboard-health-grid .dashboard-insight{background:color-mix(in srgb,var(--surface) 88%,var(--brand-soft))}
-body[data-theme="dark"] .bank-calendar-note{box-shadow:none}
 
 @media(max-width:1280px){
   .content{padding:24px}
   .dashboard-hero{min-height:210px}
-  .cheque-compose-layout{grid-template-columns:260px minmax(0,1fr)}
 }
 
 @media(max-width:1040px){
   .topbar{padding:9px 18px}
   .content{padding:20px}
   .dashboard-hero{padding:26px}
-  .cheque-compose-layout{grid-template-columns:1fr}
-  .cheque-compose-guide{min-height:auto;display:grid;grid-template-columns:auto 1fr;gap:18px;padding:22px}
-  .cheque-guide-icon{margin:0}
-  .cheque-guide-steps{grid-column:1/-1;grid-template-columns:repeat(3,1fr);padding-top:5px}
 }
 
 @media(max-width:760px){
@@ -1102,12 +1096,9 @@ body[data-theme="dark"] .bank-calendar-note{box-shadow:none}
   .bank-calendar-state{display:none!important}
   .cheque-tabs{width:100%;padding:4px}
   .cheque-tabs .btn{flex:0 0 auto;padding:8px 12px;min-height:42px}
-  .cheque-compose-guide{display:block;padding:20px}
-  .cheque-guide-icon{margin-bottom:20px}
-  .cheque-guide-steps{grid-template-columns:1fr;margin-top:22px;padding:0}
   .cheque-form-card{padding:19px 17px}
   .cheque-form-footer{align-items:stretch;flex-direction:column}
-  .cheque-form-footer>span{align-items:flex-start}
+  .cheque-quick-row{flex-direction:column;gap:13px}
   .cheque-save-btn{width:100%;min-width:0}
   .cheque-queue-form{display:grid;grid-template-columns:1fr;padding:10px}
   .cheque-queue-form .input,.cheque-queue-form .btn{min-width:0!important;width:100%}
@@ -1123,8 +1114,6 @@ body[data-theme="dark"] .bank-calendar-note{box-shadow:none}
   .cheque-tabs .btn span:not(.cheque-tab-count){display:none}
   .cheque-tabs .btn{flex:1;justify-content:center;padding:8px 11px}
   .cheque-tab-count:not(:empty){position:absolute;margin:0 0 25px 22px}
-  .bank-calendar-note{padding:12px}
-  .bank-calendar-icon{width:36px;height:36px}
 }
 
 @media(max-width:1180px){
@@ -1156,7 +1145,6 @@ body[data-theme="dark"] .bank-calendar-note{box-shadow:none}
 
 /* Advanced cheque workspace */
 .cheque-upload-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
-.cheque-save-actions{display:flex;align-items:center;justify-content:flex-end;gap:13px;flex-wrap:wrap}
 .save-another,.confirmation-check{display:flex;align-items:flex-start;gap:8px;color:var(--text-2);font-size:11.5px;font-weight:600;cursor:pointer}
 .save-another input,.confirmation-check input{width:17px;height:17px;margin-top:1px;accent-color:var(--brand)}
 .cheque-smart-views{display:flex;gap:6px;margin-bottom:12px;padding-bottom:4px;overflow-x:auto;scrollbar-width:thin}
@@ -1165,21 +1153,31 @@ body[data-theme="dark"] .bank-calendar-note{box-shadow:none}
 .cheque-view-chip.active{border-color:color-mix(in srgb,var(--brand) 38%,var(--line));background:var(--brand-soft);color:var(--brand-soft-text)}
 .cheque-view-chip span{display:grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--surface-3);font-size:9.5px}
 .cheque-view-chip.active span{background:color-mix(in srgb,var(--brand) 14%,var(--surface))}
-#chq-records .filter-strip{display:grid;grid-template-columns:minmax(190px,1.5fr) repeat(4,minmax(125px,.8fr));gap:9px;align-items:end}
-#chq-records .filter-vdivider,#chq-records .filter-arrow{display:none}
-#chq-records .filter-search-wrap{min-width:0}
-#chq-records .filter-field-wrap{min-width:0}
-#chq-records .filter-clear-wrap{align-self:end}
 .cheque-view-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;flex-wrap:wrap}
-.saved-view-group,.bulk-action-bar{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.saved-view-group>span{color:var(--muted);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-.saved-view-group .select{width:190px;height:34px;font-size:11.5px}
-.cheque-tools-left{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.bulk-action-bar{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.bulk-action-bar[hidden]{display:none}
+.cheque-tools-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .cheque-sort-group{display:flex;align-items:center;gap:8px}
 .cheque-sort-group>span{color:var(--muted);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
-.cheque-sort-group .select{width:220px;height:34px;font-size:11.5px}
+.cheque-sort-group .select{width:190px;height:34px;font-size:11.5px}
 .bulk-action-bar{padding:5px 7px;border:1px solid color-mix(in srgb,var(--brand) 28%,var(--line));border-radius:10px;background:var(--brand-soft)}
 .bulk-action-bar b{padding:0 5px;color:var(--brand-soft-text);font-size:11.5px}
+.filters-count:not([hidden]){display:inline-grid;place-items:center;min-width:17px;height:17px;margin-left:4px;padding:0 5px;border-radius:999px;background:var(--brand);color:#fff;font-size:9.5px;font-weight:800}
+.cheque-filters-panel{left:0;right:auto;width:min(440px,calc(100vw - 24px));padding:14px}
+.cheque-filters-panel .form-grid{gap:10px 12px}
+.cheque-filters-panel .field{margin-bottom:0}
+.cheque-filters-panel .field label{font-size:11px;color:var(--muted);margin-bottom:4px;display:block}
+.cheque-filter-daterange{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.cheque-filter-daterange .date-field{flex:1}
+.cheque-filters-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.filter-pills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.filter-pills[hidden]{display:none}
+.filter-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid color-mix(in srgb,var(--brand) 30%,var(--line));border-radius:999px;background:var(--brand-soft);color:var(--brand-soft-text);font-size:11px;font-weight:600;cursor:pointer}
+.filter-pill:hover{background:color-mix(in srgb,var(--brand-soft) 70%,var(--surface-3))}
+.filter-pill span{opacity:.75;font-weight:800}
+.cheque-results-summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;font-size:12px;color:var(--text-2)}
+.cheque-results-summary .results-sep{color:var(--faint)}
+.cheque-results-summary b{color:var(--text);font-weight:700}
 .cheque-table{min-width:1180px}
 .cheque-table td{vertical-align:middle}
 .cheque-table input[type="checkbox"]{width:16px;height:16px;accent-color:var(--brand)}
@@ -1221,10 +1219,10 @@ body[data-theme="dark"] .bank-calendar-note{box-shadow:none}
 .cheque-party-link:hover{text-decoration:underline}
 .cheque-party-link:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
 
-@media(max-width:1300px){#chq-records .filter-strip{grid-template-columns:repeat(3,minmax(0,1fr))}.filter-search-wrap{grid-column:span 2}}
 @media(max-width:760px){
-  .cheque-upload-row{grid-template-columns:1fr}.cheque-save-actions{align-items:stretch;flex-direction:column}.save-another{min-height:36px;align-items:center}.cheque-save-btn{width:100%}
-  #chq-records .filter-strip{grid-template-columns:1fr 1fr}.filter-search-wrap{grid-column:1/-1}.cheque-view-tools{align-items:stretch;flex-direction:column}.saved-view-group,.bulk-action-bar{width:100%}.saved-view-group .select{flex:1;min-width:0}.cheque-tools-left{width:100%;flex-direction:column;align-items:stretch;gap:10px}.cheque-sort-group{width:100%}.cheque-sort-group .select{flex:1;width:auto;min-width:0}
+  .cheque-upload-row{grid-template-columns:1fr}.save-another{min-height:36px;align-items:center}.cheque-save-btn{width:100%}
+  .cheque-view-tools{align-items:stretch;flex-direction:column}.bulk-action-bar{width:100%}.cheque-tools-left{width:100%;flex-direction:column;align-items:stretch;gap:10px}.cheque-sort-group{width:100%}.cheque-sort-group .select{flex:1;width:auto;min-width:0}
+  .cheque-filters-panel{position:absolute!important;left:0;right:auto;top:calc(100% + 6px);bottom:auto;width:min(340px,calc(100vw - 24px))}.cheque-filters-panel .form-grid{grid-template-columns:1fr}
   .cheque-table-wrap{display:none}.cheque-card-list{display:grid;gap:9px}.cheque-mobile-card{display:grid;gap:10px;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.cheque-mobile-head,.cheque-mobile-meta,.cheque-mobile-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}.cheque-mobile-head b{font-size:13px}.cheque-mobile-meta{align-items:flex-start;color:var(--muted);font-size:10.5px}.cheque-mobile-actions{justify-content:flex-start;flex-wrap:wrap}
   .cheque-drawer{width:100%}.drawer-header{padding:16px}.drawer-content{padding:12px}.drawer-status-strip{padding:9px 14px}.drawer-split{grid-template-columns:1fr}.drawer-actions{padding:10px 12px}.cheque-detail-grid{grid-template-columns:1fr 1fr}
 }
