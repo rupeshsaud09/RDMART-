@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Staff · RD MART</title>
-<meta name="theme-color" content="#0f766e">
+<meta name="theme-color" content="#0b1220">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=20">
-<link rel="stylesheet" href="assets/staff.css?v=4">
+<link rel="stylesheet" href="assets/martai.css?v=27">
+<link rel="stylesheet" href="assets/staff.css?v=6">
 </head>
 <body class="staff-page">
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;})();</script>
@@ -215,11 +215,15 @@ function npDateTime(v){if(!v)return'-';try{const d=new Date(v);return npDate(loc
 
 /* ---------- data helpers ---------- */
 function db(){return A.getDB()}
-function sdb(){const d=A.getDB();const sid=A.getActiveStoreId?.();if(!sid)return{...d,dailySales:[]};const isDefault=sid==='default';const sf=arr=>(arr||[]).filter(x=>x.storeId===sid||(isDefault&&!x.storeId));return{...d,customers:sf(d.customers),credits:sf(d.credits),tasks:sf(d.tasks),dailySales:[]}}
+let staffDataRevision=0,staffDbMemo={revision:-1,raw:null,storeId:'',value:null},staffBalanceMemo={revision:-1,storeId:'',rows:[],byId:new Map()};
+function invalidateStaffData(){staffDataRevision++;staffDbMemo={revision:-1,raw:null,storeId:'',value:null};staffBalanceMemo={revision:-1,storeId:'',rows:[],byId:new Map()}}
+function staffStoreId(){return String(A.getActiveStoreId?.()||'default')}
+function sdb(){const d=A.getDB(),sid=staffStoreId();if(staffDbMemo.revision===staffDataRevision&&staffDbMemo.raw===d&&staffDbMemo.storeId===sid)return staffDbMemo.value;const isDefault=sid==='default',sf=arr=>(arr||[]).filter(x=>x.storeId===sid||(isDefault&&!x.storeId)),value={...d,customers:sf(d.customers),credits:sf(d.credits),tasks:sf(d.tasks),dailySales:[]};staffDbMemo={revision:staffDataRevision,raw:d,storeId:sid,value};return value}
 const myEmail=String(session.email||'').toLowerCase();
 const myName=(session.name||myEmail.split('@')[0]||'Staff').replace(/^\w/,c=>c.toUpperCase());
 function isMine(t){return !t.assignedToEmail||t.assignedToEmail===myEmail}
-function balances(d){return d.customers.map(c=>({c,...A.customerBalance(d,c.id)}))}
+function balances(d){const storeId=staffStoreId();if(staffBalanceMemo.revision===staffDataRevision&&staffBalanceMemo.storeId===storeId)return staffBalanceMemo.rows;const grouped=new Map();(d.credits||[]).forEach(row=>{let item=grouped.get(row.customerId);if(!item){item={taken:0,paid:0,rows:[]};grouped.set(row.customerId,item)}item.taken+=A.num(row.amount);item.paid+=A.num(row.paid);item.rows.push(row)});const rows=(d.customers||[]).map(c=>{const item=grouped.get(c.id)||{taken:0,paid:0,rows:[]};return{c,taken:item.taken,paid:item.paid,balance:Math.max(0,item.taken-item.paid),rows:item.rows}}),byId=new Map(rows.map(item=>[item.c.id,item]));staffBalanceMemo={revision:staffDataRevision,storeId,rows,byId};return rows}
+function staffBalance(d,customerId){balances(d);return staffBalanceMemo.byId.get(customerId)||{taken:0,paid:0,balance:0,rows:[]}}
 
 /* ---------- ui helpers ---------- */
 function toast(msg,type='ok'){if(UI)return UI.toast(msg,{type:type==='err'?'error':type,container:'#toasts',duration:2600});const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;el.setAttribute('role',type==='err'?'alert':'status');$('toasts').appendChild(el);setTimeout(()=>el.remove(),2600)}
@@ -229,7 +233,7 @@ function countUp(el,to,fmt){const from=Number(lastVals[el.id]||0);lastVals[el.id
 function metricEl(id,label,color){return `<div class="stf-metric stf-anim stf-tilt" style="--m:${color};--i:${id.length%4}"><b id="${id}">0</b><span>${label}</span></div>`}
 function hueOf(name){let h=0;for(const ch of String(name))h=(h*31+ch.charCodeAt(0))%360;return h}
 function ava(name,cls=''){return `<div class="stf-ava ${cls}" style="--h:${hueOf(name)}">${A.esc(String(name||'?').trim().charAt(0).toUpperCase()||'?')}</div>`}
-function submitWrap(fn){try{fn();renderAll();setTimeout(updateSyncChip,500)}catch(e){toast(e.message,'err')}}
+function submitWrap(fn){try{fn();invalidateStaffData();renderAll();setTimeout(updateSyncChip,500)}catch(e){toast(e.message,'err')}}
 
 /* ---------- sheets ---------- */
 let openSheetId=null;
@@ -370,12 +374,13 @@ document.addEventListener('pointerdown',e=>{if(REDUCED)return;const h=e.target.c
 
 /* ---------- customer picker (credit + payment sheets) ---------- */
 function initPicker(prefix){const search=$(prefix+'Search'),results=$(prefix+'Results'),sel=$(prefix+'Selected'),hid=$(prefix+'CustomerId');
-  function choose(id){const d=sdb();const c=d.customers.find(x=>x.id===id);if(!c)return;hid.value=c.id;$(prefix+'SelName').textContent=c.name;const b=A.customerBalance(d,c.id).balance;$(prefix+'SelBal').textContent=b>0?'Due '+A.money(b):'No dues';sel.classList.add('show');search.style.display='none';results.classList.remove('show')}
+  function choose(id){const d=sdb();const c=d.customers.find(x=>x.id===id);if(!c)return;hid.value=c.id;$(prefix+'SelName').textContent=c.name;const b=staffBalance(d,c.id).balance;$(prefix+'SelBal').textContent=b>0?'Due '+A.money(b):'No dues';sel.classList.add('show');search.style.display='none';results.classList.remove('show')}
   function clear(){hid.value='';sel.classList.remove('show');search.style.display='';search.value='';results.classList.remove('show')}
-  search.addEventListener('input',()=>{const q=search.value.toLowerCase().trim();if(q.length<1){results.classList.remove('show');return}
+  const searchCustomers=()=>{const q=search.value.toLowerCase().trim();if(q.length<1){results.classList.remove('show');return}
     const d=sdb();const hits=d.customers.filter(c=>(c.name+' '+c.phone).toLowerCase().includes(q)).slice(0,6);
-    results.innerHTML=hits.length?hits.map(c=>{const b=A.customerBalance(d,c.id).balance;return `<button type="button" data-pick="${A.esc(c.id)}"><span><b>${A.esc(c.name)}</b> <span class="small">${A.esc(c.phone||'')}</span></span><span class="small">${b>0?A.money(b):'Clear'}</span></button>`}).join(''):'<button type="button" disabled><span class="small">No match found</span></button>';
-    results.classList.add('show')});
+    results.innerHTML=hits.length?hits.map(c=>{const b=staffBalance(d,c.id).balance;return `<button type="button" data-pick="${A.esc(c.id)}"><span><b>${A.esc(c.name)}</b> <span class="small">${A.esc(c.phone||'')}</span></span><span class="small">${b>0?A.money(b):'Clear'}</span></button>`}).join(''):'<button type="button" disabled><span class="small">No match found</span></button>';
+    results.classList.add('show')};
+  search.addEventListener('input',UI?UI.debounce(searchCustomers,100):searchCustomers);
   results.addEventListener('click',e=>{const b=e.target.closest('[data-pick]');if(b)choose(b.dataset.pick)});
   return{choose,clear}}
 const crPicker=initPicker('cr'),pmPicker=initPicker('pm');
@@ -447,7 +452,7 @@ $('taskList').addEventListener('click',e=>{const b=e.target.closest('[data-task-
 $('addCustBtn').addEventListener('click',()=>openSheet('sheetCust'));
 $('openCreditBtn').addEventListener('click',()=>{crPicker.clear();openSheet('sheetCredit')});
 $('openPayBtn').addEventListener('click',()=>{pmPicker.clear();openSheet('sheetPay')});
-$('custSearch').addEventListener('input',()=>renderCustomers());
+$('custSearch').addEventListener('input',UI?UI.debounce(()=>renderCustomers(),120):(()=>renderCustomers()));
 $('themeBtn').addEventListener('click',()=>{const t=document.body.dataset.theme==='dark'?'light':'dark';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;localStorage.setItem('martai_dashboard_theme',t)});
 $('logoutBtn').addEventListener('click',()=>{A.clearSession().finally(()=>location.replace('index.html'))});
 
@@ -455,7 +460,7 @@ $('logoutBtn').addEventListener('click',()=>{A.clearSession().finally(()=>locati
 (async()=>{try{await A.ready}catch(e){}
   session=A.getSession()||session;if(!guard())return;
   const h=location.hash.slice(1);if(['customers','khata','daily'].includes(h)){setTab(h)}else renderAll();
-  A.onDataChange(()=>{renderAll();toast('Updated from another device')});
+  A.onDataChange(()=>{invalidateStaffData();renderAll();toast('Updated from another device')});
   try{A.startRealtime()}catch(e){}
   setInterval(updateSyncChip,5000);
 })();

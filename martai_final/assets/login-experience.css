@@ -48,3 +48,112 @@ body.login-page{--login-ink:#f8fafc;--login-muted:#98a7bd;--login-border:rgba(25
 .login-page .pw-toggle.showing{color:var(--login-cyan);background:rgba(54,214,198,.08)}
 @keyframes authSpin{to{transform:rotate(360deg)}}@keyframes authPulse{50%{opacity:.3;transform:scale(.72)}}
 @media(max-width:430px){.login-panel-head{display:block}.auth-status{width:max-content;margin-top:12px}}
+
+/* KHATA PANA professional accounting sign-in */
+body.login-page{--login-ink:#111827;--login-muted:#64748b;--login-border:#e5e7eb;--login-cyan:#2563eb;--login-blue:#2563eb;--login-lime:#16a34a;background:#f5f7fb;color:var(--login-ink)}
+.login-stage:before{background:#f5f7fb}
+.login-grid-pattern,.login-glow,.commerce-scene{display:none}
+.login-nav{height:64px;max-width:1120px;padding:0 28px;border-bottom:1px solid #e2e8f0}
+.login-page .brand-logo{width:40px;height:40px;border-radius:12px;background:#2563eb;color:#fff;box-shadow:0 7px 18px rgba(37,99,235,.2)}
+.login-page .brand-title{color:#172033}.login-brand-copy small{color:#64748b}
+.secure-chip{border-color:#e2e8f0;border-radius:8px;background:#fff;color:#526071;backdrop-filter:none}
+.secure-chip:before{background:#16a34a;box-shadow:none}
+.login-main{width:min(1040px,100%);min-height:calc(100svh - 104px);padding:42px 28px 70px;grid-template-columns:minmax(0,1fr) 420px;gap:72px}
+.login-showcase{padding:0}
+.login-eyebrow{margin-bottom:12px;color:#2563eb}.login-eyebrow:before{background:#2563eb;box-shadow:none}
+.login-showcase h1{max-width:540px;font-size:clamp(38px,4.2vw,56px);line-height:1.08;color:#172033}
+.login-showcase h1 span{color:#2563eb;background:none;-webkit-text-fill-color:initial}
+.login-lead{margin-top:18px;color:#64748b;font-size:14px;line-height:1.7}
+.login-benefits{gap:12px;margin-top:24px}.login-benefit{margin:0;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#526071}
+.login-benefit:hover{transform:none;color:#172033;border-color:#cbd5e1;background:#f8fafc}
+.login-panel-wrap:before{display:none}
+.login-page .login-card{padding:28px;border:1px solid #dbe2ea;border-radius:18px;background:#fff;box-shadow:0 18px 50px rgba(15,23,42,.09);backdrop-filter:none;transform:none!important}
+.login-page .login-card:before{display:none}
+.login-panel-wrap:hover .login-card{border-color:#cbd5e1;box-shadow:0 10px 30px rgba(15,23,42,.08)}
+.login-panel-head h2,.login-page .form-title{color:#172033}.login-panel-head p,.login-page .form-sub{color:#64748b}
+.auth-status{border-color:#dbeafe;border-radius:8px;background:#eff6ff;color:#1e40af}.auth-status span{background:#16a34a;box-shadow:none}
+.login-page .tabs{border-color:#e2e8f0;border-radius:9px;background:#f1f5f9}
+.login-page .tab{border-radius:7px;color:#64748b}.login-page .tab.active{color:#1e40af;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.08)}
+.login-page .tab:not(.active):hover{color:#172033;background:#e2e8f0}
+.login-page .field label{color:#526071}
+.login-page .field:focus-within label{color:#2563eb;transform:none}
+.login-page .input{height:44px;border-color:#dbe2ea;border-radius:8px;background:#fff;color:#172033}
+.login-page .input::placeholder{color:#94a3b8}.login-page .input:hover{border-color:#cbd5e1}.login-page .input:focus{border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.14)}
+.login-page .pw-toggle{color:#64748b}.login-page .pw-toggle:hover{color:#172033;background:#f1f5f9}
+.login-page .remember-row{color:#64748b}
+.login-page form>.btn[type=submit]{min-height:46px;border-radius:10px;background:#2563eb;color:#fff;box-shadow:0 5px 14px rgba(37,99,235,.18)}
+.login-page form>.btn[type=submit]:hover{transform:none;background:#1d4ed8;box-shadow:0 7px 18px rgba(37,99,235,.22)}
+.login-page .btn-ghost{color:#64748b}.login-page .btn-ghost:hover{color:#2563eb}
+.login-page .hint,.login-meta{color:#64748b}.login-meta svg{color:#2563eb}
+.login-footer{color:#94a3b8}
+@media(max-width:780px){.login-nav{padding:0 18px}.login-main{display:block;padding:34px 18px 80px}.login-showcase{text-align:left;padding:0 0 28px}.login-showcase h1{margin:0}.login-lead{margin-left:0;margin-right:0}.login-benefits{justify-content:flex-start}.login-panel-wrap{max-width:440px;margin:0}}
+@media(max-width:430px){.login-main{padding-left:12px;padding-right:12px}.login-showcase h1{font-size:34px}.login-page .login-card{padding:20px 16px;border-radius:10px}}
+
+/* v7 — split-screen ledger access */
+body.login-page{
+  --login-ink:#0F172A;
+  --login-muted:#64748B;
+  --login-border:#DCE3EC;
+  background:#07111F;
+}
+.login-stage{background:#07111F}
+.login-stage:before{background:#07111F}
+.login-nav{
+  height:76px;
+  max-width:1200px;
+  border-bottom-color:rgba(148,163,184,.14);
+}
+.login-page .brand-logo{box-shadow:0 10px 28px rgba(37,99,235,.34)}
+.login-page .brand-title{color:#F8FAFC}.login-brand-copy small{color:#718198}.login-note{color:#718198}
+.secure-chip{border-color:rgba(148,163,184,.16);background:rgba(255,255,255,.05);color:#AFC0D5}
+.login-main{
+  width:min(1160px,100%);
+  min-height:calc(100svh - 120px);
+  grid-template-columns:minmax(0,1fr) 440px;
+  gap:94px;
+  padding:52px 28px 78px;
+}
+.login-showcase{align-self:center}
+.login-eyebrow{color:#7EA7FF}.login-eyebrow:before{background:#2563EB}
+.login-showcase h1{max-width:620px;color:#F8FAFC;font-size:clamp(46px,5.2vw,72px);line-height:1.01;letter-spacing:-.055em}
+.login-showcase h1 span{color:#60A5FA}
+.login-lead{max-width:590px;color:#91A1B7;font-size:15px}
+.login-benefits{gap:9px}
+.login-benefit{
+  border-color:rgba(148,163,184,.16);
+  border-radius:10px;
+  background:rgba(255,255,255,.05);
+  color:#C4D1E1;
+}
+.login-benefit:hover{border-color:rgba(96,165,250,.35);background:rgba(37,99,235,.09);color:#fff}
+.login-page .login-card{
+  padding:30px;
+  border-color:#E2E8F0;
+  border-radius:22px;
+  box-shadow:0 28px 80px rgba(0,0,0,.3);
+}
+.login-panel-head h2,.login-page .form-title{color:#0F172A}
+.login-panel-head p,.login-page .form-sub{color:#64748B}
+.login-page .tabs{padding:4px;border-radius:11px;background:#EEF2F7}
+.login-page .tab{min-height:39px;border-radius:8px}
+.login-page .tab.active{color:#1D4ED8}
+.login-page .input{height:46px;border-radius:10px}
+.login-page form>.btn[type=submit]{height:48px;border-radius:11px}
+.login-footer{color:#4D6078}
+@media(max-width:780px){
+  .login-main{padding-top:30px}
+  .login-showcase h1{font-size:40px}
+  .login-lead{font-size:13px}
+  .login-page .login-card{border-radius:20px}
+}
+@media(max-width:560px){
+  .login-nav{height:66px}
+  .login-note{display:none}
+  .secure-chip{display:none}
+  .login-main{padding-top:24px}
+  .login-showcase{padding-bottom:22px}
+  .login-showcase h1{font-size:34px}
+  .login-lead{margin-top:12px}
+  .login-benefits{display:none}
+  .login-page .login-card{padding:22px 18px}
+}

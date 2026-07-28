@@ -348,6 +348,21 @@
     return isBankingDayWithRules(date, bankingRules(options));
   }
 
+  function businessDaysBetween(start, end, options) {
+    const first = dayKey(start);
+    const last = dayKey(end);
+    if (first === last) return 0;
+    const direction = daysBetween(first, last) < 0 ? -1 : 1;
+    const rules = bankingRules(options);
+    let cursor = first;
+    let total = 0;
+    while (cursor !== last) {
+      cursor = addDays(cursor, direction);
+      if (isBankingDayWithRules(cursor, rules)) total += direction;
+    }
+    return total;
+  }
+
   function bankEffectiveDateInfo(value, options) {
     const settings = options || {};
     const originalDate = dayKey(value);
@@ -398,6 +413,7 @@
     addDays: addDays,
     bankEffectiveDate: bankEffectiveDate,
     bankEffectiveDateInfo: bankEffectiveDateInfo,
+    businessDaysBetween: businessDaysBetween,
     bsToAd: bsToAd,
     dayKey: dayKey,
     dayOfWeek: dayOfWeek,

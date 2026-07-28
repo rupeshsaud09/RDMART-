@@ -13,9 +13,13 @@ create table if not exists public.mart_settings (
   id boolean primary key default true,
   mart_name text not null default 'RD MART',
   mart_phone text default '',
+  bank_weekend_days integer[] not null default array[0,6],
+  bank_holidays date[] not null default '{}',
   updated_at timestamptz not null default now(),
   constraint single_mart_settings_row check (id)
 );
+alter table public.mart_settings add column if not exists bank_weekend_days integer[] not null default array[0,6];
+alter table public.mart_settings add column if not exists bank_holidays date[] not null default '{}';
 insert into public.mart_settings (id, mart_name)
 values (true, 'RD MART')
 on conflict (id) do nothing;

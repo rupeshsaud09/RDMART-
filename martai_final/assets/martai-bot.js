@@ -32,6 +32,8 @@ const UI={
   yes:L('✅ Yes, do it','✅ हुन्छ, गर्नुहोस्','✅ हाँ, कर दो'),
   no:L('❌ No, cancel','❌ रद्द गर्नुहोस्','❌ नहीं, रद्द करें')
 };
+UI.name=L('Khata Pana','खाता पाना','खाता पाना');
+UI.sub=L('Accounting assistant · online','लेखा सहायक · अनलाइन','लेखा सहायक · ऑनलाइन');
 const T={
   greet:L("Namaste! 🙏 I'm <b>Saathi</b>, your RD MART helper robot. I can check dues, add credit, record payments, open pages, take backups and much more — in English, नेपाली or हिंदी. Tap a button below or just tell me!",
     "नमस्ते! 🙏 म <b>साथी</b>, तपाईंको RD MART सहयोगी रोबोट। म उधारो हेर्न, क्रेडिट थप्न, भुक्तानी लेख्न, पेज खोल्न, ब्याकअप लिन — धेरै काम गर्न सक्छु। तलको बटन थिच्नुहोस् वा मलाई भन्नुहोस्!",
@@ -221,6 +223,16 @@ const T={
   undoNone:L('😕 No matching entry found to undo.','😕 मेटाउन मिल्ने प्रविष्टि भेटिएन।','😕 हटाने लायक कोई प्रविष्टि नहीं मिली।')
 };
 const PAGE_LABEL={dashboard:L('Dashboard','ड्यासबोर्ड','डैशबोर्ड'),customers:L('Customers','ग्राहक','ग्राहक'),credits:L('Credit Book','उधारो खाता','उधार खाता'),daily:L('Daily Sales','दैनिक बिक्री','दैनिक बिक्री'),payments:L('Party Payments','पार्टी भुक्तानी','पार्टी भुगतान'),cheques:L('Cheques','चेक','चेक'),estimates:L('Estimates','इस्टिमेट','एस्टीमेट'),rooms:L('Room Rent','कोठा भाडा','कमरा किराया'),reports:L('Reports','रिपोर्ट','रिपोर्ट'),followup:L('Follow-Up','फलो-अप','फॉलो-अप'),settings:L('Settings','सेटिङ','सेटिंग')};
+T.greet=L(
+  "Welcome to <b>Khata Pana Assistant</b>. I can find dues, record payments, open reports and help with everyday accounting tasks.",
+  "<b>खाता पाना सहायक</b>मा स्वागत छ। म बाँकी रकम खोज्न, भुक्तानी लेख्न, रिपोर्ट खोल्न र दैनिक हिसाबमा सहयोग गर्न सक्छु।",
+  "<b>खाता पाना सहायक</b> में स्वागत है। मैं बकाया खोजने, भुगतान दर्ज करने, रिपोर्ट खोलने और रोज़ के हिसाब में मदद कर सकता हूँ।"
+);
+T.whoAmI=L(
+  "I'm the <b>Khata Pana accounting assistant</b>. I can help you review records and complete common bookkeeping actions.",
+  "म <b>खाता पाना लेखा सहायक</b> हुँ। म रेकर्ड हेर्न र सामान्य हिसाबका काम पूरा गर्न सहयोग गर्छु।",
+  "मैं <b>खाता पाना लेखा सहायक</b> हूँ। मैं रिकॉर्ड देखने और सामान्य हिसाब के काम पूरे करने में मदद करता हूँ।"
+);
 const CHIPS={
   dash:[
     {t:L('📋 Briefing','📋 ब्रिफिङ','📋 ब्रीफिंग')},
@@ -328,31 +340,42 @@ body[data-theme="light"] .mbot-inrow{background:rgba(16,20,19,.03)}
 body[data-theme="light"] .mbot-chip{background:rgba(16,20,19,.05);border-color:rgba(16,20,19,.14);color:#343b39}
 body[data-theme="light"] .mbot-in{background:#fff;color:#101413;border-color:rgba(16,20,19,.16)}
 body[data-theme="light"] .mbot-mic{background:rgba(16,20,19,.06);border-color:rgba(16,20,19,.14);color:#101413}
-body[data-theme="light"] .mbot-act{background:rgba(15,118,110,.08);border-color:rgba(15,118,110,.35);color:#0f766e}
-body[data-theme="light"] .mbot-act:hover{background:rgba(15,118,110,.18);color:#0b4f4a}
+body[data-theme="light"] .mbot-act{background:rgba(37,99,235,.08);border-color:rgba(37,99,235,.35);color:#2563eb}
+body[data-theme="light"] .mbot-act:hover{background:rgba(37,99,235,.16);color:#1d4ed8}
+/* Compact professional assistant: flat surfaces, no mascot or decorative motion. */
+.mbot-fab{right:18px;bottom:18px;width:46px;height:46px;padding:0;border:1px solid #1d4ed8;border-radius:14px;background:#2563eb;box-shadow:0 5px 16px rgba(37,99,235,.2);animation:none;color:#fff;display:flex;align-items:center;justify-content:center;gap:0;font:700 11.5px Inter,ui-sans-serif,system-ui,sans-serif}
+.mbot-fab:hover{transform:none;background:#1d4ed8}
+.mbot-fab svg{width:17px;height:17px}
+.mbot-fab-label{display:none}
+.mbot-panel{bottom:72px;width:min(390px,calc(100vw - 24px));height:min(570px,calc(100vh - 100px));border-radius:12px;border-color:#263449;background:#111c2e;box-shadow:0 18px 48px rgba(0,0,0,.32);backdrop-filter:none}
+.mbot-panel.open{animation:mbotIn .18s ease-out both}
+.mbot-head{padding:11px 12px;background:#162235;border-bottom-color:#263449}
+.mbot-hava,.mbot-mava{display:grid;place-items:center;border-radius:8px;background:#2563eb;box-shadow:none;padding:7px}
+.mbot-hava{width:38px;height:38px}.mbot-mava{width:26px;height:26px;padding:5px}
+.mbot-hname{font-size:13.5px;font-weight:750}.mbot-hsub{color:#bfdbfe;font-size:9.5px;font-weight:650}
+.mbot-dot{box-shadow:none}
+.mbot-hbtn,.mbot-lang{border-radius:7px}
+.mbot-msg{border-radius:9px;font-size:12.5px;line-height:1.6}
+.mbot-row.bot .mbot-msg{background:#162235;border-color:#263449;border-bottom-left-radius:9px}
+.mbot-row.me .mbot-msg{background:#2563eb;border-bottom-right-radius:9px;font-weight:600}
+.mbot-chip,.mbot-act{border-radius:7px;font-weight:650}
+.mbot-chip:hover{background:#2563eb}
+.mbot-inrow{background:#0f172a}.mbot-in{border-radius:8px}.mbot-mic,.mbot-send{border-radius:8px}.mbot-send{background:#2563eb}
+.mbot-eye,.mbot-mouth,.mbot-talk .mbot-mouth{animation:none}
+body[data-theme="light"] .mbot-panel{background:#fff;border-color:#e2e8f0;box-shadow:0 18px 48px rgba(15,23,42,.16)}
+body[data-theme="light"] .mbot-head{background:#f8fafc;border-bottom-color:#e2e8f0}
+body[data-theme="light"] .mbot-row.bot .mbot-msg{background:#f1f5f9;border-color:#e2e8f0}
 @media(max-width:480px){.mbot-panel{right:12px;left:12px;width:auto;bottom:90px;height:min(560px,calc(100vh - 108px))}.mbot-fab{right:14px;bottom:14px}.mbot-bubble{right:88px;bottom:30px}}
+@media(max-width:760px){.mbot-fab{bottom:76px}.mbot-panel{bottom:124px}}
 @media print{.mbot-fab,.mbot-panel,.mbot-bubble{display:none!important}}
 `;
 
-/* ---------- cartoon character svg ---------- */
-function charSVG(cls){return `<svg class="${cls||''}" viewBox="0 0 120 120" aria-hidden="true">
-<defs><linearGradient id="mbg-${cls||'x'}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b7c2bf"/><stop offset="1" stop-color="#5eead4"/></linearGradient></defs>
-<line x1="60" y1="13" x2="60" y2="26" stroke="#dff8f4" stroke-width="4.5" stroke-linecap="round"/>
-<circle cx="60" cy="10" r="6" fill="#2dd4bf"><animate attributeName="opacity" values="1;.4;1" dur="1.7s" repeatCount="indefinite"/></circle>
-<rect x="6" y="52" width="11" height="24" rx="5.5" fill="#8b9995"/>
-<rect x="103" y="52" width="11" height="24" rx="5.5" fill="#8b9995"/>
-<rect x="15" y="24" width="90" height="82" rx="36" fill="url(#mbg-${cls||'x'})"/>
-<rect x="26" y="39" width="68" height="53" rx="24" fill="#0b1110"/>
-<g class="mbot-eye"><circle cx="46" cy="61" r="8.5" fill="#5eead4"/><circle cx="49" cy="58" r="2.8" fill="#fff"/></g>
-<g class="mbot-eye"><circle cx="74" cy="61" r="8.5" fill="#5eead4"/><circle cx="77" cy="58" r="2.8" fill="#fff"/></g>
-<circle cx="35" cy="74" r="4" fill="#a4afac" opacity=".55"/>
-<circle cx="85" cy="74" r="4" fill="#a4afac" opacity=".55"/>
-<path class="mbot-mouth" d="M49 77 Q60 87 71 77" stroke="#5eead4" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-</svg>`}
+/* ---------- compact assistant mark ---------- */
+function charSVG(cls){return `<svg class="${cls||''}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 13.7 9l6.1 1.7-6.1 1.7-1.7 6.2-1.7-6.2-6.1-1.7L10.3 9 12 2.8Z" fill="currentColor"/><path d="m19 15 .7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15Z" fill="currentColor" opacity=".72"/></svg>`}
 
 /* ---------- build DOM ---------- */
 const style=document.createElement('style');style.id='mbot-css';style.textContent=CSS;document.head.appendChild(style);
-const fab=document.createElement('button');fab.className='mbot-fab';fab.type='button';fab.setAttribute('aria-label','Open Saathi assistant');fab.innerHTML=charSVG('fab');
+const fab=document.createElement('button');fab.className='mbot-fab';fab.type='button';fab.setAttribute('aria-label','Open Khata Pana assistant');fab.innerHTML=charSVG('fab')+'<span class="mbot-fab-label">Ask Khata Pana</span>';
 const bubble=document.createElement('div');bubble.className='mbot-bubble';
 const panel=document.createElement('div');panel.className='mbot-panel';
 panel.innerHTML=`
@@ -1547,6 +1570,7 @@ fab.addEventListener('click',()=>{
 
 /* ---------- idle bubble ---------- */
 const BUBBLES=[L('Namaste! 🙏 Need help?','नमस्ते! 🙏 केही सहयोग चाहियो?','नमस्ते! 🙏 कुछ मदद चाहिए?'),L("I'm Saathi 🤖 — ask me anything!",'म साथी 🤖 — जे पनि सोध्नुस्!','मैं साथी 🤖 — कुछ भी पूछिए!')];
+BUBBLES.splice(0,BUBBLES.length,L('Need help with your accounts?','हिसाबमा सहयोग चाहियो?','हिसाब में मदद चाहिए?'),L('Ask Khata Pana','खाता पानालाई सोध्नुहोस्','खाता पाना से पूछें'));
 let bi=0;
 function popBubble(){
   if(panel.classList.contains('open'))return;

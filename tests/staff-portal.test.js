@@ -70,6 +70,14 @@ test('staff portal exposes statements and a PIN-gated write-only sales form',()=
   assert.doesNotMatch(html,/dailySales\.(?:map|filter)|byDate\(d\.dailySales/);
 });
 
+test('staff customer search reuses indexed balances and is debounced',()=>{
+  const html=fs.readFileSync(path.join(__dirname,'..','martai_final','staff.html'),'utf8');
+  assert.match(html,/function balances\(d\).*const grouped=new Map\(\)/s);
+  assert.match(html,/staffBalanceMemo\.byId\.get\(customerId\)/);
+  assert.match(html,/custSearch'\)\.addEventListener\('input',UI\?UI\.debounce/);
+  assert.match(html,/function invalidateStaffData\(\)/);
+});
+
 test('database policy allows staff insert but denies staff daily-sales reads and updates',()=>{
   const sql=fs.readFileSync(path.join(__dirname,'..','sql','setup-complete.sql'),'utf8');
   const section=sql.slice(sql.indexOf('-- daily_sales'),sql.indexOf('-- party_payments'));

@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KHATA PANA Customer Portal</title>
-<meta name="theme-color" content="#f4f6f5">
+<meta name="theme-color" content="#f5f7fb">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=20">
+<link rel="stylesheet" href="assets/martai.css?v=27">
 </head>
 <body>
 <div class="toast-box" id="toasts"></div>
@@ -74,7 +74,7 @@
 <script>
 const A=MartAI,UI=window.MartAIUI;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));let session=A.getSession();if(UI)UI.initTooltips();
 /* Follow the theme chosen on the dashboard (same browser); defaults to light */
-{const th=localStorage.getItem('martai_dashboard_theme')==='dark'?'dark':'light';document.body.dataset.theme=th;document.documentElement.style.colorScheme=th;const mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',th==='light'?'#f4f6f5':'#080b0a')}
+{const th=localStorage.getItem('martai_dashboard_theme')==='dark'?'dark':'light';document.body.dataset.theme=th;document.documentElement.style.colorScheme=th;const mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',th==='light'?'#f5f7fb':'#0b1120')}
 function db(){return A.getDB()}function toast(msg,type='ok'){if(UI)return UI.toast(msg,{type:type==='err'?'error':type,container:'#toasts',duration:2400});const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;el.setAttribute('role',type==='err'?'alert':'status');$('toasts').appendChild(el);setTimeout(()=>el.remove(),2400)}
 function currentCustomer(){const d=db();return A.customerById(d,session?.customerId)||d.customers.find(c=>c._tableId===session?.customerTableId)}
 async function secureLogout(){await A.clearSession();location.replace('index.html')}
@@ -156,6 +156,6 @@ function statementHTML(mart,c,rows){let run=0,tA=0,tP=0;const body=rows.map(r=>{
 $('printStatementBtn')?.addEventListener('click',()=>{const d=db();const c=currentCustomer();if(!c)return;const rows=d.credits.filter(x=>x.customerId===c.id).sort((a,b)=>String(a.date).localeCompare(String(b.date)));$('printArea').innerHTML=statementHTML(d.settings.martName||'RD MART',c,rows);window.print()});
 $('pinForm').addEventListener('submit',async e=>{e.preventDefault();const data=formData(e.target);try{if(data.pin!==data.confirmPin)throw new Error('PIN confirmation does not match');if(A.syncInfo().mode==='tables'){await A.updateCustomerPin(data.pin)}else{const d=db();A.updateCustomer(d,session.customerId,{pin:data.pin})}e.target.reset();toast('PIN updated')}catch(err){toast(err.message,'err')}});
 </script>
-<script src="assets/martai-bot.js?v=5"></script>
+<script src="assets/martai-bot.js?v=7"></script>
 </body>
 </html>

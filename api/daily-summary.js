@@ -51,6 +51,7 @@
  */
 
 const crypto = require('crypto');
+const DateTools = require('../martai_final/assets/martai-date.js');
 
 const REQUIRED_ENV = Object.freeze([
   'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
@@ -297,12 +298,11 @@ function money(n) { return 'Rs ' + Math.round(num(n)).toLocaleString('en-IN'); }
 async function buildStoreSummary(rest, storeId, today, yesterday) {
   const yStartUtc = nepalMidnightUtcIso(yesterday);
   const tStartUtc = nepalMidnightUtcIso(today);
-  const [dailySales, creditGiven, creditCollected, chequesDue, chequesOverdue, pendingReports, openTasks] = await Promise.all([
+  const [dailySales, creditGiven, creditCollected, openCheques, pendingReports, openTasks] = await Promise.all([
     rest('daily_sales', `select=pos,fonepay,cash,finance,party_payment,other&store_id=eq.${storeId}&sale_date=eq.${yesterday}`),
     rest('credits', `select=amount&store_id=eq.${storeId}&credit_date=eq.${yesterday}`),
     rest('credits', `select=paid&store_id=eq.${storeId}&paid_at=gte.${encodeURIComponent(yStartUtc)}&paid_at=lt.${encodeURIComponent(tStartUtc)}`),
-    rest('cheques', `select=amount&store_id=eq.${storeId}&status=eq.hold&cheque_date=eq.${today}`),
-    rest('cheques', `select=amount&store_id=eq.${storeId}&status=eq.hold&cheque_date=lt.${today}`),
+    rest('cheques', `select=amount,cheque_date&store_id=eq.${storeId}&status=eq.hold&cheque_date=lte.${today}`),
     rest('payment_requests', `select=id&store_id=eq.${storeId}&status=eq.pending`),
     rest('mart_tasks', `select=id&store_id=eq.${storeId}&status=eq.pending`)
   ]);
@@ -312,9 +312,19 @@ async function buildStoreSummary(rest, storeId, today, yesterday) {
   const salesYesterday = sumBy(dailySales.data, ['pos', 'fonepay', 'cash', 'finance', 'other']);
   const creditGivenYesterday = sumBy(creditGiven.data, ['amount']);
   const creditCollectedYesterday = sumBy(creditCollected.data, ['paid']);
-  const dueCount = Array.isArray(chequesDue.data) ? chequesDue.data.length : 0;
-  const dueAmount = sumBy(chequesDue.data, ['amount']);
-  const overdueCount = Array.isArray(chequesOverdue.data) ? chequesOverdue.data.length : 0;
+  const chequeRows = Array.isArray(openCheques.data) ? openCheques.data : [];
+  const effectiveChequeDate = row => {
+    try { return DateTools.bankEffectiveDate(row.cheque_date, { weekendDays: [0, 6] }); }
+    catch (_) { return ''; }
+  };
+  const chequesDue = chequeRows.filter(row => effectiveChequeDate(row) === today);
+  const chequesOverdue = chequeRows.filter(row => {
+    const effective = effectiveChequeDate(row);
+    return effective && effective < today;
+  });
+  const dueCount = chequesDue.length;
+  const dueAmount = sumBy(chequesDue, ['amount']);
+  const overdueCount = chequesOverdue.length;
   const pendingReportCount = Array.isArray(pendingReports.data) ? pendingReports.data.length : 0;
   const openTaskCount = Array.isArray(openTasks.data) ? openTasks.data.length : 0;
 

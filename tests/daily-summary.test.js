@@ -149,3 +149,33 @@ test('new Supabase secret keys are never sent as Bearer JWTs',()=>{
   assert.equal(legacy.apikey,'legacy-service-role-jwt');
   assert.equal(legacy.Authorization,'Bearer legacy-service-role-jwt');
 });
+
+test('Monday summary rolls Saturday and Sunday hold cheques into today',async()=>{
+  const calls=[];
+  const rest=async(table,query)=>{
+    calls.push({table,query});
+    if(table==='cheques')return{data:[
+      {amount:100000,cheque_date:'2026-07-25'},
+      {amount:80000,cheque_date:'2026-07-26'},
+      {amount:60909,cheque_date:'2026-07-27'},
+      {amount:30000,cheque_date:'2026-07-25'},
+      {amount:20000,cheque_date:'2026-07-26'},
+      {amount:20000,cheque_date:'2026-07-25'},
+      {amount:20000,cheque_date:'2026-07-26'},
+      {amount:20000,cheque_date:'2026-07-25'},
+      {amount:20000,cheque_date:'2026-07-26'},
+      {amount:20000,cheque_date:'2026-07-25'},
+      {amount:20000,cheque_date:'2026-07-26'},
+      {amount:50000,cheque_date:'2026-07-24'}
+    ]};
+    return{data:[]};
+  };
+  const summary=await dailySummary._test.buildStoreSummary(rest,STORE_ID,'2026-07-27','2026-07-26');
+  assert.equal(summary.counts.dueCount,11);
+  assert.equal(summary.counts.dueAmount,410909);
+  assert.equal(summary.counts.overdueCount,1);
+  const chequeCalls=calls.filter(call=>call.table==='cheques');
+  assert.equal(chequeCalls.length,1);
+  assert.match(chequeCalls[0].query,/select=amount,cheque_date/);
+  assert.match(summary.line2,/11 cheques due \(Rs 4,10,909\)/);
+});

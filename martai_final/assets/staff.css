@@ -295,3 +295,108 @@ body.stf-lock-open{overflow:hidden}
 @media(prefers-reduced-motion:reduce){
   .stf-app *,.stf-app,.stf-sheet,.stf-scrim,.stf-celebrate .ring,.stf-celebrate svg,.stf-bg i,.stf-hero,.stf-lock,.stf-lock-card,.stf-lock-dots i{animation:none!important;transition:none!important}
 }
+
+/* ---------- v3: shared KHATA PANA fintech workspace ---------- */
+body.staff-page{background:var(--background)}
+.stf-bg{display:none}
+.stf-app{max-width:920px}
+.stf-hero{
+  padding:calc(16px + env(safe-area-inset-top)) 24px 54px;
+  border-radius:0 0 22px 22px;
+  background:#1e40af;
+  background-size:auto;
+  animation:none;
+}
+.stf-hero::before,.stf-hero::after{display:none}
+body[data-theme="dark"] .stf-hero{background:#172554}
+.stf-logo{width:40px;height:40px;border-radius:12px}
+.stf-hero-name b{font-size:15px}.stf-hero-name span{font-size:11px}
+.stf-icon-btn{border-radius:10px;background:rgba(255,255,255,.1);transition:background-color .14s ease}
+.stf-greet{margin-top:20px}.stf-greet h1{font-size:23px;font-weight:760}.stf-greet p{font-weight:500}
+.stf-sync{border-radius:9px;font-size:10.5px}.stf-sync i{background:#86efac;animation:none}
+.stf-main{margin-top:-30px;padding:0 20px}
+.stf-page.active{animation:stfCleanIn .16s ease both}
+@keyframes stfCleanIn{from{opacity:.45;transform:translateY(3px)}to{opacity:1;transform:none}}
+.stf-anim{animation:none}
+.stf-card,.stf-metric,.stf-task,.stf-cust{
+  border-radius:14px;
+  box-shadow:var(--shadow-sm);
+}
+.stf-card{padding:18px}
+.stf-sec{margin:22px 2px 11px}.stf-sec h2{font-size:15px;font-weight:720}
+.stf-metrics{gap:12px}
+.stf-metric{min-height:92px;padding:15px}
+.stf-metric::after{left:15px;right:15px;height:3px}
+.stf-metric b{font-size:21px;font-weight:760}.stf-metric span{font-size:10px}
+.stf-task{padding:15px 15px 15px 19px;transition:border-color .14s ease,background-color .14s ease}
+.stf-task:hover{transform:none;border-color:var(--line-strong);box-shadow:var(--shadow-sm)}
+.stf-done-btn{width:42px;height:42px;border-radius:11px}
+.stf-search .input{height:44px;border-radius:10px}
+.stf-cust{padding:13px 14px;transition:border-color .14s ease,background-color .14s ease}
+.stf-cust:hover{transform:none;border-color:var(--line-strong);background:var(--surface-secondary);box-shadow:var(--shadow-sm)}
+.stf-ava{border-radius:12px;background:var(--brand)}
+.stf-actions{gap:12px}
+.stf-action{border-radius:14px;padding:17px;box-shadow:var(--shadow-sm);transition:filter .14s ease}
+.stf-action.red{background:#334155}.stf-action.green{background:#2563eb}
+.stf-action:hover{transform:none;filter:brightness(.96)}
+.stf-nav{
+  bottom:calc(10px + env(safe-area-inset-bottom));
+  padding:5px;
+  border-radius:14px;
+  background:var(--surface);
+  backdrop-filter:none;
+  box-shadow:0 12px 34px rgba(15,23,42,.14);
+}
+.stf-nav button{padding:10px 15px;border-radius:10px;transition:background-color .14s ease,color .14s ease}
+.stf-nav button.active{box-shadow:none}
+.stf-scrim{background:rgba(15,23,42,.5);backdrop-filter:none}
+.stf-sheet{border-radius:20px 20px 0 0;box-shadow:0 -18px 50px rgba(15,23,42,.16)}
+.stf-field label{font-size:11px;text-transform:none;letter-spacing:0}
+.stf-field .input,.stf-field .select{height:44px;border-radius:10px}
+.stf-chip{border-width:1px;border-radius:9px}
+.stf-submit{height:46px;border-radius:10px}
+.stf-fab-add{height:38px;border-radius:10px;box-shadow:none}
+.staff-page .empty{border-radius:13px}
+.stf-tilt,.stf-metric b,.stf-metric span,.stf-action b,.stf-action span,.stf-action svg{transform:none!important}
+.stf-ripple{display:none}
+.stf-bal.due b,.stf-nav button.active svg{animation:none}
+.stf-lock{background:rgba(15,23,42,.5);backdrop-filter:none}
+.stf-lock-card{border-radius:18px;box-shadow:var(--shadow-lg)}
+.stf-lock-ico{border-radius:14px}
+.stf-key{border-radius:12px}
+@media(min-width:1024px){
+  .stf-app{max-width:920px}
+  .stf-hero{border-radius:0 0 22px 22px}
+  .stf-main{padding:0 26px}
+  .stf-task:hover,.stf-cust:hover{transform:none}
+}
+@media(max-width:520px){
+  .stf-main{padding:0 13px}
+  .stf-hero{padding-left:17px;padding-right:17px}
+}
+
+/* v4 — compact operations console */
+.stf-app{max-width:1040px}
+.stf-hero{
+  padding:calc(17px + env(safe-area-inset-top)) 28px 52px;
+  border-radius:0;
+  background:#0B1220;
+}
+body[data-theme="dark"] .stf-hero{background:#050A12}
+.stf-hero-top{padding-bottom:15px;border-bottom:1px solid rgba(148,163,184,.14)}
+.stf-logo{border-color:transparent;background:#2563EB}
+.stf-greet{margin-top:19px}.stf-greet h1{font-size:26px}
+.stf-main{margin-top:-25px;padding:0 28px}
+.stf-metrics{grid-template-columns:repeat(4,1fr)}
+.stf-metric:first-child{border-color:#2563EB;background:#2563EB}
+.stf-metric:first-child b,.stf-metric:first-child span{color:#fff}
+.stf-metric:first-child::after{background:#fff}
+.stf-card,.stf-task,.stf-cust{border-radius:16px}
+.stf-nav{border-color:#1E293B;background:#0B1220}
+.stf-nav button{color:#718198}.stf-nav button.active{background:#2563EB;color:#fff}
+.stf-nav button .stf-nav-badge{border-color:#0B1220}
+@media(max-width:620px){
+  .stf-hero{padding-left:17px;padding-right:17px}
+  .stf-main{padding:0 13px}
+  .stf-metrics{grid-template-columns:repeat(2,1fr)}
+}
