@@ -98,3 +98,22 @@ test('all inline browser scripts compile', () => {
     ));
   }
 });
+
+test('login redesign preserves authentication controls and accessible motion fallbacks', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'martai_final', 'index.html'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'martai_final', 'assets', 'login-experience.css'), 'utf8');
+  for (const id of ['adminForm', 'customerForm', 'adminRemember', 'customerRemember', 'forgotPinBtn', 'loginThemeToggle']) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  assert.match(html, /MartAI\.adminLogin\(user,pass,\$\('adminRemember'\)\.checked\)/);
+  assert.match(html, /MartAI\.customerLogin\(phone,pin,\$\('customerRemember'\)\.checked\)/);
+  assert.match(html, /setTimeout\(\(\)=>location\.assign\(dest\),180\)/);
+  assert.match(html, /setTimeout\(\(\)=>location\.assign\('customer\.html'\),180\)/);
+  assert.match(html, /aria-describedby="adminError"/);
+  assert.match(html, /aria-describedby="customerError"/);
+  assert.doesNotMatch(html, /Sign in with Google/i);
+  assert.match(css, /@keyframes morphBlob/);
+  assert.match(css, /html\[data-login-theme=dark\]/);
+  assert.match(css, /@media\(prefers-reduced-motion:reduce\)/);
+  assert.match(css, /@media\(max-width:560px\)/);
+});
