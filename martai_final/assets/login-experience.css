@@ -158,78 +158,78 @@ body.login-page{
   .login-page .login-card{padding:22px 18px}
 }
 
-/* Premium Plum + exact Lavender + Off-White palette */
+/* Exact role swap: Lavender primary + Plum accent + Off-White */
 body.login-page{
-  --login-cyan:#8D2FF6;
-  --login-blue:#5A214B;
-  --login-lime:#F2E8FF;
-  background:#24111F;
+  --login-cyan:#5A214B;
+  --login-blue:#8D2FF6;
+  --login-lime:#F7EAF2;
+  background:#1C0F2B;
 }
-.login-stage{background:#24111F}
+.login-stage{background:#1C0F2B}
 .login-stage:before{
   background:
-    radial-gradient(circle at 13% 18%,rgba(141,47,246,.24),transparent 31%),
-    radial-gradient(circle at 81% 88%,rgba(90,33,75,.32),transparent 33%),
-    linear-gradient(135deg,#24111F,#32172B 48%,#180B15);
+    radial-gradient(circle at 13% 18%,rgba(90,33,75,.3),transparent 31%),
+    radial-gradient(circle at 81% 88%,rgba(141,47,246,.25),transparent 33%),
+    linear-gradient(135deg,#1C0F2B,#28133F 48%,#13091D);
 }
-.login-glow-one{background:#8D2FF6}
-.login-glow-two{background:#F2E8FF}
+.login-glow-one{background:#5A214B}
+.login-glow-two{background:#F7EAF2}
 .login-page .brand-logo{
   color:#fff;
-  background:linear-gradient(145deg,#5A214B,#8D2FF6);
-  box-shadow:0 10px 30px rgba(90,33,75,.4),inset 0 1px rgba(255,255,255,.55);
+  background:linear-gradient(145deg,#8D2FF6,#5A214B);
+  box-shadow:0 10px 30px rgba(141,47,246,.38),inset 0 1px rgba(255,255,255,.55);
 }
 .secure-chip:before,
 .commerce-dots i:first-child,
-.scene-pill span{background:#8D2FF6;box-shadow:0 0 0 4px rgba(141,47,246,.13),0 0 15px #8D2FF6}
-.login-eyebrow{color:#DCC0FF}
-.login-eyebrow:before{background:#8D2FF6;box-shadow:0 0 10px #8D2FF6}
+.scene-pill span{background:#5A214B;box-shadow:0 0 0 4px rgba(90,33,75,.18),0 0 15px #5A214B}
+.login-eyebrow{color:#D9A8C7}
+.login-eyebrow:before{background:#5A214B;box-shadow:0 0 10px #5A214B}
 .login-showcase h1 span{
   color:transparent;
-  background:linear-gradient(100deg,#FCF9F4 4%,#DCC0FF 48%,#8D2FF6);
+  background:linear-gradient(100deg,#FCF9F4 4%,#D9A8C7 48%,#5A214B);
   background-clip:text;
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
 }
-.login-benefit svg,.commerce-live,.mini-value small{color:#DCC0FF}
-.commerce-orbit{border-color:rgba(141,47,246,.28)}
-.commerce-orbit:before{background:#8D2FF6;box-shadow:0 0 17px #8D2FF6}
-.mini-chart i{background:linear-gradient(to top,rgba(90,33,75,.28),#8D2FF6)}
-.mini-row:nth-child(4){background:rgba(220,192,255,.58)}
-.tile-bag{background:linear-gradient(145deg,#F2E8FF,#C28AFB)}
-.tile-wallet{background:linear-gradient(145deg,#8D2FF6,#5A214B)}
+.login-benefit svg,.commerce-live,.mini-value small{color:#D9A8C7}
+.commerce-orbit{border-color:rgba(90,33,75,.34)}
+.commerce-orbit:before{background:#5A214B;box-shadow:0 0 17px #5A214B}
+.mini-chart i{background:linear-gradient(to top,rgba(141,47,246,.24),#5A214B)}
+.mini-row:nth-child(4){background:rgba(217,168,199,.58)}
+.tile-bag{background:linear-gradient(145deg,#F7EAF2,#D9A8C7)}
+.tile-wallet{background:linear-gradient(145deg,#5A214B,#8D2FF6)}
 .login-panel-wrap:before{
-  background:linear-gradient(145deg,rgba(242,232,255,.46),transparent 30%,transparent 68%,rgba(141,47,246,.58));
+  background:linear-gradient(145deg,rgba(247,234,242,.48),transparent 30%,transparent 68%,rgba(90,33,75,.62));
 }
-.login-page .login-card:before{background:rgba(141,47,246,.15)}
+.login-page .login-card:before{background:rgba(90,33,75,.16)}
 .login-page .tab.active{
   color:#fff;
-  background:linear-gradient(135deg,#5A214B,#8D2FF6);
-  box-shadow:0 7px 19px rgba(90,33,75,.3);
+  background:linear-gradient(135deg,#8D2FF6,#5A214B);
+  box-shadow:0 7px 19px rgba(141,47,246,.28);
 }
 .login-page .input:focus{
-  border-color:rgba(141,47,246,.82);
-  box-shadow:0 0 0 4px rgba(141,47,246,.14);
+  border-color:rgba(90,33,75,.82);
+  box-shadow:0 0 0 4px rgba(90,33,75,.14);
 }
 .login-page form>.btn[type=submit]{
-  background:linear-gradient(135deg,#5A214B,#8D2FF6);
+  background:linear-gradient(135deg,#8D2FF6,#5A214B);
   color:#fff;
-  box-shadow:0 10px 28px rgba(90,33,75,.32);
+  box-shadow:0 10px 28px rgba(141,47,246,.28);
 }
-.login-page form>.btn[type=submit]:hover{background:#5A214B;box-shadow:0 14px 33px rgba(90,33,75,.42)}
-.login-page .btn-ghost:hover,.login-page .field:focus-within label{color:#8D2FF6}
-.login-meta svg{color:#8D2FF6}
-.data-cube i{background:linear-gradient(145deg,rgba(242,232,255,.85),rgba(141,47,246,.55))}
+.login-page form>.btn[type=submit]:hover{background:#8D2FF6;box-shadow:0 14px 33px rgba(141,47,246,.4)}
+.login-page .btn-ghost:hover,.login-page .field:focus-within label{color:#5A214B}
+.login-meta svg{color:#5A214B}
+.data-cube i{background:linear-gradient(145deg,rgba(247,234,242,.86),rgba(90,33,75,.58))}
 .auth-status{
-  border-color:rgba(141,47,246,.22);
-  background:rgba(141,47,246,.1);
-  color:#DCC0FF;
+  border-color:rgba(90,33,75,.28);
+  background:rgba(90,33,75,.12);
+  color:#D9A8C7;
 }
-.auth-status span{background:#8D2FF6;box-shadow:0 0 8px rgba(141,47,246,.6)}
+.auth-status span{background:#5A214B;box-shadow:0 0 8px rgba(90,33,75,.65)}
 .login-page .login-nav-brand:hover .brand-logo{
-  box-shadow:0 16px 34px rgba(90,33,75,.46),inset 0 1px rgba(255,255,255,.7);
+  box-shadow:0 16px 34px rgba(141,47,246,.42),inset 0 1px rgba(255,255,255,.7);
 }
-.login-page .login-nav-brand:hover .brand-title{color:#F2E8FF}
-.secure-chip:hover{border-color:rgba(141,47,246,.3);background:rgba(141,47,246,.11)}
-.login-benefit:hover{border-color:rgba(141,47,246,.28);background:rgba(90,33,75,.18)}
-.login-meta span:first-child:hover{color:#F2E8FF}
+.login-page .login-nav-brand:hover .brand-title{color:#F7EAF2}
+.secure-chip:hover{border-color:rgba(90,33,75,.34);background:rgba(90,33,75,.14)}
+.login-benefit:hover{border-color:rgba(90,33,75,.3);background:rgba(141,47,246,.12)}
+.login-meta span:first-child:hover{color:#F7EAF2}
