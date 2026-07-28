@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=31">
+<link rel="stylesheet" href="assets/martai.css?v=32">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -457,12 +457,12 @@
         <div class="cheque-command-layout">
         <aside class="cheque-status-rail" aria-label="Cheque quick views">
           <div class="cheque-status-rail-head"><span>Quick views</span><small>Choose a working queue</small></div>
-          <button class="cheque-quick-view" type="button" data-cheque-quick="today"><span class="rail-dot tone-today"></span><span><b>Due today</b><small>Effective banking date</small></span></button>
-          <button class="cheque-quick-view active" type="button" data-cheque-quick="active"><span class="rail-dot tone-active"></span><span><b>All active</b><small>Open cheque workload</small></span></button>
-          <button class="cheque-quick-view" type="button" data-cheque-quick="upcoming"><span class="rail-dot tone-upcoming"></span><span><b>Upcoming</b><small>Future banking dates</small></span></button>
-          <button class="cheque-quick-view" type="button" data-cheque-quick="overdue"><span class="rail-dot tone-overdue"></span><span><b>Overdue</b><small>Needs immediate action</small></span></button>
-          <button class="cheque-quick-view" type="button" data-cheque-quick="cleared"><span class="rail-dot tone-cleared"></span><span><b>Cleared</b><small>Completed records</small></span></button>
-          <button class="cheque-quick-view" type="button" data-cheque-quick="all"><span class="rail-dot tone-all"></span><span><b>Archive</b><small>Every cheque record</small></span></button>
+          <button class="cheque-quick-view" type="button" data-cheque-quick="today" aria-pressed="false"><span class="rail-dot tone-today"></span><span class="rail-view-copy"><span class="rail-view-line"><b>Due today</b><strong data-cheque-quick-count>0</strong></span><small>Effective banking date</small><em data-cheque-quick-amount>Rs 0</em></span></button>
+          <button class="cheque-quick-view active" type="button" data-cheque-quick="active" aria-pressed="true"><span class="rail-dot tone-active"></span><span class="rail-view-copy"><span class="rail-view-line"><b>All active</b><strong data-cheque-quick-count>0</strong></span><small>Open cheque workload</small><em data-cheque-quick-amount>Rs 0</em></span></button>
+          <button class="cheque-quick-view" type="button" data-cheque-quick="upcoming" aria-pressed="false"><span class="rail-dot tone-upcoming"></span><span class="rail-view-copy"><span class="rail-view-line"><b>Upcoming</b><strong data-cheque-quick-count>0</strong></span><small>Future banking dates</small><em data-cheque-quick-amount>Rs 0</em></span></button>
+          <button class="cheque-quick-view" type="button" data-cheque-quick="overdue" aria-pressed="false"><span class="rail-dot tone-overdue"></span><span class="rail-view-copy"><span class="rail-view-line"><b>Overdue</b><strong data-cheque-quick-count>0</strong></span><small>Needs immediate action</small><em data-cheque-quick-amount>Rs 0</em></span></button>
+          <button class="cheque-quick-view" type="button" data-cheque-quick="cleared" aria-pressed="false"><span class="rail-dot tone-cleared"></span><span class="rail-view-copy"><span class="rail-view-line"><b>Cleared</b><strong data-cheque-quick-count>0</strong></span><small>Completed records</small><em data-cheque-quick-amount>Rs 0</em></span></button>
+          <button class="cheque-quick-view" type="button" data-cheque-quick="all" aria-pressed="false"><span class="rail-dot tone-all"></span><span class="rail-view-copy"><span class="rail-view-line"><b>Archive</b><strong data-cheque-quick-count>0</strong></span><small>Every cheque record</small><em data-cheque-quick-amount>Rs 0</em></span></button>
           <div class="cheque-rail-tip"><kbd>/</kbd><span>Focus search</span><kbd>Ctrl N</kbd><span>New cheque</span></div>
         </aside>
         <div id="chq-records">
@@ -718,9 +718,9 @@
 <script src="assets/martai-supabase-config.js"></script>
 <script src="assets/martai-push-config.js"></script>
 <script src="assets/martai-date.js?v=1"></script>
-<script src="assets/martai-bank-cheques.js?v=2"></script>
+<script src="assets/martai-bank-cheques.js?v=3"></script>
 <script src="assets/martai-ui.js?v=1"></script>
-<script src="assets/martai-store.js?v=34"></script>
+<script src="assets/martai-store.js?v=35"></script>
 <script src="assets/martai-notifications.js?v=1"></script>
 <script src="assets/martai-cheques.js?v=1"></script>
 <script src="assets/martai-intelligence.js?v=1"></script>
@@ -1133,10 +1133,10 @@ function chequeDateCell(x){
   return `<div class="cheque-date-main">${npDate(original)}</div><div class="small">${weekdayName(original)}</div>${shifted?`<div class="cheque-bank-date"><b>Bank ${weekdayName(bankDate)}:</b> ${npDate(bankDate)}</div>`:''}`;
 }
 let chequeMetricsMemo={version:-1,scope:''};
-function renderChequeMetrics(d){
+function renderChequeMetrics(d,viewIndex){
   const el=$('chequeMetrics');if(!el)return;
   const scope=derivedScope();if(chequeMetricsMemo.version===derivedDataVersion&&chequeMetricsMemo.scope===scope)return;
-  const today=A.today(),due=bankingChequesOnDate(d,today),upcoming=d.cheques.filter(x=>(!BankCheques||BankCheques.isActive(x))&&chequeBankDate(x)>today),holds=d.cheques.filter(x=>(!BankCheques||BankCheques.isActive(x))&&chequeLifecycle(x)==='on_hold');
+  const today=A.today(),index=viewIndex||BankCheques.indexForViews(d.cheques,today,bankCalendarOptions()),due=index.today,upcoming=index.upcoming,holds=index.on_hold;
   const card=(label,rows,view,tone)=>`<button class="cheque-summary-card tone-${tone}" type="button" data-cheque-summary="${view}"><span>${label}</span><b>${A.money(sumCheques(rows))}</b><small>${rows.length} cheque${rows.length!==1?'s':''}</small></button>`;
   el.innerHTML=[
     card('Due today',due,'today','today'),
@@ -1191,9 +1191,10 @@ function renderChequeRecordTotals(rows){
    then applied without recalculating the date collection. */
 let chequeView='active',chequeSort='due_asc',chequeFilteredCache=[],chequeDrawerId='',chequePageSize=20,chequeBankFilterStamp='';
 function chequePopulateBankFilter(d){const sel=$('chequeBankFilter');if(!sel)return;const banks=[...new Set(d.cheques.map(x=>String(x.bank||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b)),stamp=banks.join('\u001f');if(stamp===chequeBankFilterStamp)return;chequeBankFilterStamp=stamp;const old=sel.value;sel.innerHTML='<option value="">All banks</option>'+banks.map(b=>`<option value="${A.esc(b)}">${A.esc(b)}</option>`).join('');if(banks.some(b=>b.toLowerCase()===old.toLowerCase()))sel.value=old}
-function buildChequeQuery(){
+function buildChequeQuery(viewIndex){
   const d=sdb(),today=A.today(),selected=$('chequeStatusFilter')?.value||chequeView||'active';chequeView=selected;
-  let raw=BankCheques.recordsForView(d.cheques,selected,today,bankCalendarOptions());
+  const index=viewIndex||BankCheques.indexForViews(d.cheques,today,bankCalendarOptions());
+  let raw=index[selected]||BankCheques.recordsForView(d.cheques,selected,today,bankCalendarOptions());
   /* Reuse the banking-date memo while shaping records for the query engine.
      The old helper recalculated the same weekend/holiday chain for every
      metric, filter and row. */
@@ -1279,8 +1280,8 @@ function sortChequeCache(rows){
   return arr;
 }
 function renderCheques(){
-  const d=sdb();syncChequeQuickViews();renderChequeMetrics(d);renderChequeQueueCount(d);chequePopulateBankFilter(d);renderChequeFilterBar();
-  const {q,source}=buildChequeQuery();
+  const d=sdb(),viewIndex=BankCheques.indexForViews(d.cheques,A.today(),bankCalendarOptions());syncChequeQuickViews(undefined,viewIndex);renderChequeMetrics(d,viewIndex);renderChequeQueueCount(d);chequePopulateBankFilter(d);renderChequeFilterBar();
+  const {q,source}=buildChequeQuery(viewIndex);
   const all=CQ.queryRecords(source,{...q,page:1,pageSize:100000});
   const originals=new Map(source.map(x=>[x.id,x.originalDueDate||chequeDateIso(x)]));
   const sourceById=new Map(source.map(x=>[x.id,x]));
@@ -1801,14 +1802,14 @@ function resetChequeRefinements(){
   ['chequeDirectionFilter','chequeBankFilter','chequeDatePreset'].forEach(id=>{if($(id))$(id).value=''});
   syncDateButtons();
 }
-function syncChequeQuickViews(value=$('chequeStatusFilter')?.value||chequeView||'active'){$$('.cheque-quick-view').forEach(button=>{const active=button.dataset.chequeQuick===value;button.classList.toggle('active',active);button.setAttribute('aria-pressed',active?'true':'false')})}
+function syncChequeQuickViews(value=$('chequeStatusFilter')?.value||chequeView||'active',viewIndex){$$('.cheque-quick-view').forEach(button=>{const active=button.dataset.chequeQuick===value,rows=viewIndex?.[button.dataset.chequeQuick];button.classList.toggle('active',active);button.setAttribute('aria-pressed',active?'true':'false');button.toggleAttribute('aria-current',active);if(rows){const count=button.querySelector('[data-cheque-quick-count]'),amount=button.querySelector('[data-cheque-quick-amount]'),label=button.querySelector('b')?.textContent||'Cheque view',total=sumCheques(rows);if(count)count.textContent=rows.length;if(amount)amount.textContent=A.money(total);button.setAttribute('aria-label',`${label}: ${rows.length} cheque${rows.length!==1?'s':''}, ${A.money(total)}`)}})}
 function applyChequeQuickView(value,{reset=true}={}){
   const filter=$('chequeStatusFilter'),valid=filter&&Array.from(filter.options).some(option=>option.value===value);if(!valid)return;
   if(reset)resetChequeRefinements();
-  filter.value=value;chequeView=value;syncChequeQuickViews(value);pgState.cheques=1;renderCheques();
+  filter.value=value;chequeView=value;pgState.cheques=1;renderCheques();const records=$('chequeRecordTotals');if(records){records.classList.remove('view-updated');requestAnimationFrame(()=>records.classList.add('view-updated'))}
 }
 $('chequeStatusFilter')?.addEventListener('change',()=>{syncChequeQuickViews();pgState.cheques=1;renderCurrentPage()});
-$$('.cheque-quick-view').forEach(button=>button.addEventListener('click',()=>applyChequeQuickView(button.dataset.chequeQuick)));
+$('page-cheques')?.addEventListener('click',event=>{const button=event.target.closest('.cheque-quick-view');if(!button)return;event.preventDefault();applyChequeQuickView(button.dataset.chequeQuick)});
 $('chequeDatePreset')?.addEventListener('change',()=>{if($('chequeDatePreset').value==='custom'){$('chequeFiltersPanel').hidden=false;$('chequeFiltersBtn')?.setAttribute('aria-expanded','true')}pgState.cheques=1;renderCurrentPage()});
 $('chequeSort')?.addEventListener('change',()=>{chequeSort=$('chequeSort').value;pgState.cheques=1;renderCheques()});
 ['chequeDirectionFilter','chequeBankFilter'].forEach(id=>$(id)?.addEventListener('change',()=>{pgState.cheques=1;renderCurrentPage()}));

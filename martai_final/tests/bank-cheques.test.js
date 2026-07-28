@@ -123,11 +123,33 @@ test('quick views return distinct upcoming, overdue, and cleared banking queues'
   assert.deepEqual(ids('cleared'), ['cleared']);
 });
 
+test('one shared quick-view index keeps rail counts and records in agreement', function () {
+  const asOf = '2026-07-28';
+  const quickViewRecords = [
+    { id: 'today', chequeDate: asOf, amount: 100, status: 'hold' },
+    { id: 'weekend-overdue', chequeDate: '2026-07-25', amount: 200, status: 'hold' },
+    { id: 'upcoming', chequeDate: '2026-07-30', amount: 300, status: 'hold' },
+    { id: 'cleared', chequeDate: asOf, amount: 400, status: 'clear' },
+    { id: 'bounced', chequeDate: asOf, amount: 500, status: 'bounce' }
+  ];
+  const index = BankCheques.indexForViews(quickViewRecords, asOf, { weekendDays: [0, 6] });
+  assert.deepEqual(index.today.map(item => item.id), ['today']);
+  assert.deepEqual(index.overdue.map(item => item.id), ['weekend-overdue']);
+  assert.deepEqual(index.upcoming.map(item => item.id), ['upcoming']);
+  assert.deepEqual(index.active.map(item => item.id), ['today', 'weekend-overdue', 'upcoming']);
+  assert.deepEqual(index.cleared.map(item => item.id), ['cleared']);
+  assert.deepEqual(index.bounced.map(item => item.id), ['bounced']);
+  assert.equal(index.all.length, 5);
+  assert.equal(index.active.reduce((sum, item) => sum + item.amount, 0), 600);
+});
+
 test('quick-view controls reset stale refinements and resync their active state', function () {
   const dashboard = fs.readFileSync(path.join(__dirname, '..', 'dashboard.html'), 'utf8');
-  assert.match(dashboard, /BankCheques\.recordsForView\(d\.cheques,selected,today,bankCalendarOptions\(\)\)/);
+  assert.match(dashboard, /BankCheques\.indexForViews\(d\.cheques,A\.today\(\),bankCalendarOptions\(\)\)/);
   assert.match(dashboard, /function applyChequeQuickView\(value,\{reset=true\}=\{\}\)/);
   assert.match(dashboard, /if\(reset\)resetChequeRefinements\(\)/);
-  assert.match(dashboard, /function renderCheques\(\)\{\s*const d=sdb\(\);syncChequeQuickViews\(\)/);
+  assert.match(dashboard, /syncChequeQuickViews\(undefined,viewIndex\)/);
   assert.match(dashboard, /button\.setAttribute\('aria-pressed',active\?'true':'false'\)/);
+  assert.match(dashboard, /querySelector\('\[data-cheque-quick-count\]'\)/);
+  assert.match(dashboard, /addEventListener\('click',event=>\{const button=event\.target\.closest\('\.cheque-quick-view'\)/);
 });

@@ -124,24 +124,50 @@
     });
   }
 
-  function recordsForView(records, viewValue, asOfDate, options) {
+  /*
+   * Classify every cheque once for the whole Quick Views workspace. Keeping a
+   * single index prevents the rail counts, summary cards and records table
+   * from drifting apart, and avoids recalculating banking dates six times.
+   */
+  function indexForViews(records, asOfDate, options) {
     const settings = options || {};
     const today = DateTools.dayKey(asOfDate == null ? Date.now() : asOfDate);
-    const view = String(viewValue || 'active').trim().toLowerCase().replace(/[\s-]+/g, '_');
-    return (Array.isArray(records) ? records : []).filter(function matches(record) {
+    const index = {
+      all: [],
+      active: [],
+      today: [],
+      upcoming: [],
+      overdue: [],
+      on_hold: [],
+      cleared: [],
+      bounced: []
+    };
+    (Array.isArray(records) ? records : []).forEach(function classify(record) {
       const deleted = Boolean(firstValue(record, ['deletedAt', 'deleted_at']));
-      if (deleted && settings.includeDeleted !== true) return false;
-      if (view === 'all' || view === 'archive') return true;
-      if (view === 'active') return isActive(record);
+      if (deleted && settings.includeDeleted !== true) return;
+      index.all.push(record);
       const lifecycle = canonicalLifecycleStatus(record);
-      if (view === 'cleared') return lifecycle === 'cleared';
-      if (view === 'bounced') return lifecycle === 'bounced';
-      if (view === 'on_hold' || view === 'hold') return isActive(record) && lifecycle === 'on_hold';
-      if (view === 'today' || view === 'due_today') return dueInfo(record, today, settings).status === 'today';
-      if (view === 'upcoming') return dueInfo(record, today, settings).status === 'upcoming';
-      if (view === 'overdue') return dueInfo(record, today, settings).status === 'overdue';
-      return false;
+      if (lifecycle === 'cleared') index.cleared.push(record);
+      if (lifecycle === 'bounced') index.bounced.push(record);
+      if (!isActive(record)) return;
+      index.active.push(record);
+      if (lifecycle === 'on_hold') index.on_hold.push(record);
+      const timing = dueInfo(record, today, settings).status;
+      if (timing === 'today' || timing === 'upcoming' || timing === 'overdue') {
+        index[timing].push(record);
+      }
     });
+    Object.keys(index).forEach(function freezeBucket(key) {
+      Object.freeze(index[key]);
+    });
+    return Object.freeze(index);
+  }
+
+  function recordsForView(records, viewValue, asOfDate, options) {
+    const view = String(viewValue || 'active').trim().toLowerCase().replace(/[\s-]+/g, '_');
+    const key = { archive: 'all', due_today: 'today', hold: 'on_hold' }[view] || view;
+    const index = indexForViews(records, asOfDate, options);
+    return index[key] ? index[key].slice() : [];
   }
 
   function summaryForDate(records, targetDate, options) {
@@ -176,6 +202,7 @@
     dueInfo: dueInfo,
     effectiveDate: effectiveDate,
     forBankingViews: forBankingViews,
+    indexForViews: indexForViews,
     isActive: isActive,
     lifecycleStatus: lifecycleStatus,
     recordsForDate: recordsForDate,
