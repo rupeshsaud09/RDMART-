@@ -400,3 +400,24 @@ body[data-theme="dark"] .stf-hero{background:#050A12}
   .stf-main{padding:0 13px}
   .stf-metrics{grid-template-columns:repeat(2,1fr)}
 }
+
+/* Electric Indigo + Soft Lilac staff palette */
+.stf-hero,
+body[data-theme="dark"] .stf-hero{
+  background:linear-gradient(120deg,#1B1047,#4930D1 38%,#5B3DF5 65%,#765CF8);
+  background-size:220% 220%;
+}
+.stf-logo{border-color:rgba(232,222,255,.35);background:#5B3DF5}
+.stf-metric:first-child{border-color:#5B3DF5;background:#5B3DF5}
+.stf-ava{background:linear-gradient(140deg,#765CF8,#5B3DF5)}
+.stf-action.green{background:linear-gradient(135deg,#765CF8,#5B3DF5)}
+.stf-confetti{background:var(--c,#E8DEFF)}
+.stf-bg i:nth-child(1){background:#E8DEFF}
+.stf-bg i:nth-child(2){background:#D8CCFA}
+.stf-bg i:nth-child(3){background:#A996FF}
+body[data-theme="dark"] .stf-bg i:nth-child(1){background:#5B3DF5}
+body[data-theme="dark"] .stf-bg i:nth-child(2){background:#39286B}
+body[data-theme="dark"] .stf-bg i:nth-child(3){background:#765CF8}
+.stf-nav{border-color:#2F2352;background:#130C2B}
+.stf-nav button.active{background:#5B3DF5;color:#fff}
+.stf-nav button .stf-nav-badge{border-color:#130C2B}

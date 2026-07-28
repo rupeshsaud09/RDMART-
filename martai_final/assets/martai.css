@@ -2441,3 +2441,104 @@ body[data-theme="dark"]:has(.customer-shell){background:#080E1A}
   .dashboard-kpi-grid .metric:first-child{grid-column:span 2}
   .cheque-quick-view{flex-basis:146px}
 }
+
+/* ============================================================
+   KHATA PANA v13 — ELECTRIC INDIGO BRAND SYSTEM
+   Primary: #5B3DF5 · Soft surface: #E8DEFF
+   ============================================================ */
+body{
+  --background:#F8F6FF;
+  --surface-primary:#FFFFFF;
+  --surface-secondary:#F3EFFF;
+  --surface-hover:#E8DEFF;
+  --primary:#5B3DF5;
+  --primary-hover:#4930D1;
+  --primary-light:#E8DEFF;
+  --line:#E1D9F7;
+  --line-strong:#C8B9EF;
+  --brand-soft-text:#3822B7;
+  --brand-ring:rgba(91,61,245,.22);
+  --blue:#5B3DF5;
+  --blue-strong:#4930D1;
+  --blue-soft:#E8DEFF;
+  --blue-soft-text:#3822B7;
+  --purple:#5B3DF5;
+  --purple-soft:#E8DEFF;
+  --purple-soft-text:#3822B7;
+}
+body[data-theme="dark"]{
+  --background:#0D0820;
+  --surface-primary:#17102D;
+  --surface-secondary:#21183A;
+  --surface-hover:#2B2048;
+  --primary:#5B3DF5;
+  --primary-hover:#765CF8;
+  --primary-light:rgba(232,222,255,.13);
+  --sidebar:#0A0618;
+  --line:#352858;
+  --line-strong:#514071;
+  --brand-soft-text:#E8DEFF;
+  --brand-ring:rgba(91,61,245,.38);
+  --blue:#8D79FF;
+  --blue-strong:#B8A9FF;
+  --blue-soft:rgba(232,222,255,.13);
+  --blue-soft-text:#E8DEFF;
+  --purple:#8D79FF;
+  --purple-soft:rgba(232,222,255,.13);
+  --purple-soft-text:#E8DEFF;
+}
+body::selection{background:#E8DEFF;color:#3822B7}
+body[data-theme="dark"] ::selection{background:rgba(91,61,245,.55);color:#fff}
+.sidebar,.customer-top,.customer-nav,.mobile-bottom-nav{background:#130C2B}
+body[data-theme="dark"] .sidebar{background:#080514}
+.brand-logo{
+  background:#5B3DF5;
+  box-shadow:0 8px 22px rgba(91,61,245,.35);
+}
+.customer-top .brand-logo{box-shadow:0 7px 18px rgba(91,61,245,.28)}
+.btn-primary{box-shadow:0 4px 12px rgba(91,61,245,.18)}
+.btn-primary:hover{box-shadow:0 6px 16px rgba(91,61,245,.27)}
+.nav-btn.active{
+  background:#5B3DF5;
+  box-shadow:0 8px 20px rgba(91,61,245,.25);
+}
+.side-user-avatar{background:#2E1F80;color:#E8DEFF}
+.workspace-eyebrow{color:#8D79FF}
+.page:not(#page-dashboard):not(#page-cheques):not(#page-ai)>.section-head:first-child,
+.dashboard-command-hero,
+.dashboard-kpi-grid .metric:first-child{
+  border-color:rgba(232,222,255,.12);
+  background:#171032;
+}
+.page:not(#page-dashboard):not(#page-cheques):not(#page-ai)>.section-head:first-child::after{
+  border-color:rgba(91,61,245,.22);
+}
+.dashboard-command-hero::after,.cheque-command-hero::after{
+  border-color:rgba(91,61,245,.26);
+}
+.dashboard-command-hero .dashboard-period-tabs button.active{
+  background:#E8DEFF;
+  color:#3822B7;
+}
+.action-centre-card{background:#211745}
+.cheque-command-hero{
+  border-color:rgba(232,222,255,.12);
+  background:#130C2B;
+}
+.cheque-command-hero #addChequeBtn{
+  border-color:#E8DEFF;
+  background:#E8DEFF;
+  color:#3822B7;
+}
+body:has(.customer-shell){background:#F8F6FF}
+body[data-theme="dark"]:has(.customer-shell){background:#0D0820}
+.customer-hero{background:#5B3DF5}
+.customer-hero .hero-note,
+.customer-hero .metric-label,
+.customer-hero .small,
+.customer-hero .clock-day,
+.customer-hero .clock-date{color:#E8DEFF}
+.customer-tab.active{background:#5B3DF5;color:#fff}
+@media(max-width:760px){
+  .mobile-bottom-nav button.active{color:#E8DEFF}
+}

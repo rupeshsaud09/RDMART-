@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KHATA PANA Dashboard</title>
-<meta name="theme-color" content="#F5F7FB">
+<meta name="theme-color" content="#F8F6FF">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=27">
+<link rel="stylesheet" href="assets/martai.css?v=28">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -747,7 +747,7 @@ function sdb(){const d=A.getDB();const sid=A.getActiveStoreId?.();if(!sid)return
 function save(x){A.saveDB(x)}function toast(msg,type='ok'){if(UI)return UI.toast(msg,{type:type==='err'?'error':type,container:'#toasts',duration:3000});const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;el.setAttribute('role',type==='err'?'alert':'status');$('toasts').appendChild(el);setTimeout(()=>el.remove(),3000)}
 const THEME_KEY='martai_dashboard_theme';
 function preferredTheme(){const saved=localStorage.getItem(THEME_KEY);if(saved==='light'||saved==='dark')return saved;return 'light'}
-function applyTheme(theme,saveChoice=true){theme=theme==='light'?'light':'dark';document.body.dataset.theme=theme;document.documentElement.style.colorScheme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',theme==='light'?'#F5F7FB':'#0B1120');$$('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===theme));if(saveChoice)localStorage.setItem(THEME_KEY,theme)}
+function applyTheme(theme,saveChoice=true){theme=theme==='light'?'light':'dark';document.body.dataset.theme=theme;document.documentElement.style.colorScheme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',theme==='light'?'#F8F6FF':'#0D0820');$$('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===theme));if(saveChoice)localStorage.setItem(THEME_KEY,theme)}
 function logoInitial(name){return String(name||'M').trim().split(/\s+/).filter(Boolean).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'M'}
 function safeBgUrl(data){return String(data||'').replace(/"/g,'%22')}
 function applyBrandLogo(logo,name){logo=A.safeImageDataUrl(logo);$$('.brand-logo').forEach(el=>{if(!el.dataset.defaultLogo)el.dataset.defaultLogo=(el.textContent||'').trim()||(el.classList.contains('brand-logo-rd')?'RD':'M');if(logo){el.classList.add('logo-uploaded');el.style.backgroundImage=`url("${safeBgUrl(logo)}")`;el.textContent=''}else{el.classList.remove('logo-uploaded');el.style.backgroundImage='';el.textContent=el.dataset.defaultLogo}})}
@@ -1394,7 +1394,7 @@ function renderTaskBanner(d,canManage,email){
     el.innerHTML=n?`<div style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:1.15em">&#9989;</span><span style="flex:1;min-width:200px;font-size:.88em"><b>${n} task${n!==1?'s':''} completed</b> by staff &mdash; ready for your review.</span><button class="btn btn-primary btn-sm" data-page="tasks">Review tasks</button></div>`:'';
   }else{
     const n=(d.tasks||[]).filter(t=>t.status!=='done'&&(!t.assignedToEmail||t.assignedToEmail===email)).length;
-    el.innerHTML=n?`<div style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:1.15em">&#128221;</span><span style="flex:1;min-width:200px;font-size:.88em"><b>${n} task${n!==1?'s':''}</b> assigned to you by admin.</span><button class="btn btn-primary btn-sm" data-page="tasks">View tasks</button></div>`:'';
+    el.innerHTML=n?`<div style="background:rgba(91,61,245,.12);border:1px solid rgba(91,61,245,.3);border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:1.15em">&#128221;</span><span style="flex:1;min-width:200px;font-size:.88em"><b>${n} task${n!==1?'s':''}</b> assigned to you by admin.</span><button class="btn btn-primary btn-sm" data-page="tasks">View tasks</button></div>`:'';
   }
 }
 function renderTaskAlerts(){
@@ -2087,6 +2087,6 @@ MartAI.ready.then(async()=>{
   }
 })();
 </script>
-<script src="assets/martai-bot.js?v=7"></script>
+<script src="assets/martai-bot.js?v=8"></script>
 </body>
 </html>

@@ -157,3 +157,79 @@ body.login-page{
   .login-benefits{display:none}
   .login-page .login-card{padding:22px 18px}
 }
+
+/* Electric Indigo + Soft Lilac brand palette */
+body.login-page{
+  --login-cyan:#5B3DF5;
+  --login-blue:#5B3DF5;
+  --login-lime:#E8DEFF;
+  background:#10082D;
+}
+.login-stage{background:#10082D}
+.login-stage:before{
+  background:
+    radial-gradient(circle at 13% 18%,rgba(91,61,245,.30),transparent 31%),
+    radial-gradient(circle at 81% 88%,rgba(232,222,255,.16),transparent 33%),
+    linear-gradient(135deg,#10082D,#1A1043 48%,#0C061F);
+}
+.login-glow-one{background:#5B3DF5}
+.login-glow-two{background:#E8DEFF}
+.login-page .brand-logo{
+  color:#fff;
+  background:linear-gradient(145deg,#765CF8,#5B3DF5);
+  box-shadow:0 10px 30px rgba(91,61,245,.34),inset 0 1px rgba(255,255,255,.55);
+}
+.secure-chip:before,
+.commerce-dots i:first-child,
+.scene-pill span{background:#E8DEFF;box-shadow:0 0 0 4px rgba(232,222,255,.12),0 0 15px #E8DEFF}
+.login-eyebrow{color:#E8DEFF}
+.login-eyebrow:before{background:#5B3DF5;box-shadow:0 0 10px #5B3DF5}
+.login-showcase h1 span{
+  color:transparent;
+  background:linear-gradient(100deg,#E8DEFF 4%,#A996FF 48%,#5B3DF5);
+  background-clip:text;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.login-benefit svg,.commerce-live,.mini-value small{color:#C6B8FF}
+.commerce-orbit{border-color:rgba(232,222,255,.24)}
+.commerce-orbit:before{background:#E8DEFF;box-shadow:0 0 17px #E8DEFF}
+.mini-chart i{background:linear-gradient(to top,rgba(91,61,245,.2),#765CF8)}
+.mini-row:nth-child(4){background:rgba(232,222,255,.58)}
+.tile-bag{background:linear-gradient(145deg,#E8DEFF,#A996FF)}
+.tile-wallet{background:linear-gradient(145deg,#8D79FF,#5B3DF5)}
+.login-panel-wrap:before{
+  background:linear-gradient(145deg,rgba(232,222,255,.46),transparent 30%,transparent 68%,rgba(91,61,245,.58));
+}
+.login-page .login-card:before{background:rgba(91,61,245,.17)}
+.login-page .tab.active{
+  color:#fff;
+  background:linear-gradient(135deg,#765CF8,#5B3DF5);
+  box-shadow:0 7px 19px rgba(91,61,245,.26);
+}
+.login-page .input:focus{
+  border-color:rgba(91,61,245,.82);
+  box-shadow:0 0 0 4px rgba(91,61,245,.15);
+}
+.login-page form>.btn[type=submit]{
+  background:linear-gradient(135deg,#765CF8,#5B3DF5);
+  color:#fff;
+  box-shadow:0 10px 28px rgba(91,61,245,.28);
+}
+.login-page form>.btn[type=submit]:hover{background:#4930D1;box-shadow:0 14px 33px rgba(91,61,245,.38)}
+.login-page .btn-ghost:hover,.login-page .field:focus-within label{color:#A996FF}
+.login-meta svg{color:#C6B8FF}
+.data-cube i{background:linear-gradient(145deg,rgba(232,222,255,.8),rgba(91,61,245,.55))}
+.auth-status{
+  border-color:rgba(232,222,255,.2);
+  background:rgba(91,61,245,.1);
+  color:#E8DEFF;
+}
+.auth-status span{background:#5B3DF5;box-shadow:0 0 8px rgba(91,61,245,.6)}
+.login-page .login-nav-brand:hover .brand-logo{
+  box-shadow:0 16px 34px rgba(91,61,245,.42),inset 0 1px rgba(255,255,255,.7);
+}
+.login-page .login-nav-brand:hover .brand-title{color:#E8DEFF}
+.secure-chip:hover{border-color:rgba(232,222,255,.28);background:rgba(91,61,245,.12)}
+.login-benefit:hover{border-color:rgba(232,222,255,.25);background:rgba(91,61,245,.12)}
+.login-meta span:first-child:hover{color:#E8DEFF}
