@@ -401,23 +401,36 @@ body[data-theme="dark"] .stf-hero{background:#050A12}
   .stf-metrics{grid-template-columns:repeat(2,1fr)}
 }
 
-/* Lavender primary + Plum accent role swap */
+/* Deep Navy + Blue staff finance system */
 .stf-hero,
 body[data-theme="dark"] .stf-hero{
-  background:linear-gradient(120deg,#28133F,#7421D5 38%,#8D2FF6 65%,#5A214B);
-  background-size:220% 220%;
+  background:#102A43;
+  background-size:auto;
+  animation:none;
 }
-.stf-logo{border-color:rgba(247,234,242,.35);background:linear-gradient(145deg,#8D2FF6,#5A214B)}
-.stf-metric:first-child{border-color:#8D2FF6;background:linear-gradient(135deg,#8D2FF6,#7421D5)}
-.stf-ava{background:linear-gradient(140deg,#8D2FF6,#5A214B)}
-.stf-action.green{background:linear-gradient(135deg,#8D2FF6,#5A214B)}
-.stf-confetti{background:var(--c,#F7EAF2)}
-.stf-bg i:nth-child(1){background:#F7EAF2}
-.stf-bg i:nth-child(2){background:#E9DCEA}
-.stf-bg i:nth-child(3){background:#D9A8C7}
-body[data-theme="dark"] .stf-bg i:nth-child(1){background:#5A214B}
-body[data-theme="dark"] .stf-bg i:nth-child(2){background:#8D2FF6}
-body[data-theme="dark"] .stf-bg i:nth-child(3){background:#C47AA9}
-.stf-nav{border-color:#4B3060;background:#211230}
-.stf-nav button.active{background:linear-gradient(135deg,#8D2FF6,#5A214B);color:#fff}
-.stf-nav button .stf-nav-badge{border-color:#211230}
+.stf-logo{border-color:rgba(255,255,255,.24);background:#3B82F6}
+.stf-metric:first-child{border-color:#E2E8F0;background:#fff}
+.stf-metric:first-child b{color:#0F172A}
+.stf-metric:first-child span{color:#64748B}
+.stf-metric:first-child::after{background:#3B82F6}
+.stf-ava{background:#3B82F6}
+.stf-action.green{background:#22C55E}
+.stf-action.red{background:#EF4444}
+.stf-confetti{background:var(--c,#3B82F6)}
+.stf-bg{display:none}
+.stf-card,.stf-task,.stf-cust,.stf-metric{
+  border-color:#E2E8F0;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(15,23,42,.06);
+  transition:transform 250ms ease-out,box-shadow 250ms ease-out,border-color 250ms ease-out;
+}
+.stf-task:hover,.stf-cust:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,23,42,.09)}
+body[data-theme="dark"] .stf-card,
+body[data-theme="dark"] .stf-task,
+body[data-theme="dark"] .stf-cust,
+body[data-theme="dark"] .stf-metric{border-color:#244968;background:#102A43}
+.stf-nav{border-color:#102A43;background:#102A43}
+.stf-nav button{color:#94A3B8}
+.stf-nav button.active{background:#1E4E8C;color:#fff}
+.stf-nav button .stf-nav-badge{border-color:#102A43;background:#3B82F6;color:#fff}
