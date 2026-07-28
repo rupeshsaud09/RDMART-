@@ -4,10 +4,10 @@
         {
             "label": "Start KHATA PANA server",
             "type": "process",
-            "command": "node",
-            "args": ["server.js"],
+            "command": "npm.cmd",
+            "args": ["start"],
             "options": {
-                "cwd": "${workspaceFolder}/martai_final"
+                "cwd": "${workspaceFolder}"
             },
             "isBackground": true,
             "problemMatcher": {
@@ -19,7 +19,7 @@
                 "background": {
                     "activeOnStart": true,
                     "beginsPattern": ".*",
-                    "endsPattern": "KHATA PANA running at http://localhost:3000"
+                    "endsPattern": "KHATA PANA khata-pana-local-v67 running at http://localhost:3000"
                 }
             },
             "presentation": {

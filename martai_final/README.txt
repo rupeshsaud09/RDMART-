@@ -49,9 +49,11 @@ Option A — Open locally (no install needed):
   Open index.html directly in Chrome or Edge.
 
 Option B — Local server (Node.js):
-  Open CMD/terminal in this folder and run:
-    node server.js
+  Open CMD/terminal in the RD MART project folder and run:
+    npm start
   Then visit: http://localhost:3000
+  This always serves the martai_final folder with browser caching disabled,
+  so local UI and JavaScript changes appear immediately.
 
 Option C — Deploy to Netlify (free, HTTPS, recommended for live):
   1. Go to netlify.com and sign up free.

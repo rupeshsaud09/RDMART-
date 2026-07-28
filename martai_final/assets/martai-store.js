@@ -569,8 +569,29 @@
     remoteEnabled=!!getSupabase();return getDB();
   }
   window.addEventListener('online',()=>{const s=getSession();if(tableMode()&&hasPending()&&(s?.role==='admin'||s?.role==='staff'||s?.role==='store_admin'))queueRemoteSave(getDB())});
-  // PWA: always check for a fresh worker and reload once when a new release takes control.
-  if('serviceWorker' in navigator){let refreshing=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;location.reload()});window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=66',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})})}
+  // PWA caching belongs to the deployed HTTPS app. On localhost/file previews,
+  // remove old MartAI workers and caches so source changes appear immediately.
+  if('serviceWorker' in navigator){
+    const localPreview=location.protocol==='file:'||location.hostname==='localhost'||location.hostname==='127.0.0.1';
+    if(localPreview){
+      const clearLocalPwa=async()=>{
+        try{
+          const registrations=await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map(registration=>registration.unregister()));
+        }catch(_){}
+        const clearCaches=()=>('caches' in window?caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('martai-')).map(key=>caches.delete(key)))):Promise.resolve());
+        await clearCaches().catch(()=>{});
+        // A worker fetch already in flight can finish one cache write after it
+        // unregisters. A second pass closes that race without touching app data.
+        setTimeout(()=>clearCaches().catch(()=>{}),750);
+      };
+      window.addEventListener('load',clearLocalPwa);
+    }else{
+      let refreshing=false;
+      navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;location.reload()});
+      window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=67',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})});
+    }
+  }
   const ready=initialize();
   window.MartAI={KEY,SESSION,id,today,now,num,money,esc,safeImageDataUrl,phoneClean,getDB,saveDB,markDirty,resetDB,validateRestoreBackup,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,addStaffDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateCheque,updateChequeStatus,postponeCheque,deleteCheque,addChequeNote,scheduleChequeFollowUp,addChequeQueue,deleteChequeQueue,addParty,deleteParty,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveBankCalendar,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,setStaffPhone,staffPhone,accessToken,addTask,completeTask,reopenTask,deleteTask,acknowledgeTasks,csvEscape,download,wa,byDate,tilt3d,getSupabase};
 })();
