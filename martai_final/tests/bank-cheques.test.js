@@ -45,7 +45,7 @@ test('Today records consume the exact same banking-day collection as the summary
 test('dashboard and Today records are wired to the shared banking-day source', function () {
   const dashboard = fs.readFileSync(path.join(__dirname, '..', 'dashboard.html'), 'utf8');
   assert.match(dashboard, /todayChequeSummary=bankingChequeSummary\(d,today\)/);
-  assert.match(dashboard, /if\(selected==='today'\)raw=bankingChequesOnDate\(d,today\)/);
+  assert.match(dashboard, /BankCheques\.recordsForView\(d\.cheques,selected,today,bankCalendarOptions\(\)\)/);
   assert.match(dashboard, /todayCheques=todayChequeSummary\.items/);
 });
 
@@ -107,4 +107,27 @@ test('overdue age counts open banking days rather than calendar days', function 
   assert.equal(mondayInfo.daysOverdue, 1);
   const tuesdayHoliday = BankCheques.dueInfo(cheque, '2026-07-28', { weekendDays: [0, 6], holidays: ['2026-07-28'] });
   assert.equal(tuesdayHoliday.daysOverdue, 1);
+});
+
+test('quick views return distinct upcoming, overdue, and cleared banking queues', function () {
+  const asOf = '2026-07-28';
+  const quickViewRecords = [
+    { id: 'upcoming', chequeDate: '2026-07-30', amount: 100, status: 'hold' },
+    { id: 'overdue', chequeDate: '2026-07-24', amount: 200, status: 'hold' },
+    { id: 'cleared', chequeDate: '2026-07-30', amount: 300, lifecycleStatus: 'cleared', status: 'clear' },
+    { id: 'bounced', chequeDate: '2026-07-24', amount: 400, status: 'bounce' }
+  ];
+  const ids = view => BankCheques.recordsForView(quickViewRecords, view, asOf, { weekendDays: [0, 6] }).map(item => item.id);
+  assert.deepEqual(ids('upcoming'), ['upcoming']);
+  assert.deepEqual(ids('overdue'), ['overdue']);
+  assert.deepEqual(ids('cleared'), ['cleared']);
+});
+
+test('quick-view controls reset stale refinements and resync their active state', function () {
+  const dashboard = fs.readFileSync(path.join(__dirname, '..', 'dashboard.html'), 'utf8');
+  assert.match(dashboard, /BankCheques\.recordsForView\(d\.cheques,selected,today,bankCalendarOptions\(\)\)/);
+  assert.match(dashboard, /function applyChequeQuickView\(value,\{reset=true\}=\{\}\)/);
+  assert.match(dashboard, /if\(reset\)resetChequeRefinements\(\)/);
+  assert.match(dashboard, /function renderCheques\(\)\{\s*const d=sdb\(\);syncChequeQuickViews\(\)/);
+  assert.match(dashboard, /button\.setAttribute\('aria-pressed',active\?'true':'false'\)/);
 });

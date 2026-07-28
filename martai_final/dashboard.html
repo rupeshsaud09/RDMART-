@@ -718,9 +718,9 @@
 <script src="assets/martai-supabase-config.js"></script>
 <script src="assets/martai-push-config.js"></script>
 <script src="assets/martai-date.js?v=1"></script>
-<script src="assets/martai-bank-cheques.js?v=1"></script>
+<script src="assets/martai-bank-cheques.js?v=2"></script>
 <script src="assets/martai-ui.js?v=1"></script>
-<script src="assets/martai-store.js?v=32"></script>
+<script src="assets/martai-store.js?v=33"></script>
 <script src="assets/martai-notifications.js?v=1"></script>
 <script src="assets/martai-cheques.js?v=1"></script>
 <script src="assets/martai-intelligence.js?v=1"></script>
@@ -1193,14 +1193,7 @@ let chequeView='active',chequeSort='due_asc',chequeFilteredCache=[],chequeDrawer
 function chequePopulateBankFilter(d){const sel=$('chequeBankFilter');if(!sel)return;const banks=[...new Set(d.cheques.map(x=>String(x.bank||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b)),stamp=banks.join('\u001f');if(stamp===chequeBankFilterStamp)return;chequeBankFilterStamp=stamp;const old=sel.value;sel.innerHTML='<option value="">All banks</option>'+banks.map(b=>`<option value="${A.esc(b)}">${A.esc(b)}</option>`).join('');if(banks.some(b=>b.toLowerCase()===old.toLowerCase()))sel.value=old}
 function buildChequeQuery(){
   const d=sdb(),today=A.today(),selected=$('chequeStatusFilter')?.value||chequeView||'active';chequeView=selected;
-  let raw=d.cheques;
-  if(selected==='today')raw=bankingChequesOnDate(d,today);
-  else if(selected==='active')raw=raw.filter(x=>!BankCheques||BankCheques.isActive(x));
-  else if(selected==='upcoming')raw=raw.filter(x=>(!BankCheques||BankCheques.isActive(x))&&chequeBankDate(x)>today);
-  else if(selected==='overdue')raw=raw.filter(x=>(!BankCheques||BankCheques.isActive(x))&&chequeBankDate(x)<today);
-  else if(selected==='on_hold')raw=raw.filter(x=>(!BankCheques||BankCheques.isActive(x))&&chequeLifecycle(x)==='on_hold');
-  else if(selected==='cleared')raw=raw.filter(x=>chequeLifecycle(x)==='cleared');
-  else if(selected==='bounced')raw=raw.filter(x=>chequeLifecycle(x)==='bounced');
+  let raw=BankCheques.recordsForView(d.cheques,selected,today,bankCalendarOptions());
   /* Reuse the banking-date memo while shaping records for the query engine.
      The old helper recalculated the same weekend/holiday chain for every
      metric, filter and row. */
@@ -1286,7 +1279,7 @@ function sortChequeCache(rows){
   return arr;
 }
 function renderCheques(){
-  const d=sdb();renderChequeMetrics(d);renderChequeQueueCount(d);chequePopulateBankFilter(d);renderChequeFilterBar();
+  const d=sdb();syncChequeQuickViews();renderChequeMetrics(d);renderChequeQueueCount(d);chequePopulateBankFilter(d);renderChequeFilterBar();
   const {q,source}=buildChequeQuery();
   const all=CQ.queryRecords(source,{...q,page:1,pageSize:100000});
   const originals=new Map(source.map(x=>[x.id,x.originalDueDate||chequeDateIso(x)]));
@@ -1800,12 +1793,22 @@ document.addEventListener('reset',()=>setTimeout(setTodayInputs,0));
 $('clearCreditDateFilter')?.addEventListener('click',()=>{$('creditDateFrom').value='';$('creditDateTo').value='';syncDateButtons();pgState.creditHistory=1;renderCurrentPage()});
 $('clearDailyDateFilter')?.addEventListener('click',()=>{$('dailyDateFrom').value='';$('dailyDateTo').value='';if($('dailySearch'))$('dailySearch').value='';if($('dailyMethodFilter'))$('dailyMethodFilter').value='';syncDateButtons();pgState.daily=1;renderCurrentPage()});
   /* Reset returns the cheque list to its simple Active Cheques default. */
-$('clearChequeDateFilter')?.addEventListener('click',()=>{['chequeDateFrom','chequeDateTo','chequeAmountMin','chequeAmountMax'].forEach(id=>{if($(id))$(id).value=''});['chequeDirectionFilter','chequeBankFilter'].forEach(id=>{if($(id))$(id).value=''});if($('chequeStatusFilter'))$('chequeStatusFilter').value='active';if($('chequeDatePreset'))$('chequeDatePreset').value='';chequeView='active';syncDateButtons();pgState.cheques=1;renderCurrentPage()});
+$('clearChequeDateFilter')?.addEventListener('click',()=>{resetChequeRefinements();if($('chequeStatusFilter'))$('chequeStatusFilter').value='active';chequeView='active';syncChequeQuickViews();pgState.cheques=1;renderCurrentPage()});
 $('applyChequeFiltersBtn')?.addEventListener('click',()=>{$('chequeFiltersPanel').hidden=true;$('chequeFiltersBtn')?.setAttribute('aria-expanded','false')});
 $('chequeFilterPills')?.addEventListener('click',e=>{const b=e.target.closest('[data-clear-chq-filter]');if(!b)return;clearChequeFilterField(b.dataset.clearChqFilter)});
-function syncChequeQuickViews(value=$('chequeStatusFilter')?.value||'active'){$$('.cheque-quick-view').forEach(button=>button.classList.toggle('active',button.dataset.chequeQuick===value))}
+function resetChequeRefinements(){
+  ['chequeSearch','chequeDateFrom','chequeDateTo','chequeAmountMin','chequeAmountMax'].forEach(id=>{if($(id))$(id).value=''});
+  ['chequeDirectionFilter','chequeBankFilter','chequeDatePreset'].forEach(id=>{if($(id))$(id).value=''});
+  syncDateButtons();
+}
+function syncChequeQuickViews(value=$('chequeStatusFilter')?.value||chequeView||'active'){$$('.cheque-quick-view').forEach(button=>{const active=button.dataset.chequeQuick===value;button.classList.toggle('active',active);button.setAttribute('aria-pressed',active?'true':'false')})}
+function applyChequeQuickView(value,{reset=true}={}){
+  const filter=$('chequeStatusFilter'),valid=filter&&Array.from(filter.options).some(option=>option.value===value);if(!valid)return;
+  if(reset)resetChequeRefinements();
+  filter.value=value;chequeView=value;syncChequeQuickViews(value);pgState.cheques=1;renderCheques();
+}
 $('chequeStatusFilter')?.addEventListener('change',()=>{syncChequeQuickViews();pgState.cheques=1;renderCurrentPage()});
-$$('.cheque-quick-view').forEach(button=>button.addEventListener('click',()=>{const filter=$('chequeStatusFilter');if(!filter)return;filter.value=button.dataset.chequeQuick;syncChequeQuickViews(filter.value);pgState.cheques=1;renderCheques()}));
+$$('.cheque-quick-view').forEach(button=>button.addEventListener('click',()=>applyChequeQuickView(button.dataset.chequeQuick)));
 $('chequeDatePreset')?.addEventListener('change',()=>{if($('chequeDatePreset').value==='custom'){$('chequeFiltersPanel').hidden=false;$('chequeFiltersBtn')?.setAttribute('aria-expanded','true')}pgState.cheques=1;renderCurrentPage()});
 $('chequeSort')?.addEventListener('change',()=>{chequeSort=$('chequeSort').value;pgState.cheques=1;renderCheques()});
 ['chequeDirectionFilter','chequeBankFilter'].forEach(id=>$(id)?.addEventListener('change',()=>{pgState.cheques=1;renderCurrentPage()}));
@@ -1813,7 +1816,7 @@ $('chequeSort')?.addEventListener('change',()=>{chequeSort=$('chequeSort').value
 $('addChequeBtn')?.addEventListener('click',()=>openChequeEntry());
 $('openChequePlannerBtn')?.addEventListener('click',()=>{renderChequePlanner(sdb());openModal('chequePlannerModal')});
 $('openChequeQueueBtn')?.addEventListener('click',()=>{renderChequeQueue(sdb());openModal('chequeQueueModal')});
-$('chequeMetrics')?.addEventListener('click',e=>{const b=e.target.closest('[data-cheque-summary]');if(!b)return;chequeView=b.dataset.chequeSummary;if($('chequeStatusFilter'))$('chequeStatusFilter').value=chequeView;pgState.cheques=1;renderCurrentPage()});
+$('chequeMetrics')?.addEventListener('click',e=>{const b=e.target.closest('[data-cheque-summary]');if(!b)return;applyChequeQuickView(b.dataset.chequeSummary)});
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.planDate){e.preventDefault();e.stopImmediatePropagation();closeModal('chequePlannerModal');openChequeEntry({chequeDate:b.dataset.planDate});toast('Cheque date set to '+npDate(b.dataset.planDate));return}if(b.dataset.queueWrite){const q=(db().chequeQueue||[]).find(x=>x.id===b.dataset.queueWrite);if(!q)return;e.preventDefault();e.stopImmediatePropagation();closeModal('chequeQueueModal');chequeQueuePrefill={id:q.id};openChequeEntry({party:q.party,amount:q.amount});toast('Party filled — enter cheque number and save')}},true);
 document.addEventListener('keydown',e=>{if(e.key!=='/'||e.ctrlKey||e.metaKey||e.altKey)return;const tag=(e.target.tagName||'').toLowerCase();if(tag==='input'||tag==='textarea'||tag==='select'||e.target.isContentEditable)return;if(currentPage!=='cheques'||!$('chq-records')||$('chq-records').hidden)return;e.preventDefault();$('chequeSearch')?.focus()});
 document.addEventListener('change',e=>{if(e.target.id==='chequePageSize'){chequePageSize=Number(e.target.value)||20;pgState.cheques=1;renderCheques()}});

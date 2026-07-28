@@ -43,6 +43,18 @@
     return String(firstValue(record, ['lifecycleStatus', 'lifecycle_status', 'status']) || 'hold').trim().toLowerCase();
   }
 
+  function canonicalLifecycleStatus(record) {
+    const status = lifecycleStatus(record).replace(/[\s-]+/g, '_');
+    return {
+      hold: 'on_hold',
+      pending: 'on_hold',
+      clear: 'cleared',
+      bounce: 'bounced',
+      cancel: 'cancelled',
+      canceled: 'cancelled'
+    }[status] || status;
+  }
+
   function isActive(record) {
     return TERMINAL_STATUSES.indexOf(lifecycleStatus(record)) < 0 && !firstValue(record, ['deletedAt', 'deleted_at']);
   }
@@ -112,6 +124,26 @@
     });
   }
 
+  function recordsForView(records, viewValue, asOfDate, options) {
+    const settings = options || {};
+    const today = DateTools.dayKey(asOfDate == null ? Date.now() : asOfDate);
+    const view = String(viewValue || 'active').trim().toLowerCase().replace(/[\s-]+/g, '_');
+    return (Array.isArray(records) ? records : []).filter(function matches(record) {
+      const deleted = Boolean(firstValue(record, ['deletedAt', 'deleted_at']));
+      if (deleted && settings.includeDeleted !== true) return false;
+      if (view === 'all' || view === 'archive') return true;
+      if (view === 'active') return isActive(record);
+      const lifecycle = canonicalLifecycleStatus(record);
+      if (view === 'cleared') return lifecycle === 'cleared';
+      if (view === 'bounced') return lifecycle === 'bounced';
+      if (view === 'on_hold' || view === 'hold') return isActive(record) && lifecycle === 'on_hold';
+      if (view === 'today' || view === 'due_today') return dueInfo(record, today, settings).status === 'today';
+      if (view === 'upcoming') return dueInfo(record, today, settings).status === 'upcoming';
+      if (view === 'overdue') return dueInfo(record, today, settings).status === 'overdue';
+      return false;
+    });
+  }
+
   function summaryForDate(records, targetDate, options) {
     const items = recordsForDate(records, targetDate, options);
     return Object.freeze({
@@ -147,6 +179,7 @@
     isActive: isActive,
     lifecycleStatus: lifecycleStatus,
     recordsForDate: recordsForDate,
+    recordsForView: recordsForView,
     summaryForDate: summaryForDate,
     writtenDate: writtenDate
   });
