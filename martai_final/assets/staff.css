@@ -401,23 +401,23 @@ body[data-theme="dark"] .stf-hero{background:#050A12}
   .stf-metrics{grid-template-columns:repeat(2,1fr)}
 }
 
-/* Electric Indigo + Soft Lilac staff palette */
+/* Premium Plum + exact Lavender + Off-White staff palette */
 .stf-hero,
 body[data-theme="dark"] .stf-hero{
-  background:linear-gradient(120deg,#1B1047,#4930D1 38%,#5B3DF5 65%,#765CF8);
+  background:linear-gradient(120deg,#32172B,#5A214B 38%,#70205F 65%,#8D2FF6);
   background-size:220% 220%;
 }
-.stf-logo{border-color:rgba(232,222,255,.35);background:#5B3DF5}
-.stf-metric:first-child{border-color:#5B3DF5;background:#5B3DF5}
-.stf-ava{background:linear-gradient(140deg,#765CF8,#5B3DF5)}
-.stf-action.green{background:linear-gradient(135deg,#765CF8,#5B3DF5)}
-.stf-confetti{background:var(--c,#E8DEFF)}
-.stf-bg i:nth-child(1){background:#E8DEFF}
-.stf-bg i:nth-child(2){background:#D8CCFA}
-.stf-bg i:nth-child(3){background:#A996FF}
-body[data-theme="dark"] .stf-bg i:nth-child(1){background:#5B3DF5}
-body[data-theme="dark"] .stf-bg i:nth-child(2){background:#39286B}
-body[data-theme="dark"] .stf-bg i:nth-child(3){background:#765CF8}
-.stf-nav{border-color:#2F2352;background:#130C2B}
-.stf-nav button.active{background:#5B3DF5;color:#fff}
-.stf-nav button .stf-nav-badge{border-color:#130C2B}
+.stf-logo{border-color:rgba(242,232,255,.35);background:linear-gradient(145deg,#5A214B,#8D2FF6)}
+.stf-metric:first-child{border-color:#5A214B;background:linear-gradient(135deg,#5A214B,#70205F)}
+.stf-ava{background:linear-gradient(140deg,#5A214B,#8D2FF6)}
+.stf-action.green{background:linear-gradient(135deg,#5A214B,#8D2FF6)}
+.stf-confetti{background:var(--c,#F2E8FF)}
+.stf-bg i:nth-child(1){background:#F2E8FF}
+.stf-bg i:nth-child(2){background:#E9DCEA}
+.stf-bg i:nth-child(3){background:#DCC0FF}
+body[data-theme="dark"] .stf-bg i:nth-child(1){background:#8D2FF6}
+body[data-theme="dark"] .stf-bg i:nth-child(2){background:#5A214B}
+body[data-theme="dark"] .stf-bg i:nth-child(3){background:#A75BFA}
+.stf-nav{border-color:#543047;background:#291220}
+.stf-nav button.active{background:linear-gradient(135deg,#5A214B,#8D2FF6);color:#fff}
+.stf-nav button .stf-nav-badge{border-color:#291220}

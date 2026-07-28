@@ -2443,102 +2443,104 @@ body[data-theme="dark"]:has(.customer-shell){background:#080E1A}
 }
 
 /* ============================================================
-   KHATA PANA v13 — ELECTRIC INDIGO BRAND SYSTEM
-   Primary: #5B3DF5 · Soft surface: #E8DEFF
+   KHATA PANA v14 — PLUM, LAVENDER + OFF-WHITE
+   Plum: #5A214B · Lavender: #8D2FF6 · Off-white: #FCF9F4
    ============================================================ */
 body{
-  --background:#F8F6FF;
+  --background:#FCF9F4;
   --surface-primary:#FFFFFF;
-  --surface-secondary:#F3EFFF;
-  --surface-hover:#E8DEFF;
-  --primary:#5B3DF5;
-  --primary-hover:#4930D1;
-  --primary-light:#E8DEFF;
-  --line:#E1D9F7;
-  --line-strong:#C8B9EF;
-  --brand-soft-text:#3822B7;
-  --brand-ring:rgba(91,61,245,.22);
-  --blue:#5B3DF5;
-  --blue-strong:#4930D1;
-  --blue-soft:#E8DEFF;
-  --blue-soft-text:#3822B7;
-  --purple:#5B3DF5;
-  --purple-soft:#E8DEFF;
-  --purple-soft-text:#3822B7;
+  --surface-secondary:#F8F2F7;
+  --surface-hover:#F2E8FF;
+  --primary:#5A214B;
+  --primary-hover:#431737;
+  --primary-light:#F2E8FF;
+  --line:#E9DDE6;
+  --line-strong:#D2BBCB;
+  --brand-soft-text:#5A214B;
+  --brand-ring:rgba(141,47,246,.22);
+  --accent:#8D2FF6;
+  --blue:#8D2FF6;
+  --blue-strong:#7421D5;
+  --blue-soft:#F2E8FF;
+  --blue-soft-text:#6719B8;
+  --purple:#8D2FF6;
+  --purple-soft:#F2E8FF;
+  --purple-soft-text:#6719B8;
 }
 body[data-theme="dark"]{
-  --background:#0D0820;
-  --surface-primary:#17102D;
-  --surface-secondary:#21183A;
-  --surface-hover:#2B2048;
-  --primary:#5B3DF5;
-  --primary-hover:#765CF8;
-  --primary-light:rgba(232,222,255,.13);
-  --sidebar:#0A0618;
-  --line:#352858;
-  --line-strong:#514071;
-  --brand-soft-text:#E8DEFF;
-  --brand-ring:rgba(91,61,245,.38);
-  --blue:#8D79FF;
-  --blue-strong:#B8A9FF;
-  --blue-soft:rgba(232,222,255,.13);
-  --blue-soft-text:#E8DEFF;
-  --purple:#8D79FF;
-  --purple-soft:rgba(232,222,255,.13);
-  --purple-soft-text:#E8DEFF;
+  --background:#1B0F18;
+  --surface-primary:#2A1925;
+  --surface-secondary:#382230;
+  --surface-hover:#493040;
+  --primary:#9C5A89;
+  --primary-hover:#B76FA2;
+  --primary-light:rgba(141,47,246,.16);
+  --sidebar:#160B13;
+  --line:#553448;
+  --line-strong:#76526B;
+  --brand-soft-text:#F2E8FF;
+  --brand-ring:rgba(141,47,246,.38);
+  --accent:#A75BFA;
+  --blue:#A75BFA;
+  --blue-strong:#C28AFB;
+  --blue-soft:rgba(141,47,246,.16);
+  --blue-soft-text:#E6CCFF;
+  --purple:#A75BFA;
+  --purple-soft:rgba(141,47,246,.16);
+  --purple-soft-text:#E6CCFF;
 }
-body::selection{background:#E8DEFF;color:#3822B7}
-body[data-theme="dark"] ::selection{background:rgba(91,61,245,.55);color:#fff}
-.sidebar,.customer-top,.customer-nav,.mobile-bottom-nav{background:#130C2B}
-body[data-theme="dark"] .sidebar{background:#080514}
+body::selection{background:#F2E8FF;color:#5A214B}
+body[data-theme="dark"] ::selection{background:rgba(141,47,246,.55);color:#fff}
+.sidebar,.customer-top,.customer-nav,.mobile-bottom-nav{background:#291220}
+body[data-theme="dark"] .sidebar{background:#130910}
 .brand-logo{
-  background:#5B3DF5;
-  box-shadow:0 8px 22px rgba(91,61,245,.35);
+  background:linear-gradient(145deg,#5A214B,#8D2FF6);
+  box-shadow:0 8px 22px rgba(90,33,75,.34);
 }
-.customer-top .brand-logo{box-shadow:0 7px 18px rgba(91,61,245,.28)}
-.btn-primary{box-shadow:0 4px 12px rgba(91,61,245,.18)}
-.btn-primary:hover{box-shadow:0 6px 16px rgba(91,61,245,.27)}
+.customer-top .brand-logo{box-shadow:0 7px 18px rgba(90,33,75,.28)}
+.btn-primary{box-shadow:0 4px 12px rgba(90,33,75,.18)}
+.btn-primary:hover{box-shadow:0 6px 16px rgba(90,33,75,.27)}
 .nav-btn.active{
-  background:#5B3DF5;
-  box-shadow:0 8px 20px rgba(91,61,245,.25);
+  background:linear-gradient(135deg,#5A214B,#8D2FF6);
+  box-shadow:0 8px 20px rgba(90,33,75,.28);
 }
-.side-user-avatar{background:#2E1F80;color:#E8DEFF}
-.workspace-eyebrow{color:#8D79FF}
+.side-user-avatar{background:#5A214B;color:#F2E8FF}
+.workspace-eyebrow{color:#A75BFA}
 .page:not(#page-dashboard):not(#page-cheques):not(#page-ai)>.section-head:first-child,
 .dashboard-command-hero,
 .dashboard-kpi-grid .metric:first-child{
-  border-color:rgba(232,222,255,.12);
-  background:#171032;
+  border-color:rgba(242,232,255,.13);
+  background:#2B1726;
 }
 .page:not(#page-dashboard):not(#page-cheques):not(#page-ai)>.section-head:first-child::after{
-  border-color:rgba(91,61,245,.22);
+  border-color:rgba(141,47,246,.22);
 }
 .dashboard-command-hero::after,.cheque-command-hero::after{
-  border-color:rgba(91,61,245,.26);
+  border-color:rgba(141,47,246,.28);
 }
 .dashboard-command-hero .dashboard-period-tabs button.active{
-  background:#E8DEFF;
-  color:#3822B7;
+  background:#F2E8FF;
+  color:#5A214B;
 }
-.action-centre-card{background:#211745}
+.action-centre-card{background:#3A2032}
 .cheque-command-hero{
-  border-color:rgba(232,222,255,.12);
-  background:#130C2B;
+  border-color:rgba(242,232,255,.13);
+  background:#291220;
 }
 .cheque-command-hero #addChequeBtn{
-  border-color:#E8DEFF;
-  background:#E8DEFF;
-  color:#3822B7;
+  border-color:#F2E8FF;
+  background:#F2E8FF;
+  color:#5A214B;
 }
-body:has(.customer-shell){background:#F8F6FF}
-body[data-theme="dark"]:has(.customer-shell){background:#0D0820}
-.customer-hero{background:#5B3DF5}
+body:has(.customer-shell){background:#FCF9F4}
+body[data-theme="dark"]:has(.customer-shell){background:#1B0F18}
+.customer-hero{background:linear-gradient(135deg,#5A214B,#8D2FF6)}
 .customer-hero .hero-note,
 .customer-hero .metric-label,
 .customer-hero .small,
 .customer-hero .clock-day,
-.customer-hero .clock-date{color:#E8DEFF}
-.customer-tab.active{background:#5B3DF5;color:#fff}
+.customer-hero .clock-date{color:#F2E8FF}
+.customer-tab.active{background:linear-gradient(135deg,#5A214B,#8D2FF6);color:#fff}
 @media(max-width:760px){
-  .mobile-bottom-nav button.active{color:#E8DEFF}
+  .mobile-bottom-nav button.active{color:#C28AFB}
 }
