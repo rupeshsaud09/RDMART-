@@ -2744,6 +2744,56 @@ body[data-theme="dark"] tbody tr:hover td{background:#1C3F66}
 /* Customer portal */
 body:has(.customer-shell){background:#F5F7FA}
 body[data-theme="dark"]:has(.customer-shell){background:#081A2C}
+
+/* Body-level floating menu portal
+   --------------------------------
+   Open dropdowns are moved under <body>, outside card/table overflow and
+   transformed stacking contexts. Inline fixed coordinates come from the
+   shared collision-aware controller in martai-ui.js. */
+body>.ui-floating-menu{
+  position:fixed!important;
+  right:auto!important;
+  bottom:auto!important;
+  z-index:9999!important;
+  max-width:calc(100vw - 16px);
+  overflow-x:hidden;
+  overflow-y:auto;
+  border:1px solid #E2E8F0;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 18px 42px rgba(15,23,42,.16),0 4px 12px rgba(15,23,42,.08);
+  opacity:0;
+  transform:scale(.96);
+  pointer-events:none;
+  animation:none!important;
+  transition:opacity 180ms ease-out,transform 180ms ease-out!important;
+  will-change:opacity,transform;
+  isolation:isolate;
+}
+body>.ui-floating-menu.is-open{opacity:1;transform:scale(1);pointer-events:auto}
+body>.ui-floating-menu.is-closing{opacity:0;transform:scale(.96);pointer-events:none}
+body>.ui-floating-menu .menu-item,
+body>.ui-floating-menu.row-menu-pop .btn{white-space:nowrap}
+body>.ui-floating-menu.cheque-page-menu-pop{min-width:210px}
+body>.ui-floating-menu.row-menu-pop{min-width:180px}
+body>.ui-floating-menu [role="menuitem"]:focus-visible,
+body>.ui-floating-menu .menu-item:focus-visible,
+body>.ui-floating-menu.row-menu-pop .btn:focus-visible{
+  outline:2px solid #3B82F6;
+  outline-offset:-2px;
+  background:#F8FAFC;
+}
+body[data-theme="dark"]>.ui-floating-menu{
+  border-color:#244968;
+  background:#102A43;
+  box-shadow:0 20px 48px rgba(0,0,0,.42);
+}
+body[data-theme="dark"]>.ui-floating-menu [role="menuitem"]:focus-visible,
+body[data-theme="dark"]>.ui-floating-menu .menu-item:focus-visible,
+body[data-theme="dark"]>.ui-floating-menu.row-menu-pop .btn:focus-visible{background:#1C3F66}
+@media(prefers-reduced-motion:reduce){
+  body>.ui-floating-menu{transition:none!important}
+}
 .customer-top{background:#102A43;color:#fff}
 .customer-top .brand-logo{box-shadow:0 7px 18px rgba(59,130,246,.24)}
 .customer-hero{

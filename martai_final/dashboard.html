@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=32">
+<link rel="stylesheet" href="assets/martai.css?v=33">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -385,7 +385,7 @@
         <div class="section-head cheque-page-head">
           <div><span class="workspace-eyebrow">Banking operations</span><div class="page-title">Cheque command centre</div><div class="page-sub">See what moves today, what needs attention, and what is coming next.</div></div>
           <div class="section-head-actions">
-            <details class="cheque-page-menu"><summary class="icon-btn" aria-label="More cheque options" title="More options">&#8943;</summary><div class="menu-pop"><button class="menu-item" id="openChequePlannerBtn" type="button">Calendar view</button><button class="menu-item" id="openChequeQueueBtn" type="button">Cheques to write</button><button class="menu-item" id="downloadChequesBtn" type="button">Export CSV</button></div></details>
+            <details class="cheque-page-menu"><summary class="icon-btn" id="chequePageMenuBtn" aria-label="More cheque options" aria-haspopup="menu" aria-expanded="false" title="More options">&#8943;</summary><div class="menu-pop cheque-page-menu-pop" id="chequePageMenu" role="menu" aria-label="More cheque options"><button class="menu-item" id="openChequePlannerBtn" type="button" role="menuitem">Calendar view</button><button class="menu-item" id="openChequeQueueBtn" type="button" role="menuitem">Cheques to write</button><button class="menu-item" id="downloadChequesBtn" type="button" role="menuitem">Export CSV</button></div></details>
             <button class="btn btn-primary" id="addChequeBtn" type="button"><svg class="icon-sm icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add Cheque</button>
           </div>
         </div>
@@ -496,7 +496,7 @@
                   </div>
                   <div class="cheque-filters-footer">
                     <button class="btn btn-soft btn-sm" id="clearChequeDateFilter" type="button">Reset</button>
-                    <button class="btn btn-primary btn-sm" id="applyChequeFiltersBtn" type="button">Apply</button>
+                    <button class="btn btn-primary btn-sm" id="applyChequeFiltersBtn" type="button" data-floating-menu-close>Apply</button>
                   </div>
                 </div>
               </div>
@@ -719,7 +719,7 @@
 <script src="assets/martai-push-config.js"></script>
 <script src="assets/martai-date.js?v=1"></script>
 <script src="assets/martai-bank-cheques.js?v=3"></script>
-<script src="assets/martai-ui.js?v=1"></script>
+<script src="assets/martai-ui.js?v=2"></script>
 <script src="assets/martai-store.js?v=36"></script>
 <script src="assets/martai-notifications.js?v=1"></script>
 <script src="assets/martai-cheques.js?v=1"></script>
@@ -1795,7 +1795,7 @@ $('clearCreditDateFilter')?.addEventListener('click',()=>{$('creditDateFrom').va
 $('clearDailyDateFilter')?.addEventListener('click',()=>{$('dailyDateFrom').value='';$('dailyDateTo').value='';if($('dailySearch'))$('dailySearch').value='';if($('dailyMethodFilter'))$('dailyMethodFilter').value='';syncDateButtons();pgState.daily=1;renderCurrentPage()});
   /* Reset returns the cheque list to its simple Active Cheques default. */
 $('clearChequeDateFilter')?.addEventListener('click',()=>{resetChequeRefinements();if($('chequeStatusFilter'))$('chequeStatusFilter').value='active';chequeView='active';syncChequeQuickViews();pgState.cheques=1;renderCurrentPage()});
-$('applyChequeFiltersBtn')?.addEventListener('click',()=>{$('chequeFiltersPanel').hidden=true;$('chequeFiltersBtn')?.setAttribute('aria-expanded','false')});
+$('applyChequeFiltersBtn')?.addEventListener('click',()=>{$('chequeFiltersBtn')?.setAttribute('aria-expanded','false')});
 $('chequeFilterPills')?.addEventListener('click',e=>{const b=e.target.closest('[data-clear-chq-filter]');if(!b)return;clearChequeFilterField(b.dataset.clearChqFilter)});
 function resetChequeRefinements(){
   ['chequeSearch','chequeDateFrom','chequeDateTo','chequeAmountMin','chequeAmountMax'].forEach(id=>{if($(id))$(id).value=''});
@@ -1993,38 +1993,31 @@ MartAI.ready.then(async()=>{
 (function(){
   const $=id=>document.getElementById(id);
 
-  /* Generic dropdown behavior for header menus */
-  function dropdown(btnId,menuId){
+  /* All menus use a body-level portal so cards, tables and transformed
+     stacking contexts can never clip them. */
+  function dropdown(btnId,menuId,options){
     const btn=$(btnId),menu=$(menuId);
     if(!btn||!menu)return null;
-    function setOpen(open){
-      menu.hidden=!open;
-      btn.setAttribute('aria-expanded',open?'true':'false');
-      if(open){const first=menu.querySelector('[data-menu-search]')||menu.querySelector('.menu-item,.notification-tab,.notification-item');if(first)first.focus()}
-      else{const search=menu.querySelector('[data-menu-search]');if(search&&search.value){search.value='';search.dispatchEvent(new Event('input'))}}
-    }
-    btn.addEventListener('click',e=>{e.stopPropagation();setOpen(menu.hidden)});
-    menu.addEventListener('keydown',e=>{
-      const items=Array.from(menu.querySelectorAll('.menu-item,.notification-tab,.notification-item,.notification-action')).filter(el=>!el.hidden);
-      const i=items.indexOf(document.activeElement);
-      if(e.key==='ArrowDown'){e.preventDefault();(items[i+1]||items[0]).focus()}
-      else if(e.key==='ArrowUp'){e.preventDefault();(items[i-1]||items[items.length-1]).focus()}
-      else if(e.key==='Escape'){setOpen(false);btn.focus()}
-    });
-    menu.addEventListener('click',e=>{if(e.target.closest('.menu-item,.notification-item,[data-page]'))setOpen(false)});
-    document.addEventListener('click',e=>{if(!menu.hidden&&!menu.contains(e.target)&&e.target!==btn&&!btn.contains(e.target)&&!e.target.closest('#bspWrap'))setOpen(false)});
-    return{setOpen};
+    return UI.createFloatingMenu(btn,menu,{gap:8,margin:8,duration:180,...(options||{})});
   }
-  dropdown('quickAddBtn','quickAddMenu');
-  dropdown('notificationBtn','notificationMenu');
+  dropdown('quickAddBtn','quickAddMenu',{initialFocus:'[data-menu-search]'});
+  dropdown('notificationBtn','notificationMenu',{role:false,selectionSelector:'.notification-item,[data-page]'});
   dropdown('userMenuBtn','userMenu');
-  dropdown('chequeFiltersBtn','chequeFiltersPanel');
+  dropdown('chequeFiltersBtn','chequeFiltersPanel',{role:false,align:'start',selectionSelector:'[data-floating-menu-close]',outsideIgnoreSelector:'#bspWrap'});
+  dropdown('chequePageMenuBtn','chequePageMenu');
 
-  /* Table row overflow menus: only one open, close on outside click or after an action */
+  /* Row overflow menus are rendered dynamically. Create the same portal
+     controller on first use; subsequent clicks are handled by that controller. */
   document.addEventListener('click',e=>{
-    document.querySelectorAll('details.row-menu[open]').forEach(m=>{
-      if(!m.contains(e.target)||e.target.closest('.row-menu-pop button'))m.removeAttribute('open');
-    });
+    const summary=e.target.closest('details.row-menu>summary');
+    if(!summary)return;
+    const details=summary.parentElement;
+    if(details._floatingMenu)return;
+    const menu=details.querySelector('.row-menu-pop');
+    if(!menu)return;
+    e.preventDefault();e.stopPropagation();
+    details._floatingMenu=UI.createFloatingMenu(summary,menu,{gap:6,margin:8,duration:180,selectionSelector:'button'});
+    details._floatingMenu.open({focus:true});
   });
 
   /* Quick Add: after navigation, focus the first field of the target form */

@@ -589,7 +589,7 @@
     }else{
       let refreshing=false;
       navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;location.reload()});
-      window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=67',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})});
+      window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=68',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})});
     }
   }
   const ready=initialize();

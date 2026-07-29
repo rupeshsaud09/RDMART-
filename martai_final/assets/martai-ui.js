@@ -252,6 +252,335 @@
     return true;
   }
 
+  function computeFloatingPosition(anchorRect, floatingRect, viewport, options) {
+    const settings = options || {};
+    const gap = Math.max(0, Number(settings.gap == null ? 8 : settings.gap) || 0);
+    const margin = Math.max(0, Number(settings.margin == null ? 8 : settings.margin) || 0);
+    const align = settings.align === 'start' || settings.align === 'center' ? settings.align : 'end';
+    const view = viewport || {};
+    const offsetLeft = Number(view.offsetLeft) || 0;
+    const offsetTop = Number(view.offsetTop) || 0;
+    const width = Math.max(0, Number(view.width) || 0);
+    const height = Math.max(0, Number(view.height) || 0);
+    const floatingWidth = Math.min(Math.max(0, Number(floatingRect && floatingRect.width) || 0), Math.max(0, width - margin * 2));
+    const floatingHeight = Math.min(Math.max(0, Number(floatingRect && floatingRect.height) || 0), Math.max(0, height - margin * 2));
+    const anchorLeft = Number(anchorRect && anchorRect.left) || 0;
+    const anchorRight = Number(anchorRect && anchorRect.right) || anchorLeft;
+    const anchorTop = Number(anchorRect && anchorRect.top) || 0;
+    const anchorBottom = Number(anchorRect && anchorRect.bottom) || anchorTop;
+    const minLeft = offsetLeft + margin;
+    const maxLeft = Math.max(minLeft, offsetLeft + width - margin - floatingWidth);
+    let left = align === 'start'
+      ? anchorLeft
+      : align === 'center'
+        ? anchorLeft + ((anchorRight - anchorLeft) - floatingWidth) / 2
+        : anchorRight - floatingWidth;
+    left = Math.min(maxLeft, Math.max(minLeft, left));
+
+    const minTop = offsetTop + margin;
+    const maxTop = Math.max(minTop, offsetTop + height - margin - floatingHeight);
+    const belowTop = anchorBottom + gap;
+    const aboveTop = anchorTop - gap - floatingHeight;
+    const fitsBelow = belowTop + floatingHeight <= offsetTop + height - margin;
+    const fitsAbove = aboveTop >= minTop;
+    const useAbove = !fitsBelow && (fitsAbove || anchorTop - minTop > offsetTop + height - margin - anchorBottom);
+    const top = Math.min(maxTop, Math.max(minTop, useAbove ? aboveTop : belowTop));
+    return Object.freeze({
+      left: Math.round(left),
+      top: Math.round(top),
+      placement: useAbove ? 'top-' + align : 'bottom-' + align,
+      maxHeight: Math.max(0, Math.floor(height - margin * 2))
+    });
+  }
+
+  /*
+   * Body-level floating menu portal. While open, the menu is moved out of its
+   * card/table stacking context and positioned against the trigger with fixed
+   * coordinates. Collision handling flips and shifts it inside the viewport.
+   */
+  function createFloatingMenu(triggerTarget, menuTarget, options) {
+    const settings = options || {};
+    const doc = settings.document || elementDocument(triggerTarget);
+    const trigger = resolveElement(triggerTarget, doc);
+    const menu = resolveElement(menuTarget, doc);
+    if (!trigger || !menu) throw new Error('Floating menu trigger or panel was not found');
+    const win = settings.window || (doc && doc.defaultView) || (typeof window !== 'undefined' ? window : null);
+    const portal = resolveElement(settings.portal, doc) || (doc && (doc.body || doc.documentElement));
+    if (!portal) throw new Error('Floating menu portal root was not found');
+
+    const originalParent = menu.parentNode;
+    const originalNextSibling = menu.nextSibling;
+    const openClass = settings.openClass || 'is-open';
+    const itemSelector = settings.itemSelector || '[role="menuitem"],.menu-item,.notification-tab,.notification-item,.notification-action,.row-menu-pop button';
+    const selectionSelector = settings.selectionSelector || '[role="menuitem"],.menu-item,.notification-item,[data-floating-menu-close]';
+    const duration = Math.max(0, Number(settings.duration == null ? 180 : settings.duration) || 0);
+    const role = settings.role === false ? '' : String(settings.role || menu.getAttribute('role') || 'menu');
+    let opened = false;
+    let destroyed = false;
+    let closeTimer = null;
+    let positionFrame = null;
+    let controller = null;
+
+    if (!menu.id) menu.id = uniqueId('floating-menu');
+    trigger.setAttribute('aria-controls', menu.id);
+    trigger.setAttribute('aria-expanded', 'false');
+    if (!trigger.getAttribute('aria-haspopup')) trigger.setAttribute('aria-haspopup', role || 'true');
+    if (role) menu.setAttribute('role', role);
+    menu.hidden = true;
+    menu.classList.add('ui-floating-menu');
+
+    function navigationItems() {
+      if (!menu || typeof menu.querySelectorAll !== 'function') return [];
+      return Array.prototype.slice.call(menu.querySelectorAll(itemSelector)).filter(isFocusable);
+    }
+
+    if (role === 'menu') {
+      navigationItems().forEach(function applyMenuItemRole(item) {
+        if (!item.getAttribute('role')) item.setAttribute('role', 'menuitem');
+      });
+    }
+
+    function viewportRect() {
+      const visual = win && win.visualViewport;
+      const root = doc && doc.documentElement;
+      return {
+        width: visual ? visual.width : (root && root.clientWidth) || (win && win.innerWidth) || 0,
+        height: visual ? visual.height : (root && root.clientHeight) || (win && win.innerHeight) || 0,
+        offsetLeft: visual ? visual.offsetLeft : 0,
+        offsetTop: visual ? visual.offsetTop : 0
+      };
+    }
+
+    function position() {
+      if (!opened || !trigger.isConnected || !menu.isConnected) {
+        if (opened && !trigger.isConnected) close('detached', { restoreFocus: false, immediate: true });
+        return null;
+      }
+      const view = viewportRect();
+      menu.style.position = 'fixed';
+      menu.style.left = '-10000px';
+      menu.style.top = '0';
+      menu.style.right = 'auto';
+      menu.style.bottom = 'auto';
+      menu.style.maxWidth = Math.max(0, view.width - 16) + 'px';
+      menu.style.maxHeight = Math.max(0, view.height - 16) + 'px';
+      menu.style.visibility = 'hidden';
+      const measured = menu.getBoundingClientRect();
+      const coordinates = computeFloatingPosition(
+        trigger.getBoundingClientRect(),
+        // offsetWidth/offsetHeight are the untransformed layout dimensions.
+        // getBoundingClientRect() reflects the opening scale(.96), which would
+        // otherwise leave the final full-size menu misaligned by a few pixels.
+        { width: menu.offsetWidth || measured.width, height: menu.offsetHeight || measured.height },
+        view,
+        settings
+      );
+      menu.style.left = coordinates.left + 'px';
+      menu.style.top = coordinates.top + 'px';
+      menu.style.maxHeight = coordinates.maxHeight + 'px';
+      menu.style.visibility = '';
+      menu.dataset.placement = coordinates.placement;
+      menu.style.transformOrigin = coordinates.placement.indexOf('top-') === 0 ? 'bottom right' : 'top right';
+      return coordinates;
+    }
+
+    function schedulePosition() {
+      if (!opened || positionFrame !== null) return;
+      const raf = win && typeof win.requestAnimationFrame === 'function'
+        ? win.requestAnimationFrame.bind(win)
+        : function fallback(callback) { return setTimeout(callback, 16); };
+      positionFrame = raf(function updatePosition() {
+        positionFrame = null;
+        position();
+      });
+    }
+
+    function addPositionListeners() {
+      if (!win || typeof win.addEventListener !== 'function') return;
+      win.addEventListener('resize', schedulePosition);
+      win.addEventListener('scroll', schedulePosition, true);
+      if (win.visualViewport) {
+        win.visualViewport.addEventListener('resize', schedulePosition);
+        win.visualViewport.addEventListener('scroll', schedulePosition);
+      }
+    }
+
+    function removePositionListeners() {
+      if (!win || typeof win.removeEventListener !== 'function') return;
+      win.removeEventListener('resize', schedulePosition);
+      win.removeEventListener('scroll', schedulePosition, true);
+      if (win.visualViewport) {
+        win.visualViewport.removeEventListener('resize', schedulePosition);
+        win.visualViewport.removeEventListener('scroll', schedulePosition);
+      }
+    }
+
+    function restoreMenu() {
+      if (originalParent && originalParent.isConnected !== false && typeof originalParent.insertBefore === 'function') {
+        const sibling = originalNextSibling && originalNextSibling.parentNode === originalParent ? originalNextSibling : null;
+        originalParent.insertBefore(menu, sibling);
+      } else if (menu.parentNode === portal) removeElement(menu);
+    }
+
+    function finishClose() {
+      closeTimer = null;
+      menu.hidden = true;
+      menu.classList.remove('is-closing');
+      menu.style.visibility = '';
+      menu.style.left = '';
+      menu.style.top = '';
+      menu.style.right = '';
+      menu.style.bottom = '';
+      menu.style.maxWidth = '';
+      menu.style.maxHeight = '';
+      menu.style.transformOrigin = '';
+      delete menu.dataset.placement;
+      restoreMenu();
+    }
+
+    function close(reason, closeOptions) {
+      const action = closeOptions || {};
+      if (!opened && !closeTimer) return controller;
+      opened = false;
+      if (doc && doc.__martaiOpenFloatingMenu === controller) doc.__martaiOpenFloatingMenu = null;
+      trigger.setAttribute('aria-expanded', 'false');
+      menu.classList.remove(openClass);
+      menu.classList.add('is-closing');
+      removePositionListeners();
+      if (closeTimer !== null) clearTimeout(closeTimer);
+      if (action.restoreFocus === true || reason === 'escape') focusElement(trigger);
+      if (action.immediate || duration === 0) finishClose();
+      else closeTimer = setTimeout(finishClose, duration);
+      if (typeof settings.onClose === 'function') settings.onClose({ trigger: trigger, menu: menu, reason: reason || 'programmatic' });
+      return controller;
+    }
+
+    function open(openOptions) {
+      if (destroyed) throw new Error('Floating menu controller has been destroyed');
+      const action = openOptions || {};
+      if (opened) {
+        position();
+        return controller;
+      }
+      if (doc.__martaiOpenFloatingMenu && doc.__martaiOpenFloatingMenu !== controller) {
+        doc.__martaiOpenFloatingMenu.close('another-menu', { restoreFocus: false, immediate: true });
+      }
+      if (closeTimer !== null) {
+        clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+      if (String(trigger.tagName || '').toLowerCase() === 'summary' && trigger.parentNode) {
+        trigger.parentNode.removeAttribute('open');
+      }
+      portal.appendChild(menu);
+      menu.hidden = false;
+      menu.classList.remove('is-closing', openClass);
+      opened = true;
+      doc.__martaiOpenFloatingMenu = controller;
+      trigger.setAttribute('aria-expanded', 'true');
+      position();
+      addPositionListeners();
+      const reveal = function revealMenu() {
+        if (!opened) return;
+        menu.classList.add(openClass);
+        const focusTarget = action.focus === false
+          ? null
+          : resolveElement(settings.initialFocus, doc) || navigationItems()[action.last ? navigationItems().length - 1 : 0] || focusableElements(menu)[0];
+        if (focusTarget) focusElement(focusTarget);
+      };
+      if (win && typeof win.requestAnimationFrame === 'function') win.requestAnimationFrame(reveal);
+      else setTimeout(reveal, 0);
+      if (typeof settings.onOpen === 'function') settings.onOpen({ trigger: trigger, menu: menu, placement: menu.dataset.placement });
+      return controller;
+    }
+
+    function toggle(toggleOptions) {
+      return opened ? close('toggle', { restoreFocus: false }) : open(toggleOptions);
+    }
+
+    function handleTriggerClick(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      toggle({ focus: true });
+    }
+
+    function handleTriggerKeydown(event) {
+      if (!event) return;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        open({ focus: true, last: event.key === 'ArrowUp' });
+      } else if (event.key === 'Escape' && opened) {
+        event.preventDefault();
+        close('escape', { restoreFocus: true });
+      }
+    }
+
+    function handleMenuKeydown(event) {
+      if (!event) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        close('escape', { restoreFocus: true });
+        return;
+      }
+      if (event.key === 'Tab') {
+        setTimeout(function closeAfterTab() { close('tab', { restoreFocus: false }); }, 0);
+        return;
+      }
+      const items = navigationItems();
+      const current = items.indexOf(doc.activeElement);
+      let next = -1;
+      if (event.key === 'ArrowDown' && current >= 0) next = (current + 1) % items.length;
+      else if (event.key === 'ArrowUp' && current >= 0) next = (current - 1 + items.length) % items.length;
+      else if (event.key === 'Home' && current >= 0) next = 0;
+      else if (event.key === 'End' && current >= 0) next = items.length - 1;
+      if (next < 0) return;
+      event.preventDefault();
+      focusElement(items[next]);
+    }
+
+    function handleMenuClick(event) {
+      if (!event || !event.target || typeof event.target.closest !== 'function') return;
+      if (selectionSelector && event.target.closest(selectionSelector)) close('selection', { restoreFocus: false });
+    }
+
+    function handleOutsidePointer(event) {
+      if (!opened || !event || !event.target) return;
+      if (menu.contains(event.target) || trigger.contains(event.target)) return;
+      if (settings.outsideIgnoreSelector && typeof event.target.closest === 'function' && event.target.closest(settings.outsideIgnoreSelector)) return;
+      close('outside', { restoreFocus: false });
+    }
+
+    function destroy() {
+      if (destroyed) return;
+      close('destroy', { restoreFocus: false, immediate: true });
+      trigger.removeEventListener('click', handleTriggerClick);
+      trigger.removeEventListener('keydown', handleTriggerKeydown);
+      menu.removeEventListener('keydown', handleMenuKeydown);
+      menu.removeEventListener('click', handleMenuClick);
+      doc.removeEventListener('pointerdown', handleOutsidePointer, true);
+      menu.classList.remove('ui-floating-menu');
+      destroyed = true;
+    }
+
+    trigger.addEventListener('click', handleTriggerClick);
+    trigger.addEventListener('keydown', handleTriggerKeydown);
+    menu.addEventListener('keydown', handleMenuKeydown);
+    menu.addEventListener('click', handleMenuClick);
+    doc.addEventListener('pointerdown', handleOutsidePointer, true);
+    controller = {
+      trigger: trigger,
+      menu: menu,
+      open: open,
+      close: close,
+      toggle: toggle,
+      update: position,
+      destroy: destroy,
+      isOpen: function isOpen() { return opened; }
+    };
+    return controller;
+  }
+
   function createDialog(target, options) {
     const settings = options || {};
     const root = resolveElement(target, settings.document);
@@ -785,7 +1114,9 @@
     announce: announce,
     confirmAction: confirmAction,
     createDialog: createDialog,
+    createFloatingMenu: createFloatingMenu,
     createTabs: createTabs,
+    computeFloatingPosition: computeFloatingPosition,
     debounce: debounce,
     errorStateHtml: errorStateHtml,
     escapeAttribute: escapeHtml,

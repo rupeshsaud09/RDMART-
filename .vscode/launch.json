@@ -5,7 +5,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Run KHATA PANA",
-            "url": "http://localhost:3000/index.html?local=khata-pana-v67",
+            "url": "http://localhost:3000/index.html?local=khata-pana-v68",
             "webRoot": "${workspaceFolder}/martai_final",
             "preLaunchTask": "Start KHATA PANA server"
         }
