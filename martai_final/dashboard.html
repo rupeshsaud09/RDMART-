@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=34">
+<link rel="stylesheet" href="assets/martai.css?v=35">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -708,7 +708,7 @@
   </aside>
 </div>
 
-<div class="modal-backdrop" id="chequeTransitionModal"><form class="modal glass" id="chequeTransitionForm"><div class="modal-title" id="chequeTransitionTitle">Confirm cheque status</div><p class="small" id="chequeTransitionSummary">Review this financial status change before continuing.</p><input type="hidden" name="id"><input type="hidden" name="status"><div class="transition-preview" id="chequeTransitionPreview"></div><div class="field"><label for="chequeTransitionReason">Reason or evidence</label><textarea class="textarea" id="chequeTransitionReason" name="reason" required placeholder="Bank confirmation, return reason, cancellation reason…"></textarea></div><label class="confirmation-check"><input type="checkbox" name="confirmed" required> I reviewed the cheque, amount, party and new status.</label><div class="modal-actions"><button class="btn btn-soft" type="button" data-close="chequeTransitionModal">Cancel</button><button class="btn btn-primary" id="confirmChequeTransitionBtn" type="submit">Confirm status change</button></div></form></div>
+<div class="modal-backdrop" id="chequeTransitionModal"><form class="modal glass" id="chequeTransitionForm"><div class="modal-title" id="chequeTransitionTitle">Confirm cheque status</div><p class="small" id="chequeTransitionSummary">Review this financial status change before continuing.</p><input type="hidden" name="id"><input type="hidden" name="status"><div class="transition-preview" id="chequeTransitionPreview"></div><div class="field" id="chequeTransitionReasonField"><label for="chequeTransitionReason">Reason or evidence</label><textarea class="textarea" id="chequeTransitionReason" name="reason" placeholder="Bank confirmation, return reason, cancellation reason…"></textarea></div><label class="confirmation-check" id="chequeTransitionConfirmCheck"><input type="checkbox" name="confirmed"> I reviewed the cheque, amount, party and new status.</label><div class="modal-actions"><button class="btn btn-soft" type="button" data-close="chequeTransitionModal">Cancel</button><button class="btn btn-primary" id="confirmChequeTransitionBtn" type="submit">Confirm status change</button></div></form></div>
 
 <datalist id="partyList"></datalist>
 <datalist id="customerList"></datalist>
@@ -720,7 +720,7 @@
 <script src="assets/martai-date.js?v=1"></script>
 <script src="assets/martai-bank-cheques.js?v=3"></script>
 <script src="assets/martai-ui.js?v=2"></script>
-<script src="assets/martai-store.js?v=37"></script>
+<script src="assets/martai-store.js?v=38"></script>
 <script src="assets/martai-notifications.js?v=1"></script>
 <script src="assets/martai-cheques.js?v=1"></script>
 <script src="assets/martai-intelligence.js?v=1"></script>
@@ -1937,9 +1937,16 @@ function openChequeTransition(id,toStatus,mode){
   $('chequeTransitionTitle').textContent=mode==='delete'?'Cancel & remove cheque':('Confirm: '+CQ.statusLabel(from)+' → '+CQ.statusLabel(toStatus));
   $('chequeTransitionSummary').textContent=mode==='delete'?'This soft-deletes the cheque as cancelled and keeps its audit history.':'Review this financial status change. It is recorded in the cheque audit trail.';
   $('chequeTransitionPreview').innerHTML=`<div><b>${A.esc(ch.party||'Unknown party')}</b> · No. ${A.esc(ch.chequeNo||'—')} · ${A.money(ch.amount)}</div><div style="margin-top:6px">${statusBadge(ch.status)} <span aria-hidden="true">→</span> <span class="badge badge-${mode==='delete'||toStatus==='bounced'?'red':toStatus==='cleared'?'green':'blue'}">${A.esc(toLabel)}</span></div>`;
-  const needsReason=mode==='delete'||['cleared','bounced','cancelled','hold'].includes(CQ.normalizeStatus(toStatus,''));
-  const rt=$('chequeTransitionReason');rt.required=needsReason;rt.value='';rt.placeholder=needsReason?'Required: bank confirmation, return reason, cancellation reason…':'Optional context for the audit trail';
-  f.elements.confirmed.checked=false;$('confirmChequeTransitionBtn').textContent=mode==='delete'?'Cancel & remove cheque':'Confirm status change';
+  /* A reason is demanded only for adverse or irreversible outcomes — the canonical
+     list is REASON_REQUIRED_STATUSES in martai-cheques.js. Clearing is the normal,
+     expected end of a cheque's life, so it asks for confirmation and nothing else. */
+  const needsReason=mode==='delete'||['bounced','cancelled','hold'].includes(CQ.normalizeStatus(toStatus,''));
+  const rt=$('chequeTransitionReason'),reasonField=$('chequeTransitionReasonField'),confirmCheck=$('chequeTransitionConfirmCheck'),cb=f.elements.confirmed;
+  rt.value='';rt.required=needsReason;if(reasonField)reasonField.hidden=!needsReason;
+  /* A hidden required control blocks submit and cannot be focused to explain why,
+     so both inputs are pre-satisfied whenever they are not shown. */
+  cb.required=needsReason;cb.checked=!needsReason;if(confirmCheck)confirmCheck.hidden=!needsReason;
+  $('confirmChequeTransitionBtn').textContent=mode==='delete'?'Cancel & remove cheque':'Confirm status change';
   openModal('chequeTransitionModal');
 }
 $('chequeTransitionForm')?.addEventListener('submit',e=>{e.preventDefault();const f=e.target,id=f.elements.id.value,status=f.elements.status.value,mode=f.dataset.mode,reason=String(f.elements.reason.value||'').trim();if(!f.elements.confirmed.checked)return toast('Tick the confirmation box to continue','err');submitWrap(()=>{if(mode==='delete')A.deleteCheque(db(),id,{confirmed:true,reason});else A.updateChequeStatus(db(),id,status,{confirmed:true,reason,source:'manual'});closeModal('chequeTransitionModal');if(mode==='delete'&&chequeDrawerId===id)closeModal('chequeDrawer');else if(chequeDrawerId===id)renderChequeDrawer(id);toast(mode==='delete'?'Cheque cancelled and removed':'Cheque status updated')})});

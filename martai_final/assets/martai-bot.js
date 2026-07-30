@@ -856,7 +856,10 @@ function markCheque(txt){
 function doMarkCheque(cid,st){
   try{
     const d=data();const ch=d.cheques.find(x=>x.id===cid);if(!ch)return;
-    M().updateChequeStatus(d,cid,st);rerender();
+    // Tapping the cheque button — which spells out number, party and amount — is
+    // the confirmation. Without this the call always threw the audit-gate error.
+    // Bouncing still needs a written reason, so that path reports what to do.
+    M().updateChequeStatus(d,cid,st,{confirmed:true,source:'assistant'});rerender();
     botSay(fmt(t('chequeMarkDone'),{no:esc(ch.chequeNo),party:esc(ch.party),amt:money(ch.amount),st:st==='clear'?'✅ clear':'⚠️ bounce'}));
   }catch(e){botSay(t('error')+esc(e.message))}
 }

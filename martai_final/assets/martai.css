@@ -2857,3 +2857,13 @@ body[data-theme="dark"]>.ui-floating-menu.row-menu-pop .btn:focus-visible{backgr
 .content.switch-in .page.active>:nth-child(7){animation-delay:.28s}
 .content.switch-in .page.active>:nth-child(n+8){animation-delay:.32s}
 @keyframes riseIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---------- 21. [hidden] GUARDS ---------- */
+/* An author `display` declaration outranks the browser's own [hidden] rule, so
+   any class that sets `display` needs an explicit guard — without one, setting
+   the `hidden` property leaves the element fully visible while JS believes it
+   is gone. The cheque confirmation modal hit exactly this: its reason field and
+   confirmation checkbox stayed on screen after being hidden. Same class of bug
+   as the .menu-pop / .filter-pills guards above; add a line here whenever a new
+   display-setting class is toggled via `hidden`. */
+.field[hidden],.confirmation-check[hidden]{display:none}
