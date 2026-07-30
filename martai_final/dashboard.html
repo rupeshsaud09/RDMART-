@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/martai.css?v=33">
+<link rel="stylesheet" href="assets/martai.css?v=34">
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('martai_dashboard_theme');t=t==='dark'?'dark':'light';document.body.dataset.theme=t;document.documentElement.style.colorScheme=t;if(localStorage.getItem('martai_nav_collapsed')==='1')document.body.classList.add('boot-nav-collapsed');})();</script>
@@ -720,13 +720,13 @@
 <script src="assets/martai-date.js?v=1"></script>
 <script src="assets/martai-bank-cheques.js?v=3"></script>
 <script src="assets/martai-ui.js?v=2"></script>
-<script src="assets/martai-store.js?v=36"></script>
+<script src="assets/martai-store.js?v=37"></script>
 <script src="assets/martai-notifications.js?v=1"></script>
 <script src="assets/martai-cheques.js?v=1"></script>
 <script src="assets/martai-intelligence.js?v=1"></script>
 <script src="assets/martai-ai-client.js?v=1"></script>
 <script src="assets/martai-insights-ui.js?v=1"></script>
-<script src="assets/khata-backup.js?v=5"></script>
+<script src="assets/khata-backup.js?v=6"></script>
 <script src="assets/martai-qr.js?v=1"></script>
 <script>
 const A=MartAI,UI=window.MartAIUI,DateTools=window.MartAIDate,BankCheques=window.MartAIBankCheques,CQ=window.MartAICheques,N=window.MartAINotifications;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));if(UI)UI.initTooltips();
@@ -876,7 +876,7 @@ function lifecycleLabel(status){return({draft:'Draft',to_write:'To write',writte
 function statusBadge(status){const state=chequeLifecycle({lifecycleStatus:status}),tone=state==='cleared'?'green':state==='bounced'||state==='cancelled'?'red':state==='deposited'||state==='received'?'blue':state==='on_hold'?'amber':'purple';return `<span class="badge badge-${tone}">${A.esc(lifecycleLabel(state))}</span>`}
 function estimateBadge(status){const s=String(status||'draft');if(s==='approved')return '<span class="badge badge-green">Approved</span>';if(s==='rejected')return '<span class="badge badge-red">Rejected</span>';if(s==='expired')return '<span class="badge badge-red">Expired</span>';if(s==='sent')return '<span class="badge badge-blue">Sent</span>';return '<span class="badge badge-amber">Draft</span>'}
 function estimateOpen(x){return !['approved','rejected','expired'].includes(String(x.status||'draft'))}
-function nav(page){if(!isMainAdmin()&&page==='settings')page='dashboard';const target=$('page-'+page);if(!target)return toast('This module is not available yet','err');currentPage=page;$$('.page').forEach(p=>p.classList.remove('active'));target.classList.add('active');$$('.nav-btn').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});$('topTitle').textContent=titles[page][0];$('topSub').textContent=titles[page][1];$('sidebar').classList.remove('open');$('overlay').classList.remove('open');renderCurrentPage();target.querySelector('h1,h2,.page-title,.section-title')?.focus?.({preventScroll:true})}
+function nav(page){if(!isMainAdmin()&&page==='settings')page='dashboard';const target=$('page-'+page);if(!target)return toast('This module is not available yet','err');currentPage=page;$$('.page').forEach(p=>p.classList.remove('active'));target.classList.add('active');$$('.nav-btn').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});$('topTitle').textContent=titles[page][0];$('topSub').textContent=titles[page][1];$('sidebar').classList.remove('open');$('overlay').classList.remove('open');renderCurrentPage();playContentRefresh();target.querySelector('h1,h2,.page-title,.section-title')?.focus?.({preventScroll:true})}
 let storeOptionsStamp='',partyOptionsStamp='',customerOptionsStamp='';
 function renderStoreSelector(){const stores=A.getStores?A.getStores():[];const el=$('storeSelect');if(!el)return;const active=A.getActiveStoreId?A.getActiveStoreId():'',stamp=stores.map(s=>s.id+'\u001f'+s.name).join('\u001e');if(stamp!==storeOptionsStamp){storeOptionsStamp=stamp;el.innerHTML=stores.length?stores.map(s=>`<option value="${A.esc(s.id)}">${A.esc(s.name)}</option>`).join(''):'<option value="default">RD MART</option>'}if(el.value!==active&&[...el.options].some(o=>o.value===active))el.value=active}
 function renderPartyOptions(){const dl=$('partyList');if(!dl)return;const d=sdb();const seen=new Map();const add=n=>{n=String(n||'').trim();if(!n)return;const k=n.toLowerCase();if(!seen.has(k))seen.set(k,n)};(d.parties||[]).forEach(p=>add(p.name));d.cheques.forEach(x=>add(x.party));(d.partyPayments||[]).forEach(x=>add(x.party));(d.estimateBills||[]).forEach(x=>add(x.customer));(d.chequeQueue||[]).forEach(x=>add(x.party));const names=[...seen.values()].sort((a,b)=>a.localeCompare(b)),stamp=derivedScope()+'\u001d'+names.join('\u001f');if(stamp===partyOptionsStamp)return;partyOptionsStamp=stamp;dl.innerHTML=names.map(n=>`<option value="${A.esc(n)}">`).join('')}
@@ -1535,9 +1535,39 @@ function urlBase64ToUint8Array(base64String){
 }
 function pushConfigured(){return Boolean(window.MARTAI_PUSH&&window.MARTAI_PUSH.vapidPublicKey)}
 function pushApiSupported(){return 'serviceWorker' in navigator&&'PushManager' in window&&typeof Notification!=='undefined'}
+/* navigator.serviceWorker.ready NEVER settles when no worker is registered —
+   which is exactly the case on localhost/file previews, where the app
+   deliberately unregisters them. Racing it against a timeout keeps callers
+   (push UI, store-binding refresh) from hanging forever on a dead promise. */
 async function currentPushSubscription(){
   if(!pushApiSupported())return null;
-  try{const reg=await navigator.serviceWorker.ready;return await reg.pushManager.getSubscription()}catch(_){return null}
+  try{
+    if(!(await navigator.serviceWorker.getRegistration()))return null;
+    const reg=await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise(resolve=>setTimeout(()=>resolve(null),3000))
+    ]);
+    return reg?await reg.pushManager.getSubscription():null;
+  }catch(_){return null}
+}
+function pushSubscriptionRow(sub){
+  const keys=sub.toJSON().keys||{};
+  return{store_id:A.getActiveStoreId(),endpoint:sub.endpoint,p256dh:keys.p256dh||'',auth_key:keys.auth||'',user_agent:String(navigator.userAgent||'').slice(0,300),last_seen_at:new Date().toISOString()};
+}
+/* The daily-summary cron sends each phone the summary of the store its
+   registration row points at. That binding is a snapshot from when push was
+   enabled — if the store list changed since (or the phone now works in another
+   store), the morning summary reads the wrong store and shows zeros. Quietly
+   re-point this device's row at the current store on load and after a switch. */
+async function syncPushStoreBinding(){
+  try{
+    const client=A.getSupabase();if(!client)return;
+    // store_id is a real FK to mart_stores; the local 'default' placeholder is not a row.
+    if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(A.getActiveStoreId()||'')))return;
+    const sub=await currentPushSubscription();if(!sub)return;
+    const r=await client.from('push_subscriptions').upsert(pushSubscriptionRow(sub),{onConflict:'endpoint'});
+    if(r.error)console.warn('Push store binding not refreshed:',r.error);
+  }catch(e){console.warn('Push store binding not refreshed:',e)}
 }
 async function refreshPushUI(){
   const statusEl=$('dailyPushStatus'),enableBtn=$('enableDailyPushBtn'),testBtn=$('testDailyPushBtn'),disableBtn=$('disableDailyPushBtn');
@@ -1556,14 +1586,16 @@ async function enableDailyPush(){
   try{
     const perm=await Notification.requestPermission();
     if(perm!=='granted'){await refreshPushUI();return toast('Notification permission was not granted','err')}
-    const reg=await navigator.serviceWorker.ready;
+    const reg=await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise(resolve=>setTimeout(()=>resolve(null),8000))
+    ]);
+    if(!reg)throw new Error('The background service for notifications did not start. Reload the page and try again — on iPhone, open RD MART from the Home Screen icon first.');
     let sub=await reg.pushManager.getSubscription();
     if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(window.MARTAI_PUSH.vapidPublicKey)});
     const client=A.getSupabase();
     if(!client)throw new Error('Online sync is not connected, so this phone cannot be registered yet.');
-    const keys=sub.toJSON().keys||{};
-    const row={store_id:A.getActiveStoreId(),endpoint:sub.endpoint,p256dh:keys.p256dh||'',auth_key:keys.auth||'',user_agent:String(navigator.userAgent||'').slice(0,300),last_seen_at:new Date().toISOString()};
-    const r=await client.from('push_subscriptions').upsert(row,{onConflict:'endpoint'});
+    const r=await client.from('push_subscriptions').upsert(pushSubscriptionRow(sub),{onConflict:'endpoint'});
     if(r.error)throw r.error;
     toast('Daily summary enabled on this phone');
   }catch(e){toast('Could not enable notifications: '+(e.message||String(e)),'err')}
@@ -1618,7 +1650,7 @@ function getPortalUrl(){
 }
 function qrApiUrl(url,size){if(window.MartQR){try{return MartQR.dataUrl(url,size)}catch(e){console.warn('Local QR failed:',e)}}return'https://api.qrserver.com/v1/create-qr-code/?size='+size+'x'+size+'&data='+encodeURIComponent(url)+'&color=1e1b4b&bgcolor=ffffff&margin=10'}
 function openQrModal(url,title){if(isLocalUrl(url))toast('⚠ This link only works on this computer. Save your public portal link in Settings so the QR works everywhere.','err');$('qrModalTitle').textContent=title||'Customer Portal QR';$('qrModalUrl').textContent=url;const img=$('qrImg');if(img){img.src=qrApiUrl(url,220);img.onerror=()=>{img.alt='QR failed to load. Check internet connection.';img.style.background='var(--surface-3)'}}openModal('qrModal')}
-function backupJson(){if(!isMainAdmin())return toast('Only the main admin can export backups','err');const data=window.KhataBackup?.createEnvelope?KhataBackup.createEnvelope(db()):db(),name=String(data.storeName||db().settings?.martName||'RD MART').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase()||'store';A.download(`KHATA-PANA__${name}__manual__${A.today()}.json`,JSON.stringify(data,null,2));markBackupDone()}
+function backupJson(){if(!isMainAdmin())return toast('Only the main admin can export backups','err');try{const data=window.KhataBackup?.createEnvelope?KhataBackup.createEnvelope(db()):db(),name=String(data.storeName||db().settings?.martName||'RD MART').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase()||'store';A.download(`KHATA-PANA__${name}__manual__${A.today()}.json`,JSON.stringify(data,null,2));toast('Backup file downloaded');markBackupDone()}catch(error){toast('Could not create the backup file: '+(error.message||String(error)),'err')}}
 function commandBtn(label,attrs,cls='btn-soft'){return `<button class="btn ${cls} btn-sm" type="button" ${attrs}>${label}</button>`}
 function commandRow(type,title,sub,badge,actions){return `<div class="command-result"><div><div class="small command-type">${type}</div><b>${title}</b><div class="small">${sub||''}</div>${badge?`<div style="margin-top:6px">${badge}</div>`:''}</div><div class="command-actions">${actions||''}</div></div>`}
 function commandMatch(q,...parts){if(!q)return true;return parts.join(' ').toLowerCase().includes(q)}
@@ -1751,7 +1783,79 @@ document.querySelector('#estimateForm [name="customer"]')?.addEventListener('cha
 $('settingsForm').addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{A.saveSettings(db(),formData(e.target));toast('Settings saved')})});
 $('bankCalendarForm')?.addEventListener('submit',e=>{e.preventDefault();submitWrap(()=>{const form=e.target,weekendDays=[...form.querySelectorAll('[name="weekendDay"]:checked')].map(x=>Number(x.value)),lines=String(form.elements.holidayDates.value||'').split(/[\n,]+/).map(x=>(DateTools?.normalizeNepaliDigits?DateTools.normalizeNepaliDigits(x):x).trim()).filter(Boolean),holidays=lines.map(value=>{if(!/^\d{4}-\d{1,2}-\d{1,2}$/.test(value))throw new Error('Holiday dates must use YYYY-MM-DD, one per line');const year=Number(value.slice(0,4));return year>=2070?DateTools.bsToAd(value):DateTools.dayKey(value)});A.saveBankCalendar(db(),{weekendDays,holidays});toast('Banking calendar saved. Cheque dates and totals have been recalculated.');renderBankCalendarSettings()})});
 $('savePortalUrlBtn')?.addEventListener('click',()=>{const v=($('portalUrlInput')?.value||'').trim();if(v&&!/^(https?:\/\/)?[\w-]+(\.[\w-]+)+/i.test(v))return toast('Enter a valid link, e.g. https://rdmart.netlify.app','err');if(v&&isLocalUrl(v))return toast('That is a local address — enter your public website link','err');if(v)localStorage.setItem(PORTAL_URL_KEY,v);else localStorage.removeItem(PORTAL_URL_KEY);toast(v?'Portal link saved — QR codes and WhatsApp links now use it':'Portal link cleared — using this device\'s address');renderAll()});
-$('storeSelect')?.addEventListener('change',e=>{asyncWrap(async()=>{A.setActiveStoreId(e.target.value);await A.syncNow();toast('Store changed');await runAutoBackupCheck({quiet:true})})});
+/* Store switching: full-screen veil while the new store's data loads; on failure the
+   switch is rolled back by A.switchStore and the select snaps back to the real store. */
+let storeSwitchVeil=null;
+function beginStoreSwitch(label){
+  endStoreSwitch();
+  const veil=document.createElement('div');
+  veil.className='store-switch-veil';
+  veil.setAttribute('role','status');
+  veil.innerHTML=`<div class="store-switch-card"><div class="store-switch-mark">${A.esc(logoInitial(label))}</div><div class="store-switch-name">${A.esc(label)}</div><div class="store-switch-sub">Loading store data<span class="store-switch-dots"><i>.</i><i>.</i><i>.</i></span></div><div class="store-switch-bar"><i></i></div></div>`;
+  document.body.appendChild(veil);
+  storeSwitchVeil=veil;
+}
+function endStoreSwitch(){
+  const veil=storeSwitchVeil;storeSwitchVeil=null;
+  if(!veil)return;
+  veil.classList.add('leaving');
+  setTimeout(()=>veil.remove(),320);
+}
+function playContentRefresh(){
+  const content=document.querySelector('.content');if(!content)return;
+  content.classList.remove('switch-in');
+  void content.offsetWidth; // restart the stagger animation
+  content.classList.add('switch-in');
+  setTimeout(()=>content.classList.remove('switch-in'),900);
+  animateCountUps();
+}
+/* Count-up for plain numeric metric values ("Rs 3,800" / "12"). Runs only on
+   explicit moments (store switch, page nav, first load) — never on ordinary
+   re-renders — and leaves the exact original text in place when done. */
+function animateCountUps(){
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  document.querySelectorAll('.page.active .metric-value').forEach(el=>{
+    if(el.childElementCount>0)return;
+    const original=el.textContent.trim();
+    const m=original.match(/^(Rs\s?)?([\d,]+)$/);
+    if(!m)return;
+    const prefix=m[1]||'';
+    const target=Number(m[2].replace(/,/g,''));
+    if(!Number.isFinite(target)||target<=0||target>1e12)return;
+    const dur=650,start=performance.now(),token=String(start+Math.random());
+    el.dataset.countup=token;
+    const tick=t=>{
+      if(el.dataset.countup!==token||!el.isConnected)return;
+      const p=Math.min(1,(t-start)/dur),eased=1-Math.pow(1-p,3);
+      if(p>=1){el.textContent=original;delete el.dataset.countup;return}
+      el.textContent=prefix+Math.round(target*eased).toLocaleString('en-IN');
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+}
+$('storeSelect')?.addEventListener('change',async e=>{
+  const sel=e.target,prev=A.getActiveStoreId(),next=sel.value;
+  if(!next||next===prev)return;
+  const label=sel.options[sel.selectedIndex]?.textContent||'store';
+  beginStoreSwitch(label);
+  try{
+    await A.switchStore(next);
+    renderAll();
+    playContentRefresh();
+    endStoreSwitch();
+    toast('Switched to '+label);
+    setTimeout(updateSyncStatus,400);
+    scheduleAutoBackup();
+    syncPushStoreBinding(); // morning summary must follow the store you actually work in
+    await runAutoBackupCheck({quiet:true});
+  }catch(err){
+    sel.value=prev;
+    endStoreSwitch();
+    renderAll();
+    toast(err.message,'err');
+  }
+});
 $('storeForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{await A.addStore(db(),formData(e.target));e.target.reset();toast('Store created')})});
 $('editStoreForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{const data=formData(e.target);await A.updateStore(db(),data.id,data);closeModal('editStoreModal');toast('Store updated')})});
 $('staffForm')?.addEventListener('submit',e=>{e.preventDefault();asyncWrap(async()=>{const data=formData(e.target);try{await A.addStaff(db(),data)}catch(err){if(!/already exists/i.test(err.message||''))throw err}if(data.email)A.setStaffPhone(db(),data.email,data.phone);e.target.reset();toast('Staff access saved')})});
@@ -1981,7 +2085,9 @@ A.onDataChange(()=>{renderAll();toast('Updated from another device');scheduleAut
 MartAI.ready.then(async()=>{
   setTodayInputs();updateClock();setInterval(updateClock,1000);
   renderAll();
+  playContentRefresh();
   A.startRealtime();
+  syncPushStoreBinding();
   runAutoBackupCheck({quiet:true});
   setInterval(()=>{if(document.visibilityState==='visible')runAutoBackupCheck({quiet:true})},600000);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')runAutoBackupCheck({quiet:true})});
@@ -2084,6 +2190,6 @@ MartAI.ready.then(async()=>{
   }
 })();
 </script>
-<script src="assets/martai-bot.js?v=11"></script>
+<script src="assets/martai-bot.js?v=12"></script>
 </body>
 </html>

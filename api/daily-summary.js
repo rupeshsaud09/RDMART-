@@ -306,6 +306,12 @@ async function buildStoreSummary(rest, storeId, today, yesterday) {
     rest('payment_requests', `select=id&store_id=eq.${storeId}&status=eq.pending`),
     rest('mart_tasks', `select=id&store_id=eq.${storeId}&status=eq.pending`)
   ]);
+  /* A failed read must never be summed as zero — a summary claiming "Rs 0 sales"
+     because a query failed is worse than no summary at all. The optional tables
+     (payment_requests, mart_tasks) may be absent in older installs and stay soft. */
+  const coreReadFailed = [dailySales, creditGiven, creditCollected, openCheques]
+    .some(result => !result || result.ok === false || !Array.isArray(result.data));
+  if (coreReadFailed) throw new Error('summary_read_failed');
   /* party_payment is money paid OUT to a supplier that day (see dashboard.html's
      totalDaily() comment) - a cash outflow, not sales. Selected above only
      because the query already reads the whole row; deliberately excluded here. */
@@ -384,10 +390,34 @@ async function handleCron(request, response, configuration, emailConfiguration, 
 
   const [subscriptionsResult, storesResult] = await Promise.all([
     rest('push_subscriptions', 'select=id,store_id,endpoint,p256dh,auth_key'),
-    emailConfiguration.ok ? rest('mart_stores', 'select=id&is_active=eq.true') : Promise.resolve({ ok: true, data: [] })
+    rest('mart_stores', 'select=id&is_active=eq.true')
   ]);
   if (!subscriptionsResult.ok || !Array.isArray(subscriptionsResult.data)) {
     return respond(response, 502, { ok: false, state: 'UPSTREAM_ERROR', error: 'Could not read registered devices.' });
+  }
+  /* A device registered while a store that no longer exists was active (e.g.
+     'default' from before multi-store, or a deleted store) would query empty
+     tables and push a misleading all-zero summary. With exactly one active
+     store the intent is unambiguous — re-point the row permanently. Otherwise
+     skip it and record why; opening the dashboard re-binds the device. */
+  const activeStores = storesResult.ok && Array.isArray(storesResult.data)
+    ? storesResult.data.map(row => row && row.id).filter(Boolean)
+    : null; // stores unreadable — don't second-guess bindings this run
+  let pushSkippedStale = 0;
+  if (activeStores && activeStores.length) {
+    const activeSet = new Set(activeStores);
+    const loneStore = activeStores.length === 1 ? activeStores[0] : '';
+    const writeHeaders = serviceHeaders(configuration.serviceRoleKey, true);
+    await Promise.allSettled(subscriptionsResult.data.map(row => {
+      if (!row || !row.id || !row.store_id || activeSet.has(row.store_id)) return null;
+      if (loneStore) {
+        row.store_id = loneStore;
+        return restRequest(fetchImplementation, configuration.supabaseUrl, writeHeaders, `push_subscriptions?id=eq.${row.id}`, { method: 'PATCH', body: JSON.stringify({ store_id: loneStore }) });
+      }
+      pushSkippedStale += 1;
+      row.store_id = '';
+      return restRequest(fetchImplementation, configuration.supabaseUrl, writeHeaders, `push_subscriptions?id=eq.${row.id}`, { method: 'PATCH', body: JSON.stringify({ last_error: 'This phone is linked to a store that no longer exists. Open the dashboard on this device once to relink it.' }) });
+    }));
   }
   const pushByStore = new Map();
   subscriptionsResult.data.forEach(row => {
@@ -395,7 +425,7 @@ async function handleCron(request, response, configuration, emailConfiguration, 
     if (!pushByStore.has(row.store_id)) pushByStore.set(row.store_id, []);
     pushByStore.get(row.store_id).push(row);
   });
-  const emailStoreIds = new Set((Array.isArray(storesResult.data) ? storesResult.data : []).map(row => row && row.id).filter(Boolean));
+  const emailStoreIds = new Set(emailConfiguration.ok && activeStores ? activeStores : []);
   const storeIds = new Set([...pushByStore.keys(), ...emailStoreIds]);
 
   const today = nepalTodayIso(new Date());
@@ -431,7 +461,7 @@ async function handleCron(request, response, configuration, emailConfiguration, 
     ok: true,
     state: 'SENT',
     stores: storeIds.size,
-    push: { sent: pushSent, failed: pushFailed, pruned: pushPruned },
+    push: { sent: pushSent, failed: pushFailed, pruned: pushPruned, skippedStale: pushSkippedStale },
     email: { sent: emailSent, failed: emailFailed }
   });
 }

@@ -86,13 +86,23 @@
     }
     return data;
   }
+  const SCOPED_COLLECTIONS=['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','paymentRequests'];
+  function recordStoreId(item){return item&&item.storeId?String(item.storeId):'default'}
   function assertDataScope(data,context){
     if(!context||context.localScope)return data;
-    const scoped=['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','paymentRequests'];
-    for(const key of scoped)for(const item of Array.isArray(data[key])?data[key]:[]){
-      const recordStoreId=item.storeId?String(item.storeId):'default';
-      if(recordStoreId!==context.storeId)throw new Error('Backup contains unscoped data or data from a different store');
+    for(const key of SCOPED_COLLECTIONS)for(const item of Array.isArray(data[key])?data[key]:[]){
+      if(recordStoreId(item)!==context.storeId)throw new Error('Backup contains unscoped data or data from a different store');
     }
+    return data;
+  }
+  // A per-store backup must contain only that store's records. Rows from another
+  // store can linger in the shared local cache (older store-switch bugs, and the
+  // chequeQueue/parties/tasks keep-local fallbacks survive switches) — they belong
+  // to their own store's backup, not this one, so they are filtered out rather
+  // than failing every backup attempt with an unscoped-data error.
+  function scopeBackupData(data,context){
+    if(!context||context.localScope)return data;
+    for(const key of SCOPED_COLLECTIONS)if(Array.isArray(data[key]))data[key]=data[key].filter(item=>recordStoreId(item)===context.storeId);
     return data;
   }
   function utf8Bytes(value){
@@ -146,7 +156,7 @@
       storeId:context.storeId,
       storeName:context.storeName,
       secretsExcluded:true,
-      data:sanitizeBackupData(db)
+      data:scopeBackupData(sanitizeBackupData(db),context)
     };
     if(kind==='checkpoint')envelope.checkpointId=date.toISOString()+'-'+randomToken();
     envelope.checksum=envelopeChecksum(envelope);
@@ -516,6 +526,6 @@
     validateForRestore,
     config:readConfig,
     supported:()=>typeof window.showDirectoryPicker==='function'&&window.isSecureContext!==false,
-    _test:{localDay,normalizeRetention,automaticBackupDue,sanitizeBackupData,storeContext,fileNameFor,revisionFileNameFor,checkpointFileNameFor,fileInfo,fileDay,retentionPlan,validateDataStructure,assertDataScope,validateEnvelope,validateForRestore,dataSignature,sha256,envelopeChecksum}
+    _test:{localDay,normalizeRetention,automaticBackupDue,sanitizeBackupData,scopeBackupData,storeContext,fileNameFor,revisionFileNameFor,checkpointFileNameFor,fileInfo,fileDay,retentionPlan,validateDataStructure,assertDataScope,validateEnvelope,validateForRestore,dataSignature,sha256,envelopeChecksum}
   };
 })();

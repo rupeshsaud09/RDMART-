@@ -179,3 +179,102 @@ test('Monday summary rolls Saturday and Sunday hold cheques into today',async()=
   assert.match(chequeCalls[0].query,/select=amount,cheque_date/);
   assert.match(summary.line2,/11 cheques due \(Rs 4,10,909\)/);
 });
+
+/* ===== "Morning summary shows everything 0" regression tests =====
+   Two independent causes, both real:
+     1. A failed/denied table read was summed as 0, so a broken query produced a
+        confident "Rs 0 sales" summary instead of failing loudly.
+     2. A phone registered while a now-deleted/renamed store was active kept
+        querying that store id, which legitimately returns no rows — every
+        figure zero, forever, with no error anywhere. */
+
+function cronEnvironment(){
+  return{
+    SUPABASE_URL:'https://project.supabase.co',
+    SUPABASE_ANON_KEY:'public-anon-key-for-tests',
+    SUPABASE_SERVICE_ROLE_KEY:'sb_secret_test_key',
+    VAPID_PUBLIC_KEY:'vapid-public',
+    VAPID_PRIVATE_KEY:'vapid-private',
+    VAPID_SUBJECT:'mailto:owner@example.com',
+    CRON_SECRET:'cron-secret-value'
+  };
+}
+function cronRequest(){
+  return{method:'GET',headers:{authorization:'Bearer cron-secret-value'}};
+}
+
+test('a failed data read never becomes a zero summary',async()=>{
+  const rest=async table=>{
+    if(table==='daily_sales')return{ok:false,status:401,data:{message:'permission denied for table daily_sales'}};
+    return{ok:true,status:200,data:[]};
+  };
+  await assert.rejects(
+    ()=>dailySummary._test.buildStoreSummary(rest,STORE_ID,'2026-07-30','2026-07-29'),
+    /summary_read_failed/
+  );
+});
+
+test('a real all-zero day still sends a summary',async()=>{
+  const rest=async()=>({ok:true,status:200,data:[]});
+  const summary=await dailySummary._test.buildStoreSummary(rest,STORE_ID,'2026-07-30','2026-07-29');
+  assert.equal(summary.counts.salesYesterday,0);
+  assert.match(summary.line1,/Rs 0 sales/);
+});
+
+test('a phone bound to a deleted store is relinked to the only active store',async()=>{
+  const DEAD_STORE='33333333-3333-4333-8333-333333333333';
+  const patches=[],summarised=[];
+  const fetchImpl=async(url,init)=>{
+    if(url.includes('/push_subscriptions?select='))
+      return fetchResponse(200,[{id:'sub-1',store_id:DEAD_STORE,endpoint:'https://push.example/1',p256dh:'key',auth_key:'auth'}]);
+    if(url.includes('/mart_stores?select=id'))return fetchResponse(200,[{id:STORE_ID}]);
+    if(url.includes('/push_subscriptions?id=eq.')){patches.push({url,body:JSON.parse(init.body)});return fetchResponse(204,{})}
+    if(url.includes('/rest/v1/')){
+      const match=url.match(/store_id=eq\.([0-9a-f-]+)/i);
+      if(match)summarised.push(match[1]);
+      return fetchResponse(200,url.includes('daily_sales')?[{pos:1200,fonepay:800,cash:500,finance:0,party_payment:300,other:0}]:[]);
+    }
+    throw new Error('Unexpected URL: '+url);
+  };
+  const sent=[];
+  const handler=dailySummary.createHandler({
+    env:cronEnvironment(),
+    fetch:fetchImpl,
+    webpush:{async sendNotification(sub,payload){sent.push(JSON.parse(payload));return{}}}
+  });
+  const response=responseCapture();
+  await handler(cronRequest(),response);
+
+  assert.equal(response.body.ok,true);
+  assert.equal(response.body.push.sent,1);
+  assert.equal(summarised.includes(DEAD_STORE),false,'must not query the dead store');
+  assert.ok(summarised.includes(STORE_ID),'summary is built for the live store');
+  assert.match(sent[0].body,/Rs 2,500 sales/,'real figures, not zeros');
+  assert.ok(patches.some(p=>p.body.store_id===STORE_ID),'binding is healed permanently');
+});
+
+test('an ambiguous stale binding is skipped rather than guessed',async()=>{
+  const DEAD_STORE='33333333-3333-4333-8333-333333333333';
+  const OTHER_STORE='44444444-4444-4444-8444-444444444444';
+  const patches=[];
+  const fetchImpl=async(url,init)=>{
+    if(url.includes('/push_subscriptions?select='))
+      return fetchResponse(200,[{id:'sub-1',store_id:DEAD_STORE,endpoint:'https://push.example/1',p256dh:'key',auth_key:'auth'}]);
+    if(url.includes('/mart_stores?select=id'))return fetchResponse(200,[{id:STORE_ID},{id:OTHER_STORE}]);
+    if(url.includes('/push_subscriptions?id=eq.')){patches.push(JSON.parse(init.body));return fetchResponse(204,{})}
+    if(url.includes('/rest/v1/'))return fetchResponse(200,[]);
+    throw new Error('Unexpected URL: '+url);
+  };
+  const sent=[];
+  const handler=dailySummary.createHandler({
+    env:cronEnvironment(),
+    fetch:fetchImpl,
+    webpush:{async sendNotification(sub,payload){sent.push(JSON.parse(payload));return{}}}
+  });
+  const response=responseCapture();
+  await handler(cronRequest(),response);
+
+  assert.equal(response.body.push.skippedStale,1);
+  assert.equal(sent.length,0,'no misleading zero summary is sent');
+  assert.match(patches[0].last_error,/no longer exists/,'the reason is recorded for the admin');
+});

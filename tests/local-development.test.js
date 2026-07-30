@@ -29,5 +29,5 @@ test('localhost removes production service workers and MartAI caches', function 
   assert.match(store, /registration=>registration\.unregister\(\)/);
   assert.match(store, /key=>key\.startsWith\('martai-'\)/);
   assert.match(store, /setTimeout\(\(\)=>clearCaches\(\).*750\)/);
-  assert.match(read('martai_final/dashboard.html'), /martai-store\.js\?v=36/);
+  assert.match(read('martai_final/dashboard.html'), /martai-store\.js\?v=37/);
 });

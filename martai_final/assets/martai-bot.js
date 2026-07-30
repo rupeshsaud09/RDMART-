@@ -1545,10 +1545,11 @@ panel.addEventListener('click',e=>{
     else if(k==='prof'){const c=M().customerById(data(),v);if(c)showProfile(c)}
     else if(k==='srch'){if(typeof window.openCommand==='function')window.openCommand(v);else doNav('customers')}
     else if(k==='store'){
-      M().setActiveStoreId(v);
-      M().syncNow()
+      // switchStore flushes pending work to the old store and rolls back on failure;
+      // the setActiveStoreId+syncNow fallback covers an older cached martai-store.js.
+      Promise.resolve(M().switchStore?M().switchStore(v):(M().setActiveStoreId(v),M().syncNow()))
         .then(()=>{rerender();const st=M().getStores().find(s=>s.id===v);botSay(fmt(t('storeSet'),{name:esc(st?st.name:v)}))})
-        .catch(e2=>botSay(t('syncFail')+esc(e2.message)));
+        .catch(e2=>{rerender();botSay(t('syncFail')+esc(e2.message))});
     }
   }catch(err){botSay(t('error')+esc(err.message||err))}
 });

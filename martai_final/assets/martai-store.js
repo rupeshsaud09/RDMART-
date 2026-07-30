@@ -49,7 +49,12 @@
   }
   function redactStoredSecrets(db){if(!tableMode()||!db||typeof db!=='object')return db;db.settings=db.settings||{};db.settings.adminPass='';(db.staffAccounts||[]).forEach(s=>{delete s.password});(db.customers||[]).forEach(c=>{if(!dirty.customers.has(c.id))c.pin=''});if(isStaffSession())db.dailySales=[];return db}
   function readLocal(){let db;try{db=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){db=null}return normalizeDB(redactStoredSecrets(db))}
-  function writeLocal(db){const stored=tableMode()?redactStoredSecrets(JSON.parse(JSON.stringify(db))):db;localStorage.setItem(KEY,JSON.stringify(stored))}
+  // In tables mode the single local cache blob holds ONE store's data. CACHE_STORE
+  // records which store that is, so pending offline work is always flushed to the
+  // store it was created in — even if the admin switches store before it syncs.
+  const CACHE_STORE='martai_cache_store_v1';
+  function cacheStoreId(){return localStorage.getItem(CACHE_STORE)||getActiveStoreId()}
+  function writeLocal(db,storeId){const stored=tableMode()?redactStoredSecrets(JSON.parse(JSON.stringify(db))):db;localStorage.setItem(KEY,JSON.stringify(stored));try{localStorage.setItem(CACHE_STORE,storeId||getActiveStoreId())}catch(e){}}
   function getDB(){if(!currentDB)currentDB=readLocal();return currentDB}
   function getSupabase(){const cfg=window.MARTAI_SUPABASE||{};const configured=cfg.url&&cfg.anonKey&&!String(cfg.url).includes('YOUR_SUPABASE')&&!String(cfg.anonKey).includes('YOUR_SUPABASE');if(!configured||!window.supabase)return null;if(!supabaseClient)supabaseClient=window.supabase.createClient(cfg.url,cfg.anonKey);return supabaseClient}
   function dbMode(){return (window.MARTAI_SUPABASE&&window.MARTAI_SUPABASE.mode)||'json'}
@@ -73,15 +78,37 @@
   async function loadTableDB(){
     const client=getSupabase();if(!client)return getDB();
     // Flush unsynced offline changes first — otherwise the remote load would overwrite them.
+    // They are pushed to the store the cached data belongs to (cacheStoreId), which protects
+    // against mis-tagging records when the active store changed after they were written.
     if(hasPending()){
-      try{await saveTableDB(getDB())}
+      try{await saveTableDB(getDB(),cacheStoreId())}
       catch(e){remoteEnabled=false;remoteError='Offline changes waiting to sync: '+(e.message||String(e));console.error('Pending sync failed, keeping local data:',e);return getDB()}
     }
-    try{
+    try{return await fetchTableDB(client)}
+    catch(e){remoteEnabled=false;remoteError=e.message||String(e);console.error('Supabase table load failed:',e);return getDB()}
+  }
+  // Fetches the active store's data and commits it as currentDB. Throws on failure.
+  // A load superseded by a newer one (store switched mid-flight, realtime reload
+  // racing a manual sync) is abandoned instead of overwriting the newer data.
+  let loadGen=0;
+  async function fetchTableDB(client){
+    client=client||getSupabase();if(!client)return getDB();
+    const gen=++loadGen;
+    {
       const storeResult=await client.from('mart_stores').select('*').eq('is_active',true).order('created_at',{ascending:true});
-      const stores=storeResult.error?[defaultStore()]:(storeResult.data||[]).map(fromStoreRow);
-      let storeId=getActiveStoreId();if(!stores.some(s=>s.id===storeId)){storeId=stores[0]?.id||'default';setActiveStoreId(storeId)}
-      const byStore=q=>storeResult.error?q:q.eq('store_id',storeId);
+      // A failed store-list read must abort the whole load. The old fallback
+      // (pretend the list is [default]) silently repointed the active store to
+      // 'default' whenever the online login expired, and the store filter then
+      // hid every cached record — the "data not loading" bug.
+      if(storeResult.error){
+        let authMissing=false;
+        try{const s=await client.auth.getSession();authMissing=!s?.data?.session}catch(e){}
+        throw authMissing?new Error('Online login expired. Log out and log in again to reload store data.'):storeResult.error;
+      }
+      const stores=(storeResult.data||[]).map(fromStoreRow);
+      if(!stores.length)throw new Error('No active stores found in the online database. Run setup-complete.sql or create a store first.');
+      let storeId=getActiveStoreId();if(!stores.some(s=>s.id===storeId)){if(gen!==loadGen)return getDB();storeId=stores[0].id;setActiveStoreId(storeId)}
+      const byStore=q=>q.eq('store_id',storeId);
       const staffView=isStaffSession();
       const [settings,customers,credits,sales,daily,party,cheques,estimates,activity,payReqs,chequeQueueRes,partiesRes,tasksRes]=await Promise.all([
         client.from('mart_settings').select('*').eq('id',true).maybeSingle(),
@@ -102,7 +129,7 @@
       const customerRows=(customers.data||[]).map(fromCustomerRow);
       const activeStore=stores.find(s=>s.id===storeId)||stores[0]||defaultStore();
       const localCalendar=(getDB().settings||{});
-      currentDB=normalizeDB({
+      const nextDB=normalizeDB({
         version:2,
         createdAt:now(),
         settings:{martName:activeStore.name||settings.data?.mart_name||'RD MART',adminUser:'',adminPass:'',martPhone:activeStore.phone||settings.data?.mart_phone||'',storeLogo:activeStore.logoData||'',storePaymentQr:activeStore.qrData||'',storePaymentQrLabel:activeStore.qrLabel||'',bankWeekendDays:Array.isArray(settings.data?.bank_weekend_days)?settings.data.bank_weekend_days:localCalendar.bankWeekendDays,bankHolidays:Array.isArray(settings.data?.bank_holidays)?settings.data.bank_holidays:localCalendar.bankHolidays},
@@ -125,11 +152,13 @@
         loginEvents:[]
       });
       const logins=await client.from('login_events').select('*').order('created_at',{ascending:false}).limit(80);
-      if(!logins.error)currentDB.loginEvents=(logins.data||[]).map(fromLoginEventRow);
+      if(!logins.error)nextDB.loginEvents=(logins.data||[]).map(fromLoginEventRow);
       const staff=await client.from('mart_staff').select('*').order('created_at',{ascending:false}).limit(80);
-      if(!staff.error)currentDB.staffAccounts=(staff.data||[]).map(fromStaffRow);
-      writeLocal(currentDB);clearDirty();remoteEnabled=true;remoteError='';return currentDB;
-    }catch(e){remoteEnabled=false;remoteError=e.message||String(e);console.error('Supabase table load failed:',e);return getDB()}
+      if(!staff.error)nextDB.staffAccounts=(staff.data||[]).map(fromStaffRow);
+      if(gen!==loadGen)return getDB(); // a newer load started while this one was in flight — discard
+      currentDB=nextDB;
+      writeLocal(currentDB,storeId);clearDirty();remoteEnabled=true;remoteError='';return currentDB;
+    }
   }
   async function hashPin(pin){const client=getSupabase();const r=await client.rpc('hash_pin',{pin});if(r.error)throw r.error;return r.data}
   function noRowsError(error){const msg=String(error?.message||'');return error?.code==='PGRST116'||msg.includes('Cannot coerce')||msg.includes('JSON object')}
@@ -146,11 +175,14 @@
     if(!r.data)throw new Error('Could not save '+table+' row');
     return r.data.id;
   }
-  async function saveTableDB(db){
+  // storeIdOverride pins the rows to the store the data was created in. Callers that
+  // queue a save (queueRemoteSave) or flush an old cache (loadTableDB/switchStore)
+  // pass it explicitly so a store switch mid-save can never re-tag records.
+  async function saveTableDB(db,storeIdOverride){
     const client=getSupabase();if(!client)return;
     db=normalizeDB(db);
     const s=db.settings||{};
-    const storeId=getActiveStoreId();
+    const storeId=storeIdOverride||getActiveStoreId();
     let r;
     while(deleteQueue.length){
       const t=deleteQueue[0];
@@ -235,10 +267,13 @@
       catch(e){if(String(e.message||'').includes('mart_tasks')){dirty.tasks.clear();console.warn('mart_tasks table missing — run add-tasks.sql in Supabase to sync staff tasks');break}throw e}
       dirty.tasks.delete(x.id)
     }
-    writeLocal(db);remoteEnabled=true;remoteError='';
+    // Only refresh the shared local cache if it still belongs to this store —
+    // after a switch, this save's data must not clobber the new store's cache.
+    if(storeId===getActiveStoreId())writeLocal(db,storeId);
+    remoteEnabled=true;remoteError='';
   }
   async function loadRemoteDB(){remoteEnabled=false;remoteError='Legacy shared JSON cloud sync is disabled. Configure Supabase tables mode.';return getDB()}
-  function queueRemoteSave(db){if(!tableMode())return;const client=getSupabase();if(!client)return;touchLocal();pendingSave=(pendingSave||Promise.resolve()).catch(()=>{}).then(()=>saveTableDB(db)).then(()=>{remoteEnabled=true;remoteError='';touchLocal();persistPending()}).catch(e=>{remoteEnabled=false;remoteError=e.message||String(e);persistPending();console.error('Supabase save failed:',e)});return pendingSave}
+  function queueRemoteSave(db,storeId){if(!tableMode())return;const client=getSupabase();if(!client)return;const sid=storeId||getActiveStoreId();touchLocal();pendingSave=(pendingSave||Promise.resolve()).catch(()=>{}).then(()=>saveTableDB(db,sid)).then(()=>{remoteEnabled=true;remoteError='';touchLocal();persistPending()}).catch(e=>{remoteEnabled=false;remoteError=e.message||String(e);persistPending();console.error('Supabase save failed:',e)});return pendingSave}
   function saveDB(db){currentDB=normalizeDB(db);writeLocal(currentDB);queueRemoteSave(currentDB);return currentDB}
   function resetDB(){if(!isMainAdminSession())throw new Error('Only the main admin can reset data');currentDB=makeDB();saveDB(currentDB);return currentDB}
   function validateRestoreBackup(input){
@@ -288,6 +323,28 @@
     return currentDB;
   }
   async function syncNow(){if(pendingSave)await pendingSave;if(tableMode())await loadTableDB();else await loadRemoteDB();return getDB()}
+  // Safe store switching. Flushes everything still owed to the CURRENT store first,
+  // then loads the new store strictly: if that load fails, the switch is rolled back
+  // so the app never shows one store's name over another store's (or empty) data.
+  async function switchStore(storeId){
+    storeId=String(storeId||'').trim()||'default';
+    if(!tableMode()){setActiveStoreId(storeId);return getDB()}
+    if(storeId===getActiveStoreId())return getDB();
+    if(pendingSave){try{await pendingSave}catch(e){}}
+    if(hasPending()){
+      try{await saveTableDB(getDB(),cacheStoreId())}
+      catch(e){throw new Error('Cannot switch stores yet: offline changes could not be synced ('+(e.message||String(e))+'). Reconnect and press Sync, then try again.')}
+    }
+    const prev=getActiveStoreId();
+    setActiveStoreId(storeId);
+    try{return await fetchTableDB()}
+    catch(e){
+      setActiveStoreId(prev);
+      remoteEnabled=false;remoteError=e.message||String(e);
+      console.error('Store switch load failed:',e);
+      throw new Error('Could not load that store\'s data ('+(e.message||String(e))+'). Staying on the current store.')
+    }
+  }
   function syncInfo(){return{remoteEnabled,remoteError,configured:!!getSupabase(),mode:dbMode(),pendingSave,pendingCount:pendingCount(),hasPending:hasPending()}}
   async function adminLogin(username,password,remember){
     if(!tableMode()){
@@ -412,8 +469,8 @@
   function clearSupabaseAuthStorage(){try{const url=String(window.MARTAI_SUPABASE?.url||''),ref=new URL(url).hostname.split('.')[0],prefix='sb-'+ref+'-auth-token';for(let i=localStorage.length-1;i>=0;i--){const key=localStorage.key(i);if(key&&(key===prefix||key.startsWith(prefix+'-')))localStorage.removeItem(key)}}catch(e){}}
   async function clearSession(){sessionStorage.removeItem(SESSION);try{localStorage.removeItem(REMEMBER)}catch(e){}const client=getSupabase();try{if(client)await client.auth.signOut({scope:'local'})}catch(e){console.warn('Remote sign-out failed; local credentials were still cleared')}finally{clearSupabaseAuthStorage()}}
   function getStores(){return (getDB().stores||[defaultStore()]).filter(s=>s.isActive!==false)}
-  async function addStore(db,input){if(!isMainAdminSession())throw new Error('Only main admin can create stores');const name=String(input.name||'').trim();const phone=phoneClean(input.phone||'');const adminEmail=String(input.adminEmail||'').trim().toLowerCase();if(!name)throw new Error('Store name is required');if(!adminEmail.includes('@'))throw new Error('Store admin email is required');if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_create_store',{name_input:name,phone_input:phone,email_input:adminEmail});if(r.error)throw r.error;setActiveStoreId(r.data);await loadTableDB();return r.data}db.stores.unshift({id:id(),name,phone,adminEmail,createdAt:now(),isActive:true});setActiveStoreId(db.stores[0].id);saveDB(db);return db.stores[0]}
-  async function deleteStore(db,storeId){if(!isMainAdminSession())throw new Error('Only main admin can delete stores');const stores=getStores();if(stores.length<=1)throw new Error('You must keep at least one store');if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_delete_store',{store_input:storeId});if(r.error)throw r.error;if(getActiveStoreId()===storeId)setActiveStoreId('default');await loadTableDB();return}db.stores=(db.stores||[]).filter(s=>s.id!==storeId);if(getActiveStoreId()===storeId)setActiveStoreId(db.stores[0]?.id||'default');saveDB(db)}
+  async function addStore(db,input){if(!isMainAdminSession())throw new Error('Only main admin can create stores');const name=String(input.name||'').trim();const phone=phoneClean(input.phone||'');const adminEmail=String(input.adminEmail||'').trim().toLowerCase();if(!name)throw new Error('Store name is required');if(!adminEmail.includes('@'))throw new Error('Store admin email is required');if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_create_store',{name_input:name,phone_input:phone,email_input:adminEmail});if(r.error)throw r.error;await switchStore(r.data);return r.data}db.stores.unshift({id:id(),name,phone,adminEmail,createdAt:now(),isActive:true});setActiveStoreId(db.stores[0].id);saveDB(db);return db.stores[0]}
+  async function deleteStore(db,storeId){if(!isMainAdminSession())throw new Error('Only main admin can delete stores');const stores=getStores();if(stores.length<=1)throw new Error('You must keep at least one store');if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_delete_store',{store_input:storeId});if(r.error)throw r.error;if(getActiveStoreId()===storeId){deleteQueue=[];clearDirty();setActiveStoreId('default')}await loadTableDB();return}db.stores=(db.stores||[]).filter(s=>s.id!==storeId);if(getActiveStoreId()===storeId)setActiveStoreId(db.stores[0]?.id||'default');saveDB(db)}
   async function updateStore(db,storeId,input){if(!isMainAdminSession())throw new Error('Only main admin can edit stores');const name=String(input.name||'').trim();const phone=phoneClean(input.phone||'');if(!name)throw new Error('Store name is required');if(tableMode()){const client=getSupabase();const r=await client.from('mart_stores').update({name,phone,updated_at:now()}).eq('id',storeId);if(r.error)throw r.error;await loadTableDB();return}const store=(db.stores||[]).find(s=>s.id===storeId);if(!store)throw new Error('Store not found');store.name=name;store.phone=phone;saveDB(db)}
   function addActivity(db,message,type='info'){db.activity.unshift({id:id(),type,message,time:now()});db.activity=db.activity.slice(0,60)}
   function deleteTableRow(table,row){const client=getSupabase();if(!(tableMode()&&client&&row?._tableId))return;touchLocal();const tableId=row._tableId;client.from(table).delete().eq('id',tableId).then(r=>{if(r.error){deleteQueue.push({table,tableId});persistPending();console.error('Delete failed, queued for retry:',r.error)}},()=>{deleteQueue.push({table,tableId});persistPending()})}
@@ -568,7 +625,7 @@
     if(s?.role==='customer'&&s.customerToken)return loadCustomerPortal(s.customerToken);
     remoteEnabled=!!getSupabase();return getDB();
   }
-  window.addEventListener('online',()=>{const s=getSession();if(tableMode()&&hasPending()&&(s?.role==='admin'||s?.role==='staff'||s?.role==='store_admin'))queueRemoteSave(getDB())});
+  window.addEventListener('online',()=>{const s=getSession();if(tableMode()&&hasPending()&&(s?.role==='admin'||s?.role==='staff'||s?.role==='store_admin'))queueRemoteSave(getDB(),cacheStoreId())});
   // PWA caching belongs to the deployed HTTPS app. On localhost/file previews,
   // remove old MartAI workers and caches so source changes appear immediately.
   if('serviceWorker' in navigator){
@@ -589,9 +646,9 @@
     }else{
       let refreshing=false;
       navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;location.reload()});
-      window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=68',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})});
+      window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=70',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})});
     }
   }
   const ready=initialize();
-  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,safeImageDataUrl,phoneClean,getDB,saveDB,markDirty,resetDB,validateRestoreBackup,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,addStaffDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateCheque,updateChequeStatus,postponeCheque,deleteCheque,addChequeNote,scheduleChequeFollowUp,addChequeQueue,deleteChequeQueue,addParty,deleteParty,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveBankCalendar,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,setStaffPhone,staffPhone,accessToken,addTask,completeTask,reopenTask,deleteTask,acknowledgeTasks,csvEscape,download,wa,byDate,tilt3d,getSupabase};
+  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,safeImageDataUrl,phoneClean,getDB,saveDB,markDirty,resetDB,validateRestoreBackup,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,switchStore,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,addStaffDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateCheque,updateChequeStatus,postponeCheque,deleteCheque,addChequeNote,scheduleChequeFollowUp,addChequeQueue,deleteChequeQueue,addParty,deleteParty,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveBankCalendar,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,setStaffPhone,staffPhone,accessToken,addTask,completeTask,reopenTask,deleteTask,acknowledgeTasks,csvEscape,download,wa,byDate,tilt3d,getSupabase};
 })();

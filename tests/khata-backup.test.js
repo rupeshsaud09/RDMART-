@@ -54,3 +54,74 @@ test('backup data excludes local passwords and PINs', () => {
   assert.equal('password' in output.staffAccounts[0], false);
   assert.equal(input.settings.adminPass, 'secret');
 });
+
+/* ===== Per-store envelope scoping (backup-fails-with-unscoped-data bug) ===== */
+
+function loadBackupHelpersTablesMode(activeStoreId) {
+  const sandbox = {
+    Blob,
+    CustomEvent: function CustomEvent() {},
+    console,
+    crypto: require('node:crypto').webcrypto,
+    navigator: {},
+    window: {
+      dispatchEvent() {},
+      localStorage: { getItem: () => null, setItem() {} },
+      MartAI: {
+        getActiveStoreId: () => activeStoreId,
+        syncInfo: () => ({ mode: 'tables' })
+      }
+    }
+  };
+  const source = fs.readFileSync(path.join(__dirname, '..', 'martai_final', 'assets', 'khata-backup.js'), 'utf8');
+  vm.runInNewContext(source, sandbox);
+  return sandbox.window.KhataBackup;
+}
+
+function contaminatedDb() {
+  const empty = { dailySales: [], partyPayments: [], cheques: [], parties: [], estimateBills: [], activity: [], loginEvents: [], staffAccounts: [], paymentRequests: [] };
+  return {
+    version: 2,
+    settings: { martName: 'Store A', adminPass: 'secret' },
+    stores: [{ id: 'store-a', name: 'Store A' }, { id: 'store-b', name: 'Store B' }],
+    customers: [{ id: 'c1', storeId: 'store-a', name: 'Ram', pin: '1234' }],
+    credits: [{ id: 'cr1', storeId: 'store-a', customerId: 'c1', amount: 100 }],
+    sales: [
+      { id: 's1', storeId: 'store-a', amount: 500 },
+      { id: 's2', storeId: 'store-b', amount: 900 } // left behind by old store-switch bugs
+    ],
+    chequeQueue: [
+      { id: 'q1', storeId: 'store-b', party: 'Foreign supplier' }, // keep-local fallback row
+      { id: 'q2', party: 'Legacy row with no storeId' }            // maps to 'default'
+    ],
+    ...empty
+  };
+}
+
+test('createEnvelope keeps only the active store\'s records in tables mode', () => {
+  const api = loadBackupHelpersTablesMode('store-a');
+  const envelope = api.createEnvelope(contaminatedDb());
+  assert.equal(envelope.storeId, 'store-a');
+  assert.deepEqual(Array.from(envelope.data.sales, s => s.id), ['s1']);
+  assert.equal(envelope.data.chequeQueue.length, 0, 'foreign and legacy-unscoped queue rows are excluded');
+  assert.deepEqual(Array.from(envelope.data.customers, c => c.id), ['c1']);
+  assert.equal(envelope.data.customers[0].pin, '', 'secrets still sanitized');
+});
+
+test('a contaminated cache no longer breaks backup verification or restore', () => {
+  const api = loadBackupHelpersTablesMode('store-a');
+  const envelope = api.createEnvelope(contaminatedDb());
+  // The same checks writeInternal/writeFolder and restore run — used to throw
+  // 'Backup contains unscoped data or data from a different store'.
+  assert.doesNotThrow(() => api._test.validateEnvelope(envelope, api._test.storeContext(contaminatedDb()), envelope.backupDay, 'daily'));
+  assert.doesNotThrow(() => api.validateForRestore(contaminatedDb(), envelope));
+});
+
+test('local (all-stores) mode keeps every record in the envelope', () => {
+  const helpers = loadBackupHelpers();
+  const context = { storeId: 'all-stores', storeName: 'All stores', localScope: true };
+  const data = contaminatedDb();
+  const scoped = helpers.scopeBackupData(JSON.parse(JSON.stringify(data)), context);
+  assert.equal(scoped.sales.length, 2);
+  assert.equal(scoped.chequeQueue.length, 2);
+});
