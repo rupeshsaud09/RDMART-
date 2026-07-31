@@ -1,18 +1,18 @@
 // KHATA PANA service worker — offline app shell + cached assets.
 // Bump CACHE version when deploying big changes to force a refresh.
-const CACHE = 'martai-v71';
+const CACHE = 'martai-v74';
 const SHELL = [
   'index.html',
   'customer.html',
   'dashboard.html',
   'staff.html',
-  'assets/martai.css?v=35',
-  'assets/staff.css?v=10',
-  'assets/login-experience.css?v=12',
+  'assets/martai.css?v=38',
+  'assets/staff.css?v=11',
+  'assets/login-experience.css?v=13',
   'assets/martai-date.js?v=1',
   'assets/martai-bank-cheques.js?v=3',
-  'assets/martai-ui.js?v=2',
-  'assets/martai-store.js?v=38',
+  'assets/martai-ui.js?v=3',
+  'assets/martai-store.js?v=39',
   'assets/martai-notifications.js?v=1',
   'assets/martai-cheques.js?v=1',
   'assets/martai-intelligence.js?v=1',

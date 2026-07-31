@@ -35,10 +35,10 @@
   function defaultStore(){return{id:'default',name:'RD MART',phone:'',logoData:'',createdAt:now(),isActive:true}}
   function getActiveStoreId(){return localStorage.getItem(ACTIVE_STORE)||'default'}
   function setActiveStoreId(storeId){localStorage.setItem(ACTIVE_STORE,storeId||'default');currentDB=null}
-  function makeDB(){return{version:1,createdAt:now(),settings:{martName:'RD MART',adminUser:'admin',adminPass:'',martPhone:'',storeLogo:'',storePaymentQr:'',storePaymentQrLabel:'',bankWeekendDays:[0,6],bankHolidays:[]},stores:[defaultStore()],customers:[],credits:[],sales:[],dailySales:[],partyPayments:[],cheques:[],chequeQueue:[],parties:[],estimateBills:[],activity:[],staffAccounts:[],tasks:[]}}
+  function makeDB(){return{version:1,createdAt:now(),settings:{martName:'RD MART',adminUser:'admin',adminPass:'',martPhone:'',storeLogo:'',storePaymentQr:'',storePaymentQrLabel:'',bankWeekendDays:[0,6],bankHolidays:[]},stores:[defaultStore()],customers:[],credits:[],sales:[],dailySales:[],partyPayments:[],cheques:[],chequeQueue:[],parties:[],estimateBills:[],activity:[],staffAccounts:[],tasks:[],recycleBin:[]}}
   function normalizeDB(db){
     if(!db||typeof db!=='object')db=makeDB();
-    ['settings','stores','customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','activity','loginEvents','staffAccounts','paymentRequests','tasks'].forEach(k=>{if(k==='settings'){db[k]=db[k]||makeDB().settings}else if(!Array.isArray(db[k]))db[k]=[]});
+    ['settings','stores','customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','activity','loginEvents','staffAccounts','paymentRequests','tasks','recycleBin'].forEach(k=>{if(k==='settings'){db[k]=db[k]||makeDB().settings}else if(!Array.isArray(db[k]))db[k]=[]});
     if(!db.stores.length)db.stores=[defaultStore()];
     if(db.settings.martName==='KHATA PANA'||db.settings.martName==='MartAI'||!db.settings.martName)db.settings.martName='RD MART';
     db.stores.forEach(s=>{if(s.name==='KHATA PANA'||s.name==='MartAI'||!s.name)s.name='RD MART'});
@@ -149,6 +149,10 @@
         paymentRequests:payReqs.error?[]:(payReqs.data||[]).map(r=>fromPaymentRequestRow(r,customerRows)),
         // mart_tasks table may not exist until add-tasks.sql is run — keep local copy then
         tasks:tasksRes.error?(getDB().tasks||[]):(tasksRes.data||[]).map(fromTaskRow),
+        // The recycle bin is device-local and has no upstream table, so it must
+        // be carried across explicitly — this object replaces currentDB wholesale
+        // and would otherwise wipe every recoverable record on each sync.
+        recycleBin:getDB().recycleBin||[],
         loginEvents:[]
       });
       const logins=await client.from('login_events').select('*').order('created_at',{ascending:false}).limit(80);
@@ -474,17 +478,125 @@
   async function updateStore(db,storeId,input){if(!isMainAdminSession())throw new Error('Only main admin can edit stores');const name=String(input.name||'').trim();const phone=phoneClean(input.phone||'');if(!name)throw new Error('Store name is required');if(tableMode()){const client=getSupabase();const r=await client.from('mart_stores').update({name,phone,updated_at:now()}).eq('id',storeId);if(r.error)throw r.error;await loadTableDB();return}const store=(db.stores||[]).find(s=>s.id===storeId);if(!store)throw new Error('Store not found');store.name=name;store.phone=phone;saveDB(db)}
   function addActivity(db,message,type='info'){db.activity.unshift({id:id(),type,message,time:now()});db.activity=db.activity.slice(0,60)}
   function deleteTableRow(table,row){const client=getSupabase();if(!(tableMode()&&client&&row?._tableId))return;touchLocal();const tableId=row._tableId;client.from(table).delete().eq('id',tableId).then(r=>{if(r.error){deleteQueue.push({table,tableId});persistPending();console.error('Delete failed, queued for retry:',r.error)}},()=>{deleteQueue.push({table,tableId});persistPending()})}
+
+  // === RECYCLE BIN ===
+  // Financial records used to be gone the instant they were deleted, with only
+  // the weekly backup to fall back on. Every delete now keeps a full copy here
+  // first, so a misclick costs seconds instead of days of re-entry.
+  //
+  // Restore re-inserts through the normal dirty-sync path: the row keeps its
+  // original `id` (its `legacy_id` upstream) and `saveLegacyRow` upserts on that
+  // column, so the record comes back with the same identity it had before —
+  // which is what keeps credit payments still pointing at the right customer.
+  const RECYCLE_LIMIT=200;
+  const RECYCLE_COLLECTIONS={
+    credits:{table:'credits',label:'Credit entry'},
+    customers:{table:'customers',label:'Customer'},
+    sales:{table:'sales',label:'Sale'},
+    dailySales:{table:'daily_sales',label:'Daily sales entry'},
+    partyPayments:{table:'party_payments',label:'Supplier payment'},
+    estimateBills:{table:'estimate_bills',label:'Estimate'},
+    chequeQueue:{table:'cheque_queue',label:'Cheque to write'},
+    parties:{table:'parties',label:'Party account'},
+    tasks:{table:'mart_tasks',label:'Task'}
+  };
+  // One-line description per record type, so the bin reads as business events
+  // ("Ram Prasad — Rs 1,500") rather than raw ids.
+  function recycleDescription(collection,record){
+    const r=record||{};
+    switch(collection){
+      case 'credits':return `${r.customer||'Customer'} - ${money(r.amount)}${r.date?' on '+r.date:''}`;
+      case 'customers':return `${r.name||'Customer'}${r.phone?' - '+r.phone:''}`;
+      case 'sales':return `${r.party||'Walk-in'} - ${money(r.amount)}`;
+      case 'dailySales':return `${r.date||'Entry'} - ${money(num(r.pos)+num(r.fonepay)+num(r.cash)+num(r.finance)+num(r.other))}`;
+      case 'partyPayments':return `${r.party||'Supplier'} - ${money(r.amount)}`;
+      case 'estimateBills':return `${r.customer||'Customer'} - ${money(r.amount)}`;
+      case 'chequeQueue':return `${r.party||'Party'}${num(r.amount)?' - '+money(r.amount):''}`;
+      case 'parties':return String(r.name||'Party account');
+      case 'tasks':return String(r.title||'Task');
+      default:return 'Record';
+    }
+  }
+  function recycleRecord(db,collection,record){
+    const meta=RECYCLE_COLLECTIONS[collection];
+    if(!meta||!record)return null;
+    db.recycleBin=Array.isArray(db.recycleBin)?db.recycleBin:[];
+    const entry={
+      id:id(),
+      collection,
+      table:meta.table,
+      typeLabel:meta.label,
+      description:recycleDescription(collection,record),
+      storeId:record.storeId||getActiveStoreId(),
+      deletedAt:now(),
+      deletedBy:String(getSession()?.email||getSession()?.role||'User'),
+      // Deep copy: the caller is about to drop this object, and a live
+      // reference would let later edits mutate what we promised to restore.
+      record:JSON.parse(JSON.stringify(record))
+    };
+    // A recycled customer must not carry a PIN around in localStorage. It is
+    // re-issued on restore rather than resurrected.
+    if(entry.record&&'pin' in entry.record)entry.record.pin='';
+    db.recycleBin.unshift(entry);
+    if(db.recycleBin.length>RECYCLE_LIMIT)db.recycleBin=db.recycleBin.slice(0,RECYCLE_LIMIT);
+    return entry;
+  }
+  function listRecycleBin(db){
+    const sid=getActiveStoreId();
+    return (Array.isArray(db.recycleBin)?db.recycleBin:[])
+      .filter(e=>e&&RECYCLE_COLLECTIONS[e.collection]&&(e.storeId===sid||(!e.storeId&&sid==='default')))
+      .slice();
+  }
+  function restoreRecord(db,entryId){
+    if(isStaffSession())throw new Error('Staff cannot restore deleted records');
+    db.recycleBin=Array.isArray(db.recycleBin)?db.recycleBin:[];
+    const index=db.recycleBin.findIndex(e=>e&&e.id===entryId);
+    if(index<0)throw new Error('That deleted record is no longer available to restore');
+    const entry=db.recycleBin[index];
+    const collection=entry.collection;
+    if(!RECYCLE_COLLECTIONS[collection])throw new Error('This record type cannot be restored');
+    db[collection]=Array.isArray(db[collection])?db[collection]:[];
+    if(db[collection].some(x=>x&&x.id===entry.record.id))throw new Error('That record already exists, so it was not restored again');
+    const restored=JSON.parse(JSON.stringify(entry.record));
+    // The upstream row is already gone, so drop the stale row id and let the
+    // next sync recreate it keyed on legacy_id. Keeping it would make the first
+    // save target a row that no longer exists.
+    delete restored._tableId;
+    restored.restoredAt=now();
+    db[collection].unshift(restored);
+    markDirty(collection,restored.id);
+    db.recycleBin.splice(index,1);
+    addActivity(db,`Restored ${entry.typeLabel.toLowerCase()}: ${entry.description}`,'restore');
+    saveDB(db);
+    return {entry,record:restored};
+  }
+  function purgeRecycleEntry(db,entryId){
+    if(!isMainAdminSession())throw new Error('Only the main admin can permanently remove records');
+    db.recycleBin=Array.isArray(db.recycleBin)?db.recycleBin:[];
+    const index=db.recycleBin.findIndex(e=>e&&e.id===entryId);
+    if(index<0)return false;
+    db.recycleBin.splice(index,1);
+    saveDB(db);
+    return true;
+  }
+  function clearRecycleBin(db){
+    if(!isMainAdminSession())throw new Error('Only the main admin can empty the recycle bin');
+    const sid=getActiveStoreId();
+    db.recycleBin=(Array.isArray(db.recycleBin)?db.recycleBin:[])
+      .filter(e=>!(e&&(e.storeId===sid||(!e.storeId&&sid==='default'))));
+    saveDB(db);
+  }
   function customerBalance(db,customerId){const rows=db.credits.filter(c=>c.customerId===customerId);const taken=rows.reduce((s,c)=>s+num(c.amount),0);const paid=rows.reduce((s,c)=>s+num(c.paid),0);return{taken,paid,balance:Math.max(0,taken-paid),rows}}
   function findCustomer(db,phone,pin){const ph=phoneClean(phone);return db.customers.find(c=>phoneClean(c.phone)===ph&&String(c.pin||'')===String(pin||''))}
   function customerById(db,idv){return db.customers.find(c=>c.id===idv)}
   function addCustomer(db,input){const ph=phoneClean(input.phone);if(ph.length<10)throw new Error('Enter valid 10 digit phone number');if(!String(input.pin||'').match(/^\d{4}$/))throw new Error('PIN must be exactly 4 digits');const sid=getActiveStoreId();if(db.customers.some(c=>phoneClean(c.phone)===ph&&(c.storeId===sid||(!c.storeId&&sid==='default'))))throw new Error('Customer phone already exists');const c={id:id(),storeId:sid,name:String(input.name||'').trim(),phone:ph,pin:String(input.pin),email:String(input.email||'').trim(),address:String(input.address||'').trim(),notes:String(input.notes||'').trim(),creditLimit:num(input.creditLimit)||0,createdAt:now()};if(!c.name)throw new Error('Customer name is required');db.customers.unshift(c);markDirty('customers',c.id);addActivity(db,`Customer added: ${c.name}`,'customer');saveDB(db);return c}
   function updateCustomer(db,idv,patch){const c=customerById(db,idv);if(!c)throw new Error('Customer not found');if(patch.phone){const ph=phoneClean(patch.phone);if(ph.length<10)throw new Error('Enter valid 10 digit phone number');if(db.customers.some(x=>x.id!==idv&&phoneClean(x.phone)===ph))throw new Error('Phone already used by another customer');c.phone=ph}['name','email','address','notes'].forEach(k=>{if(k in patch)c[k]=String(patch[k]||'').trim()});if('creditLimit' in patch)c.creditLimit=num(patch.creditLimit)||0;if(patch.pin){if(!String(patch.pin).match(/^\d{4}$/))throw new Error('PIN must be exactly 4 digits');c.pin=String(patch.pin)}c.updatedAt=now();markDirty('customers',c.id);addActivity(db,`Customer updated: ${c.name}`,'customer');saveDB(db);return c}
-  function deleteCustomer(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const c=customerById(db,idv);if(!c)throw new Error('Customer not found');if(db.credits.some(x=>x.customerId===idv))throw new Error('This customer has credit history. Keep the profile for records.');deleteTableRow('customers',c);db.customers=db.customers.filter(x=>x.id!==idv);addActivity(db,`Customer deleted: ${c.name}`,'customer');saveDB(db)}
+  function deleteCustomer(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const c=customerById(db,idv);if(!c)throw new Error('Customer not found');if(db.credits.some(x=>x.customerId===idv))throw new Error('This customer has credit history. Keep the profile for records.');recycleRecord(db,'customers',c);deleteTableRow('customers',c);db.customers=db.customers.filter(x=>x.id!==idv);addActivity(db,`Customer deleted: ${c.name}`,'customer');saveDB(db)}
   function addCredit(db,input){const c=customerById(db,input.customerId);if(!c)throw new Error('Select customer');const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const limit=num(c.creditLimit)||0;if(limit>0){const{balance}=customerBalance(db,c.id);if(balance+amount>limit)throw new Error(`Credit limit exceeded. ${c.name} limit is ${money(limit)}, current balance ${money(balance)}`)}const cr={id:id(),storeId:getActiveStoreId(),customerId:c.id,customer:c.name,phone:c.phone,date:input.date||today(),dueDate:input.dueDate?isoDate(input.dueDate):'',items:String(input.items||'').trim(),amount,paid:0,note:String(input.note||'').trim(),createdAt:now()};db.credits.unshift(cr);markDirty('credits',cr.id);addActivity(db,`Credit ${money(amount)} added for ${c.name}`,'credit');saveDB(db);return cr}
   function addCreditPayment(db,customerId,amount,note){let remaining=num(amount);if(remaining<=0)throw new Error('Payment amount must be greater than 0');const c=customerById(db,customerId);if(!c)throw new Error('Customer not found');const rows=db.credits.filter(x=>x.customerId===customerId&&num(x.amount)>num(x.paid)).sort((a,b)=>String(a.date).localeCompare(String(b.date)));for(const r of rows){const bal=num(r.amount)-num(r.paid);const pay=Math.min(bal,remaining);r.paid=num(r.paid)+pay;r.paidAt=now();if(note)r.paymentNote=String(note).trim();markDirty('credits',r.id);remaining-=pay;if(remaining<=0)break}addActivity(db,`Payment ${money(amount-remaining)} received from ${c.name}`,'payment');saveDB(db);return amount-remaining}
-  function deleteCredit(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.credits.find(x=>x.id===idv);if(!r)throw new Error('Credit not found');deleteTableRow('credits',r);db.credits=db.credits.filter(x=>x.id!==idv);addActivity(db,`Credit deleted: ${r.customer} ${money(r.amount)}`,'credit');saveDB(db)}
+  function deleteCredit(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.credits.find(x=>x.id===idv);if(!r)throw new Error('Credit not found');recycleRecord(db,'credits',r);deleteTableRow('credits',r);db.credits=db.credits.filter(x=>x.id!==idv);addActivity(db,`Credit deleted: ${r.customer} ${money(r.amount)}`,'credit');saveDB(db)}
   function addSale(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const s={id:id(),storeId:getActiveStoreId(),date:input.date||today(),party:String(input.party||'Walk-in Customer').trim(),amount,note:String(input.note||'').trim(),createdAt:now()};db.sales.unshift(s);markDirty('sales',s.id);addActivity(db,`Sale ${money(amount)} - ${s.party}`,'sale');saveDB(db);return s}
-  function deleteSale(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.sales.find(x=>x.id===idv);deleteTableRow('sales',r);db.sales=db.sales.filter(x=>x.id!==idv);if(r)addActivity(db,`Sale deleted: ${money(r.amount)}`,'sale');saveDB(db)}
+  function deleteSale(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.sales.find(x=>x.id===idv);recycleRecord(db,'sales',r);deleteTableRow('sales',r);db.sales=db.sales.filter(x=>x.id!==idv);if(r)addActivity(db,`Sale deleted: ${money(r.amount)}`,'sale');saveDB(db)}
   function addDaily(db,input){const fields=['pos','fonepay','cash','finance','partyPayment','other'];const d={id:id(),storeId:getActiveStoreId(),date:input.date||today(),note:String(input.note||'').trim(),createdAt:now()};fields.forEach(f=>d[f]=num(input[f]));db.dailySales.unshift(d);markDirty('dailySales',d.id);addActivity(db,`Daily sales saved for ${d.date}`,'daily');saveDB(db);return d}
   async function addStaffDaily(input){
     if(!isStaffSession())throw new Error('Only a signed-in staff member can use this entry form');
@@ -506,15 +618,15 @@
     return entry;
   }
   function updateDaily(db,idv,input){const r=db.dailySales.find(x=>x.id===idv);if(!r)throw new Error('Daily sales entry not found');const fields=['pos','fonepay','cash','finance','partyPayment','other'];r.date=input.date||r.date||today();fields.forEach(f=>{if(f in input)r[f]=num(input[f])});r.note=String(input.note||'').trim();r.updatedAt=now();markDirty('dailySales',r.id);addActivity(db,`Daily sales updated for ${r.date}`,'daily');saveDB(db);return r}
-  function deleteDaily(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.dailySales.find(x=>x.id===idv);deleteTableRow('daily_sales',r);db.dailySales=db.dailySales.filter(x=>x.id!==idv);addActivity(db,'Daily sales entry deleted','daily');saveDB(db)}
+  function deleteDaily(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.dailySales.find(x=>x.id===idv);recycleRecord(db,'dailySales',r);deleteTableRow('daily_sales',r);db.dailySales=db.dailySales.filter(x=>x.id!==idv);addActivity(db,'Daily sales entry deleted','daily');saveDB(db)}
   function addPartyPayment(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const p={id:id(),storeId:getActiveStoreId(),date:input.date||today(),party:String(input.party||'').trim(),amount,method:String(input.method||'Cash'),reference:String(input.reference||'').trim(),note:String(input.note||'').trim(),createdAt:now()};if(!p.party)throw new Error('Party name is required');db.partyPayments.unshift(p);markDirty('partyPayments',p.id);addActivity(db,`Party payment ${money(amount)} to ${p.party}`,'party');saveDB(db);return p}
-  function deletePartyPayment(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.partyPayments.find(x=>x.id===idv);deleteTableRow('party_payments',r);db.partyPayments=db.partyPayments.filter(x=>x.id!==idv);addActivity(db,'Party payment deleted','party');saveDB(db)}
+  function deletePartyPayment(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.partyPayments.find(x=>x.id===idv);recycleRecord(db,'partyPayments',r);deleteTableRow('party_payments',r);db.partyPayments=db.partyPayments.filter(x=>x.id!==idv);addActivity(db,'Party payment deleted','party');saveDB(db)}
   function addCheque(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const lifecycle=chequeLifecycle(input.lifecycleStatus||input.status||'written'),rawDirection=String(input.direction||'').toLowerCase(),direction=['incoming','outgoing'].includes(rawDirection)?rawDirection:'unspecified';const linked=String(input.linkedCustomer||'').trim().toLowerCase(),customer=linked?(db.customers||[]).find(c=>(c.name+' — '+c.phone).toLowerCase()===linked||String(c.name).toLowerCase()===linked||phoneClean(c.phone)===phoneClean(linked)):null;const due=isoDate(input.dueDate||input.chequeDate||today()),created=now();const ch={id:id(),storeId:getActiveStoreId(),party:String(input.party||'').trim(),chequeNo:String(input.chequeNo||'').trim(),amount,bank:String(input.bank||'').trim(),direction,customerId:customer?.id||'',customerTableId:customer?._tableId||'',issueDate:input.issueDate?isoDate(input.issueDate):'',dueDate:due,chequeDate:due,depositDate:input.depositDate?isoDate(input.depositDate):'',lifecycleStatus:lifecycle,status:legacyChequeStatus(lifecycle),assignedTo:String(input.assignedTo||'').trim(),lastFollowUpAt:'',nextActionAt:input.nextActionAt?isoDate(input.nextActionAt):'',riskScore:0,riskLevel:'',riskFactors:[],attachmentPath:'',attachmentMeta:null,deletedAt:'',version:1,note:String(input.note||'').trim(),statusHistory:[{id:id(),from:'',to:lifecycle,reason:'Cheque created',source:'manual',time:created}],notes:[],followUps:[],attachments:[],createdAt:created,updatedAt:created};if(!ch.party)throw new Error('Party name is required');if(!ch.chequeNo)throw new Error('Cheque number is required');db.cheques.unshift(ch);markDirty('cheques',ch.id);addActivity(db,`Cheque added: ${ch.chequeNo}${ch.party?' - '+ch.party:''}`,'cheque');saveDB(db);return ch}
   function updateCheque(db,idv,input){const ch=db.cheques.find(x=>x.id===idv);if(!ch)throw new Error('Cheque not found');const amount=num(input.amount),party=String(input.party||'').trim(),chequeNo=String(input.chequeNo||'').trim();if(amount<=0)throw new Error('Amount must be greater than 0');if(!party)throw new Error('Party name is required');if(!chequeNo)throw new Error('Cheque number is required');const rawDirection=String(input.direction||'').toLowerCase(),linked=String(input.linkedCustomer||'').trim().toLowerCase(),customer=linked?(db.customers||[]).find(c=>(c.name+' — '+c.phone).toLowerCase()===linked||String(c.name).toLowerCase()===linked||phoneClean(c.phone)===phoneClean(linked)):null,due=isoDate(input.dueDate||input.chequeDate||ch.dueDate||ch.chequeDate||today()),changedAt=now();ch.party=party;ch.chequeNo=chequeNo;ch.amount=amount;ch.bank=String(input.bank||'').trim();ch.direction=['incoming','outgoing'].includes(rawDirection)?rawDirection:'unspecified';ch.customerId=customer?.id||ch.customerId||'';ch.customerTableId=customer?._tableId||ch.customerTableId||'';ch.issueDate=input.issueDate?isoDate(input.issueDate):'';ch.dueDate=due;ch.chequeDate=due;ch.note=String(input.note||'').trim();ch.updatedAt=changedAt;ch.version=num(ch.version)+1;ch.statusHistory=Array.isArray(ch.statusHistory)?ch.statusHistory:[];ch.statusHistory.unshift({id:id(),from:chequeLifecycle(ch.lifecycleStatus||ch.status),to:chequeLifecycle(ch.lifecycleStatus||ch.status),reason:'Cheque details edited',source:'manual',time:changedAt});markDirty('cheques',ch.id);addActivity(db,`Cheque edited: ${ch.chequeNo} - ${ch.party}`,'cheque');saveDB(db);return ch}
   // Cheque queue: quick reminders of parties whose cheque still has to be written
   // (e.g. a ledger arrived on WhatsApp). Cleared once the cheque is written.
   function addChequeQueue(db,input){const party=String(input.party||'').trim();if(!party)throw new Error('Party name is required');const q={id:id(),storeId:getActiveStoreId(),party,amount:num(input.amount)||0,note:String(input.note||'').trim(),createdAt:now()};db.chequeQueue=db.chequeQueue||[];db.chequeQueue.unshift(q);markDirty('chequeQueue',q.id);addActivity(db,`Cheque to write: ${party}`,'cheque');saveDB(db);return q}
-  function deleteChequeQueue(db,idv){const r=(db.chequeQueue||[]).find(x=>x.id===idv);if(!r)throw new Error('Queue entry not found');deleteTableRow('cheque_queue',r);db.chequeQueue=(db.chequeQueue||[]).filter(x=>x.id!==idv);dirty.chequeQueue.delete(idv);persistPending();addActivity(db,`Cheque queue cleared: ${r.party}`,'cheque');saveDB(db);return r}
+  function deleteChequeQueue(db,idv){const r=(db.chequeQueue||[]).find(x=>x.id===idv);if(!r)throw new Error('Queue entry not found');recycleRecord(db,'chequeQueue',r);deleteTableRow('cheque_queue',r);db.chequeQueue=(db.chequeQueue||[]).filter(x=>x.id!==idv);dirty.chequeQueue.delete(idv);persistPending();addActivity(db,`Cheque queue cleared: ${r.party}`,'cheque');saveDB(db);return r}
   // Postpone: move a pending cheque to a later date. The caller passes a
   // human-readable noteLine (BS dates); every postpone is appended so the
   // full history stays on the cheque.
@@ -525,11 +637,11 @@
   function deleteCheque(db,idv,options){if(isStaffSession())throw new Error('Staff cannot delete records');const r=db.cheques.find(x=>x.id===idv);if(!r)throw new Error('Cheque not found');if(options?.confirmed!==true)throw new Error('Confirm cancellation before removing this cheque');const reason=String(options.reason||'').trim(),previous=chequeLifecycle(r.lifecycleStatus||r.status);if(!reason)throw new Error('Add a cancellation reason');r.deletedAt=now();r.lifecycleStatus='cancelled';r.status='hold';r.updatedAt=r.deletedAt;r.version=num(r.version)+1;r.statusHistory=Array.isArray(r.statusHistory)?r.statusHistory:[];r.statusHistory.unshift({id:id(),from:previous,to:'cancelled',reason,source:'manual',time:r.deletedAt});markDirty('cheques',r.id);addActivity(db,`Cheque cancelled: ${r.chequeNo} - ${reason}`,'cheque');saveDB(db);return r}
   // Party accounts: saved supplier/party master used by estimates, cheques and payments
   function addParty(db,input){const name=String(input.name||'').trim();if(!name)throw new Error('Party name is required');const sid=getActiveStoreId();db.parties=db.parties||[];if(db.parties.some(p=>String(p.name||'').trim().toLowerCase()===name.toLowerCase()&&(p.storeId===sid||(!p.storeId&&sid==='default'))))throw new Error('Party "'+name+'" already exists');const p={id:id(),storeId:sid,name,phone:phoneClean(input.phone||'')||String(input.phone||'').trim(),notes:String(input.notes||'').trim(),createdAt:now()};db.parties.unshift(p);markDirty('parties',p.id);addActivity(db,`Party account created: ${name}`,'party');saveDB(db);return p}
-  function deleteParty(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=(db.parties||[]).find(x=>x.id===idv);if(!r)throw new Error('Party not found');deleteTableRow('parties',r);db.parties=(db.parties||[]).filter(x=>x.id!==idv);dirty.parties.delete(idv);persistPending();addActivity(db,`Party account deleted: ${r.name}`,'party');saveDB(db)}
+  function deleteParty(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=(db.parties||[]).find(x=>x.id===idv);if(!r)throw new Error('Party not found');recycleRecord(db,'parties',r);deleteTableRow('parties',r);db.parties=(db.parties||[]).filter(x=>x.id!==idv);dirty.parties.delete(idv);persistPending();addActivity(db,`Party account deleted: ${r.name}`,'party');saveDB(db)}
   function estimateStatus(v){return ['draft','sent','approved','rejected','expired'].includes(String(v||''))?String(v):'draft'}
   function addEstimateBill(db,input){const amount=num(input.amount);if(amount<=0)throw new Error('Amount must be greater than 0');const customer=String(input.customer||'').trim();if(!customer)throw new Error('Customer or party name is required');const est={id:id(),storeId:getActiveStoreId(),date:input.date||today(),customer,phone:phoneClean(input.phone||''),items:String(input.items||'').trim(),amount,validUntil:input.validUntil?isoDate(input.validUntil):'',status:estimateStatus(input.status),note:String(input.note||'').trim(),createdAt:now(),updatedAt:now()};db.estimateBills=db.estimateBills||[];db.estimateBills.unshift(est);markDirty('estimateBills',est.id);addActivity(db,`Estimate bill ${money(amount)} - ${customer}`,'estimate');saveDB(db);return est}
   function updateEstimateStatus(db,idv,status){const est=(db.estimateBills||[]).find(x=>x.id===idv);if(!est)throw new Error('Estimate bill not found');est.status=estimateStatus(status);est.updatedAt=now();markDirty('estimateBills',est.id);addActivity(db,`Estimate ${est.customer} marked ${est.status}`,'estimate');saveDB(db);return est}
-  function deleteEstimateBill(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=(db.estimateBills||[]).find(x=>x.id===idv);if(!r)throw new Error('Estimate bill not found');deleteTableRow('estimate_bills',r);db.estimateBills=(db.estimateBills||[]).filter(x=>x.id!==idv);addActivity(db,`Estimate deleted: ${r.customer} ${money(r.amount)}`,'estimate');saveDB(db)}
+  function deleteEstimateBill(db,idv){if(isStaffSession())throw new Error('Staff cannot delete records');const r=(db.estimateBills||[]).find(x=>x.id===idv);if(!r)throw new Error('Estimate bill not found');recycleRecord(db,'estimateBills',r);deleteTableRow('estimate_bills',r);db.estimateBills=(db.estimateBills||[]).filter(x=>x.id!==idv);addActivity(db,`Estimate deleted: ${r.customer} ${money(r.amount)}`,'estimate');saveDB(db)}
   // Staff tasks: admin/store admin assigns work to one staff member (or leaves
   // assignedToEmail blank to broadcast to every active staff account); the
   // assignee marks it done, which flips ackByAdmin off so the dashboard can
@@ -556,7 +668,7 @@
     markDirty('tasks',t.id);addActivity(db,`Task completed: ${t.title} — by ${t.completedBy}`,'task');saveDB(db);return t;
   }
   function reopenTask(db,idv){if(isStaffSession())throw new Error('Staff cannot reopen tasks');const t=(db.tasks||[]).find(x=>x.id===idv);if(!t)throw new Error('Task not found');t.status='pending';t.completedAt='';t.completedBy='';t.ackByAdmin=false;t.updatedAt=now();markDirty('tasks',t.id);addActivity(db,`Task reopened: ${t.title}`,'task');saveDB(db);return t}
-  function deleteTask(db,idv){if(isStaffSession())throw new Error('Staff cannot delete tasks');const r=(db.tasks||[]).find(x=>x.id===idv);if(!r)throw new Error('Task not found');deleteTableRow('mart_tasks',r);db.tasks=(db.tasks||[]).filter(x=>x.id!==idv);dirty.tasks.delete(idv);persistPending();addActivity(db,`Task deleted: ${r.title}`,'task');saveDB(db);return r}
+  function deleteTask(db,idv){if(isStaffSession())throw new Error('Staff cannot delete tasks');const r=(db.tasks||[]).find(x=>x.id===idv);if(!r)throw new Error('Task not found');recycleRecord(db,'tasks',r);deleteTableRow('mart_tasks',r);db.tasks=(db.tasks||[]).filter(x=>x.id!==idv);dirty.tasks.delete(idv);persistPending();addActivity(db,`Task deleted: ${r.title}`,'task');saveDB(db);return r}
   function acknowledgeTasks(db){if(isStaffSession())return 0;const targets=(db.tasks||[]).filter(x=>x.status==='done'&&!x.ackByAdmin);if(!targets.length)return 0;targets.forEach(t=>{t.ackByAdmin=true;t.updatedAt=now();markDirty('tasks',t.id)});saveDB(db);return targets.length}
   function saveSettings(db,input){if(!isMainAdminSession())throw new Error('Only main admin can change settings');db.settings.martName=String(input.martName||db.settings.martName||'RD MART').trim();db.settings.martPhone=phoneClean(input.martPhone||db.settings.martPhone||'');const st=(db.stores||[]).find(x=>x.id===getActiveStoreId());if(st){st.name=db.settings.martName;st.phone=db.settings.martPhone}db.settings.adminUser=String(input.adminUser||db.settings.adminUser||'admin').trim();if(input.adminPass)db.settings.adminPass=String(input.adminPass);settingsDirty=true;addActivity(db,'Settings updated','settings');saveDB(db)}
   function saveBankCalendar(db,input){if(!isMainAdminSession())throw new Error('Only main admin can change the banking calendar');const weekends=Array.from(new Set((input.weekendDays||[]).map(Number)));if(weekends.some(x=>!Number.isInteger(x)||x<0||x>6))throw new Error('Invalid weekly bank holiday');const holidays=Array.from(new Set((input.holidays||[]).map(value=>window.MartAIDate?window.MartAIDate.dayKey(value):isoDate(value)))).sort();db.settings.bankWeekendDays=weekends;db.settings.bankHolidays=holidays;settingsDirty=true;addActivity(db,'Cheque banking calendar updated','settings');saveDB(db)}
@@ -646,9 +758,9 @@
     }else{
       let refreshing=false;
       navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;location.reload()});
-      window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=71',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})});
+      window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=72',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})});
     }
   }
   const ready=initialize();
-  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,safeImageDataUrl,phoneClean,getDB,saveDB,markDirty,resetDB,validateRestoreBackup,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,switchStore,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,addStaffDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateCheque,updateChequeStatus,postponeCheque,deleteCheque,addChequeNote,scheduleChequeFollowUp,addChequeQueue,deleteChequeQueue,addParty,deleteParty,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveBankCalendar,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,setStaffPhone,staffPhone,accessToken,addTask,completeTask,reopenTask,deleteTask,acknowledgeTasks,csvEscape,download,wa,byDate,tilt3d,getSupabase};
+  window.MartAI={KEY,SESSION,id,today,now,num,money,esc,safeImageDataUrl,phoneClean,getDB,saveDB,markDirty,resetDB,validateRestoreBackup,restoreBackup,syncNow,syncInfo,ready,adminLogin,customerLogin,publicStoreInfo,verifyAdminPassword,customerRequestPayment,resolvePaymentRequest,startRealtime,onDataChange,updateCustomerPin,updateCustomerAvatar,setSession,getSession,clearSession,getStores,getActiveStoreId,setActiveStoreId,switchStore,addStore,deleteStore,updateStore,addActivity,customerBalance,findCustomer,customerById,addCustomer,updateCustomer,deleteCustomer,addCredit,addCreditPayment,deleteCredit,addSale,deleteSale,addDaily,addStaffDaily,updateDaily,deleteDaily,addPartyPayment,deletePartyPayment,addCheque,updateCheque,updateChequeStatus,postponeCheque,deleteCheque,addChequeNote,scheduleChequeFollowUp,addChequeQueue,deleteChequeQueue,addParty,deleteParty,addEstimateBill,updateEstimateStatus,deleteEstimateBill,saveSettings,saveBankCalendar,saveStoreLogo,saveStoreQr,addStaff,setStaffActive,setStaffPhone,staffPhone,accessToken,addTask,completeTask,reopenTask,deleteTask,acknowledgeTasks,listRecycleBin,restoreRecord,purgeRecycleEntry,clearRecycleBin,csvEscape,download,wa,byDate,tilt3d,getSupabase};
 })();

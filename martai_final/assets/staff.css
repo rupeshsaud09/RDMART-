@@ -434,3 +434,7 @@ body[data-theme="dark"] .stf-metric{border-color:#244968;background:#102A43}
 .stf-nav button{color:#94A3B8}
 .stf-nav button.active{background:#1E4E8C;color:#fff}
 .stf-nav button .stf-nav-badge{border-color:#102A43;background:#3B82F6;color:#fff}
+
+/* Preserve the operations-console proportions when zoom-out makes the CSS
+   viewport wider than a standard desktop. */
+.stf-app{max-width:max(1040px,54.167vw)}

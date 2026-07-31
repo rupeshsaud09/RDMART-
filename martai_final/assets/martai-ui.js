@@ -185,7 +185,32 @@
     const type = String(settings.type || 'info').replace(/[^a-z0-9_-]/gi, '') || 'info';
     const element = doc.createElement('div');
     element.className = (settings.className || 'toast') + ' ' + type;
-    element.textContent = String(message == null ? '' : message);
+    // `action: {label, onClick}` turns the toast into an undo affordance. The
+    // message keeps its own element so the button is a real, focusable control
+    // rather than text the user cannot reach with a keyboard.
+    const action = settings.action && settings.action.label ? settings.action : null;
+    if (action) {
+      element.classList.add('toast-with-action');
+      const text = doc.createElement('span');
+      text.className = 'toast-text';
+      text.textContent = String(message == null ? '' : message);
+      element.appendChild(text);
+      const button = doc.createElement('button');
+      button.type = 'button';
+      button.className = 'toast-action';
+      button.textContent = String(action.label);
+      button.addEventListener('click', function runAction(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        // Dismiss first: the handler may render a new toast, and leaving this
+        // one on screen would stack a stale "deleted" beside a fresh "restored".
+        dismiss();
+        if (typeof action.onClick === 'function') action.onClick();
+      });
+      element.appendChild(button);
+    } else {
+      element.textContent = String(message == null ? '' : message);
+    }
     element.setAttribute('role', type === 'error' || type === 'danger' || type === 'err' ? 'alert' : 'status');
     element.setAttribute('aria-live', type === 'error' || type === 'danger' || type === 'err' ? 'assertive' : 'polite');
     element.setAttribute('aria-atomic', 'true');
