@@ -32,6 +32,8 @@
   function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[m]))}
   function safeImageDataUrl(value,maxLength=2000000){const text=String(value||'');return text.length<=maxLength&&/^data:image\/(?:jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$/i.test(text)?text:''}
   function phoneClean(v){return String(v||'').replace(/\D/g,'').slice(-10)}
+  const REQUIRED_BANK_WEEKEND_DAYS=Object.freeze([0,6]);
+  function normalizeBankWeekendDays(value){const source=Array.isArray(value)?value:[];return Array.from(new Set([...REQUIRED_BANK_WEEKEND_DAYS,...source.map(Number).filter(day=>Number.isInteger(day)&&day>=0&&day<=6)])).sort((a,b)=>a-b)}
   function defaultStore(){return{id:'default',name:'RD MART',phone:'',logoData:'',createdAt:now(),isActive:true}}
   function getActiveStoreId(){return localStorage.getItem(ACTIVE_STORE)||'default'}
   function setActiveStoreId(storeId){localStorage.setItem(ACTIVE_STORE,storeId||'default');currentDB=null}
@@ -42,7 +44,7 @@
     if(!db.stores.length)db.stores=[defaultStore()];
     if(db.settings.martName==='KHATA PANA'||db.settings.martName==='MartAI'||!db.settings.martName)db.settings.martName='RD MART';
     db.stores.forEach(s=>{if(s.name==='KHATA PANA'||s.name==='MartAI'||!s.name)s.name='RD MART'});
-    db.settings.storeLogo=safeImageDataUrl(db.settings.storeLogo);db.settings.storePaymentQr=safeImageDataUrl(db.settings.storePaymentQr);if(!db.settings.adminUser)db.settings.adminUser='admin';if(!('adminPass' in db.settings))db.settings.adminPass='';if(!Array.isArray(db.settings.bankWeekendDays))db.settings.bankWeekendDays=[0,6];else if(db.settings.bankWeekendDays.length===1&&Number(db.settings.bankWeekendDays[0])===6)db.settings.bankWeekendDays=[0,6];if(!Array.isArray(db.settings.bankHolidays))db.settings.bankHolidays=[];
+    db.settings.storeLogo=safeImageDataUrl(db.settings.storeLogo);db.settings.storePaymentQr=safeImageDataUrl(db.settings.storePaymentQr);if(!db.settings.adminUser)db.settings.adminUser='admin';if(!('adminPass' in db.settings))db.settings.adminPass='';db.settings.bankWeekendDays=normalizeBankWeekendDays(db.settings.bankWeekendDays);if(!Array.isArray(db.settings.bankHolidays))db.settings.bankHolidays=[];
     db.stores.forEach(s=>{s.logoData=safeImageDataUrl(s.logoData);s.qrData=safeImageDataUrl(s.qrData)});db.customers.forEach(c=>{c.avatarData=safeImageDataUrl(c.avatarData,700000)});db.cheques.forEach(ch=>{ch.lifecycleStatus=chequeLifecycle(ch.lifecycleStatus||ch.status);ch.status=legacyChequeStatus(ch.lifecycleStatus);const rawDirection=String(ch.direction||'').toLowerCase();ch.direction=rawDirection==='unknown'?'unspecified':(['incoming','outgoing','unspecified'].includes(rawDirection)?rawDirection:'unspecified');ch.dueDate=ch.dueDate||ch.chequeDate||'';ch.issueDate=ch.issueDate||'';ch.depositDate=ch.depositDate||'';ch.assignedTo=ch.assignedTo||'';ch.nextActionAt=ch.nextActionAt||'';ch.lastFollowUpAt=ch.lastFollowUpAt||'';ch.statusHistory=Array.isArray(ch.statusHistory)?ch.statusHistory:[];ch.notes=Array.isArray(ch.notes)?ch.notes:[];ch.followUps=Array.isArray(ch.followUps)?ch.followUps:[];ch.attachments=Array.isArray(ch.attachments)?ch.attachments:[]});
     if(tableMode()){const sid=getActiveStoreId();db.sales.forEach(s=>{if(!s.storeId)s.storeId=sid})}
     return db;
@@ -179,6 +181,13 @@
     if(!r.data)throw new Error('Could not save '+table+' row');
     return r.data.id;
   }
+  function chequeSchemaCompatibilityError(error){return/lifecycle_status|direction|issue_date|due_date|deposit_date|assigned_to|last_follow_up_at|next_action_at|deleted_at|version|schema cache|column/i.test(String(error?.message||error||''))}
+  async function deleteLegacyChequeRow(client,cheque,storeId){
+    let query=client.from('cheques').delete();
+    if(cheque._tableId)query=query.eq('id',cheque._tableId);
+    else{query=query.eq('legacy_id',cheque.id);if(storeId)query=query.eq('store_id',storeId)}
+    const result=await query;if(result.error)throw result.error;cheque._tableId='';
+  }
   // storeIdOverride pins the rows to the store the data was created in. Callers that
   // queue a save (queueRemoteSave) or flush an old cache (loadTableDB/switchStore)
   // pass it explicitly so a store switch mid-save can never re-tag records.
@@ -236,7 +245,20 @@
     for(const x of db.sales){if(x._tableId&&!dirty.sales.has(x.id))continue;const row={legacy_id:x.id,store_id:storeId,sale_date:isoDate(x.date),party:x.party||'Walk-in Customer',amount:num(x.amount),note:x.note||'',created_at:x.createdAt||now()};x._tableId=await saveLegacyRow(client,'sales',row,x._tableId);dirty.sales.delete(x.id)}
     for(const x of db.dailySales){if(x._tableId&&!dirty.dailySales.has(x.id))continue;const row={legacy_id:x.id,store_id:storeId,sale_date:isoDate(x.date),pos:num(x.pos),fonepay:num(x.fonepay),cash:num(x.cash),finance:num(x.finance),party_payment:num(x.partyPayment),other:num(x.other),note:x.note||'',created_at:x.createdAt||now()};x._tableId=await saveLegacyRow(client,'daily_sales',row,x._tableId);dirty.dailySales.delete(x.id)}
     for(const x of db.partyPayments){if(x._tableId&&!dirty.partyPayments.has(x.id))continue;const row={legacy_id:x.id,store_id:storeId,payment_date:isoDate(x.date),party:x.party||'',amount:num(x.amount),method:x.method||'Cash',reference:x.reference||'',note:x.note||'',created_at:x.createdAt||now()};x._tableId=await saveLegacyRow(client,'party_payments',row,x._tableId);dirty.partyPayments.delete(x.id)}
-    for(const x of db.cheques){if(x._tableId&&!dirty.cheques.has(x.id))continue;const lifecycle=chequeLifecycle(x.lifecycleStatus||x.status),rawDirection=String(x.direction||'').toLowerCase(),direction=rawDirection==='unknown'?'unspecified':(['incoming','outgoing','unspecified'].includes(rawDirection)?rawDirection:'unspecified'),legacyRow={legacy_id:x.id,store_id:storeId,party:x.party||'',cheque_no:x.chequeNo||'',amount:num(x.amount),bank:x.bank||'',cheque_date:isoDate(x.dueDate||x.chequeDate),status:legacyChequeStatus(lifecycle),note:x.note||'',created_at:x.createdAt||now(),updated_at:x.updatedAt||null},advancedRow={...legacyRow,lifecycle_status:lifecycle,direction,issue_date:x.issueDate?isoDate(x.issueDate):null,due_date:isoDate(x.dueDate||x.chequeDate),deposit_date:x.depositDate?isoDate(x.depositDate):null,assigned_to:x.assignedTo||null,last_follow_up_at:x.lastFollowUpAt||null,next_action_at:x.nextActionAt||null,deleted_at:x.deletedAt||null,version:num(x.version)||1};try{x._tableId=await saveLegacyRow(client,'cheques',advancedRow,x._tableId)}catch(e){if(!/lifecycle_status|direction|issue_date|due_date|deposit_date|assigned_to|last_follow_up_at|next_action_at|deleted_at|version|schema cache|column/i.test(String(e.message||'')))throw e;x._tableId=await saveLegacyRow(client,'cheques',legacyRow,x._tableId)}dirty.cheques.delete(x.id)}
+    for(const x of db.cheques){
+      if(x._tableId&&!dirty.cheques.has(x.id))continue;
+      const lifecycle=chequeLifecycle(x.lifecycleStatus||x.status),rawDirection=String(x.direction||'').toLowerCase(),direction=rawDirection==='unknown'?'unspecified':(['incoming','outgoing','unspecified'].includes(rawDirection)?rawDirection:'unspecified'),legacyRow={legacy_id:x.id,store_id:storeId,party:x.party||'',cheque_no:x.chequeNo||'',amount:num(x.amount),bank:x.bank||'',cheque_date:isoDate(x.dueDate||x.chequeDate),status:legacyChequeStatus(lifecycle),note:x.note||'',created_at:x.createdAt||now(),updated_at:x.updatedAt||null},advancedRow={...legacyRow,lifecycle_status:lifecycle,direction,issue_date:x.issueDate?isoDate(x.issueDate):null,due_date:isoDate(x.dueDate||x.chequeDate),deposit_date:x.depositDate?isoDate(x.depositDate):null,assigned_to:x.assignedTo||null,last_follow_up_at:x.lastFollowUpAt||null,next_action_at:x.nextActionAt||null,deleted_at:x.deletedAt||null,version:num(x.version)||1};
+      try{x._tableId=await saveLegacyRow(client,'cheques',advancedRow,x._tableId)}
+      catch(error){
+        if(!chequeSchemaCompatibilityError(error))throw error;
+        // Old installations do not have deleted_at. Re-saving the legacy row
+        // would resurrect a cheque after refresh, so a requested deletion must
+        // fall back to a real row delete instead of silently dropping its state.
+        if(x.deletedAt)await deleteLegacyChequeRow(client,x,storeId);
+        else x._tableId=await saveLegacyRow(client,'cheques',legacyRow,x._tableId);
+      }
+      dirty.cheques.delete(x.id);
+    }
     for(const x of db.chequeQueue||[]){
       if(x._tableId&&!dirty.chequeQueue.has(x.id))continue;
       const row={legacy_id:x.id,store_id:storeId,party:x.party||'',amount:num(x.amount),note:x.note||'',created_at:x.createdAt||now()};
@@ -671,7 +693,7 @@
   function deleteTask(db,idv){if(isStaffSession())throw new Error('Staff cannot delete tasks');const r=(db.tasks||[]).find(x=>x.id===idv);if(!r)throw new Error('Task not found');recycleRecord(db,'tasks',r);deleteTableRow('mart_tasks',r);db.tasks=(db.tasks||[]).filter(x=>x.id!==idv);dirty.tasks.delete(idv);persistPending();addActivity(db,`Task deleted: ${r.title}`,'task');saveDB(db);return r}
   function acknowledgeTasks(db){if(isStaffSession())return 0;const targets=(db.tasks||[]).filter(x=>x.status==='done'&&!x.ackByAdmin);if(!targets.length)return 0;targets.forEach(t=>{t.ackByAdmin=true;t.updatedAt=now();markDirty('tasks',t.id)});saveDB(db);return targets.length}
   function saveSettings(db,input){if(!isMainAdminSession())throw new Error('Only main admin can change settings');db.settings.martName=String(input.martName||db.settings.martName||'RD MART').trim();db.settings.martPhone=phoneClean(input.martPhone||db.settings.martPhone||'');const st=(db.stores||[]).find(x=>x.id===getActiveStoreId());if(st){st.name=db.settings.martName;st.phone=db.settings.martPhone}db.settings.adminUser=String(input.adminUser||db.settings.adminUser||'admin').trim();if(input.adminPass)db.settings.adminPass=String(input.adminPass);settingsDirty=true;addActivity(db,'Settings updated','settings');saveDB(db)}
-  function saveBankCalendar(db,input){if(!isMainAdminSession())throw new Error('Only main admin can change the banking calendar');const weekends=Array.from(new Set((input.weekendDays||[]).map(Number)));if(weekends.some(x=>!Number.isInteger(x)||x<0||x>6))throw new Error('Invalid weekly bank holiday');const holidays=Array.from(new Set((input.holidays||[]).map(value=>window.MartAIDate?window.MartAIDate.dayKey(value):isoDate(value)))).sort();db.settings.bankWeekendDays=weekends;db.settings.bankHolidays=holidays;settingsDirty=true;addActivity(db,'Cheque banking calendar updated','settings');saveDB(db)}
+  function saveBankCalendar(db,input){if(!isMainAdminSession())throw new Error('Only main admin can change the banking calendar');const requested=(input.weekendDays||[]).map(Number);if(requested.some(x=>!Number.isInteger(x)||x<0||x>6))throw new Error('Invalid weekly bank holiday');const weekends=normalizeBankWeekendDays(requested),holidays=Array.from(new Set((input.holidays||[]).map(value=>window.MartAIDate?window.MartAIDate.dayKey(value):isoDate(value)))).sort();db.settings.bankWeekendDays=weekends;db.settings.bankHolidays=holidays;settingsDirty=true;addActivity(db,'Cheque banking calendar updated','settings');saveDB(db)}
   async function saveStoreLogo(logoData){const safe=logoData?safeImageDataUrl(logoData):'';if(logoData&&!safe)throw new Error('Logo must be a valid JPG, PNG or WebP image');const db=getDB();db.settings.storeLogo=safe;const storeId=getActiveStoreId();const store=(db.stores||[]).find(s=>s.id===storeId);if(store)store.logoData=safe;if(tableMode()){const client=getSupabase();if(client){const r=await client.from('mart_stores').update({logo_data:safe,updated_at:now()}).eq('id',storeId);if(r.error)throw r.error}}saveDB(db)}
   async function saveStoreQr(qrData,label){const safe=qrData?safeImageDataUrl(qrData):'';if(qrData&&!safe)throw new Error('Payment QR must be a valid JPG, PNG or WebP image');label=String(label||'').trim().slice(0,80);const db=getDB();db.settings.storePaymentQr=safe;db.settings.storePaymentQrLabel=label;const storeId=getActiveStoreId();const store=(db.stores||[]).find(s=>s.id===storeId);if(store){store.qrData=safe;store.qrLabel=label}if(tableMode()){const client=getSupabase();if(client){const r=await client.from('mart_stores').update({qr_data:safe,qr_label:label,updated_at:now()}).eq('id',storeId);if(r.error)throw r.error}}saveDB(db)}
   async function addStaff(db,input){if(isStaffSession())throw new Error('Staff cannot manage staff');const email=String(input.email||'').trim().toLowerCase();const name=String(input.name||'').trim();if(!email.includes('@'))throw new Error('Enter staff email');if(tableMode()){const client=getSupabase();const r=await client.rpc('admin_add_staff',{email_input:email,name_input:name});if(r.error)throw r.error;await loadTableDB();return r.data}if(db.staffAccounts.some(x=>x.email.toLowerCase()===email))throw new Error('Staff already exists');db.staffAccounts.unshift({id:id(),email,name,password:String(input.password||'1234'),active:true,createdAt:now()});saveDB(db)}
@@ -758,7 +780,7 @@
     }else{
       let refreshing=false;
       navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;location.reload()});
-      window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=72',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})});
+      window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js?v=75',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{})});
     }
   }
   const ready=initialize();

@@ -86,7 +86,7 @@
     }
     return data;
   }
-  const SCOPED_COLLECTIONS=['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','paymentRequests'];
+  const SCOPED_COLLECTIONS=['customers','credits','sales','dailySales','partyPayments','cheques','chequeQueue','parties','estimateBills','paymentRequests','tasks','recycleBin'];
   function recordStoreId(item){return item&&item.storeId?String(item.storeId):'default'}
   function assertDataScope(data,context){
     if(!context||context.localScope)return data;
@@ -192,7 +192,7 @@
 
   function openDatabase(){
     if(databasePromise)return databasePromise;
-    databasePromise=new Promise((resolve,reject)=>{
+    const opening=new Promise((resolve,reject)=>{
       if(!window.indexedDB)return reject(new Error('Browser backup storage is unavailable'));
       const request=indexedDB.open(DB_NAME,DB_VERSION);
       request.onupgradeneeded=()=>{
@@ -207,7 +207,9 @@
       request.onerror=()=>reject(request.error||new Error('Could not open browser backup storage'));
       request.onblocked=()=>reject(new Error('Close other KHATA PANA tabs and try again'));
     });
-    return databasePromise;
+    databasePromise=opening;
+    opening.catch(()=>{if(databasePromise===opening)databasePromise=null});
+    return opening;
   }
   function requestResult(request){
     return new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error||new Error('Backup storage request failed'))});
@@ -397,10 +399,11 @@
     saveConfig(config);
     return{created:true,context,envelope,internal,external,warning,permission};
   }
+  function backupLockOptions(options){return options?.force?{mode:'exclusive'}:{mode:'exclusive',ifAvailable:true}}
   async function withBackupLock(db,options){
     const context=storeContext(db),run=()=>performBackup(db,options);
     if(!navigator.locks?.request)return run();
-    return navigator.locks.request('khata-pana-backup:'+context.storeId,{mode:'exclusive',ifAvailable:true},lock=>lock?run():{skipped:true,reason:'another-tab',context});
+    return navigator.locks.request('khata-pana-backup:'+context.storeId,backupLockOptions(options),lock=>(lock||options?.force)?run():{skipped:true,reason:'another-tab',context});
   }
 
   function assertMainAdmin(){
@@ -513,7 +516,7 @@
 
   window.KhataBackup={
     runIfDue:db=>withBackupLock(db,{force:false}),
-    backupNow:db=>withBackupLock(db,{force:true}),
+    backupNow:(db,options={})=>withBackupLock(db,{...options,force:true}),
     createCheckpoint,
     configureFolder,
     setEnabled,
@@ -526,6 +529,6 @@
     validateForRestore,
     config:readConfig,
     supported:()=>typeof window.showDirectoryPicker==='function'&&window.isSecureContext!==false,
-    _test:{localDay,normalizeRetention,automaticBackupDue,sanitizeBackupData,scopeBackupData,storeContext,fileNameFor,revisionFileNameFor,checkpointFileNameFor,fileInfo,fileDay,retentionPlan,validateDataStructure,assertDataScope,validateEnvelope,validateForRestore,dataSignature,sha256,envelopeChecksum}
+    _test:{localDay,normalizeRetention,automaticBackupDue,sanitizeBackupData,scopeBackupData,storeContext,fileNameFor,revisionFileNameFor,checkpointFileNameFor,fileInfo,fileDay,retentionPlan,validateDataStructure,assertDataScope,validateEnvelope,validateForRestore,dataSignature,sha256,envelopeChecksum,backupLockOptions}
   };
 })();

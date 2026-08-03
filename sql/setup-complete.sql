@@ -23,6 +23,13 @@ alter table public.mart_settings add column if not exists bank_holidays date[] n
 insert into public.mart_settings (id, mart_name)
 values (true, 'RD MART')
 on conflict (id) do nothing;
+update public.mart_settings
+set bank_weekend_days = array(
+  select distinct day
+  from unnest(coalesce(bank_weekend_days, '{}'::integer[]) || array[0,6]) as day
+  order by day
+)
+where id = true;
 
 -- === AUTH / ACCESS TABLES ===
 create table if not exists public.mart_admins (

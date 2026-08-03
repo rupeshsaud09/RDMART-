@@ -101,7 +101,7 @@
     </header>
 
     <div class="content">
-      <div id="backupReminderBanner" style="display:none"><div style="background:var(--brand-soft);border:1px solid var(--brand);border-radius:10px;padding:11px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:1.15em">&#9888;</span><span id="backupReminderText" style="flex:1;min-width:160px;font-size:.88em"></span><button class="btn btn-primary btn-sm" id="backupNowBtn">Backup now</button><button class="btn btn-ghost btn-sm" id="dismissReminderBtn">Remind later</button></div></div>
+      <div id="backupReminderBanner" style="display:none"><div style="background:var(--brand-soft);border:1px solid var(--brand);border-radius:10px;padding:11px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:1.15em">&#9888;</span><span id="backupReminderText" style="flex:1;min-width:160px;font-size:.88em"></span><button class="btn btn-primary btn-sm" id="dashboardBackupNowBtn">Backup now</button><button class="btn btn-ghost btn-sm" id="dismissReminderBtn">Remind later</button></div></div>
       <section class="page active" id="page-dashboard">
         <section class="dashboard-command-hero" aria-label="Business command centre">
         <div class="dashboard-page-header">
@@ -584,7 +584,7 @@
         <form class="card bank-calendar-settings" id="bankCalendarForm">
           <div class="section-head"><div><div class="section-title">Cheque banking calendar</div><div class="section-sub">Controls effective due dates, dashboard totals and overdue business-day counts.</div></div><span class="badge badge-green">Nepal calendar</span></div>
           <div class="bank-calendar-layout">
-            <fieldset class="bank-calendar-weekends"><legend>Weekly bank holidays</legend><label><input type="checkbox" name="weekendDay" value="6" checked> Saturday</label><label><input type="checkbox" name="weekendDay" value="0" checked> Sunday</label></fieldset>
+            <fieldset class="bank-calendar-weekends"><legend>Required weekly bank holidays</legend><label><input type="checkbox" name="weekendDay" value="6" checked disabled> Saturday <span class="small">(required)</span></label><label><input type="checkbox" name="weekendDay" value="0" checked disabled> Sunday <span class="small">(required)</span></label></fieldset>
             <div class="field"><label>Public and custom holidays</label><textarea class="textarea" name="holidayDates" rows="5" placeholder="One date per line&#10;2083-04-18&#10;2026-08-03"></textarea><div class="hint">Enter BS or AD dates. A cheque on any closed day rolls to the next open banking day.</div></div>
             <div class="bank-calendar-preview"><span>Current rule</span><b id="bankCalendarPreview">Saturday and Sunday roll forward</b><small id="bankCalendarHolidayCount">No additional holidays</small></div>
           </div>
@@ -720,13 +720,13 @@
 <script src="assets/martai-date.js?v=1"></script>
 <script src="assets/martai-bank-cheques.js?v=3"></script>
 <script src="assets/martai-ui.js?v=3"></script>
-<script src="assets/martai-store.js?v=39"></script>
+<script src="assets/martai-store.js?v=40"></script>
 <script src="assets/martai-notifications.js?v=1"></script>
 <script src="assets/martai-cheques.js?v=1"></script>
 <script src="assets/martai-intelligence.js?v=1"></script>
 <script src="assets/martai-ai-client.js?v=1"></script>
 <script src="assets/martai-insights-ui.js?v=1"></script>
-<script src="assets/khata-backup.js?v=6"></script>
+<script src="assets/khata-backup.js?v=7"></script>
 <script src="assets/martai-qr.js?v=1"></script>
 <script>
 const A=MartAI,UI=window.MartAIUI,DateTools=window.MartAIDate,BankCheques=window.MartAIBankCheques,CQ=window.MartAICheques,N=window.MartAINotifications;const $=id=>document.getElementById(id);const $$=sel=>Array.from(document.querySelectorAll(sel));if(UI)UI.initTooltips();
@@ -1110,14 +1110,16 @@ function renderChequeQueue(d){const el=$('chequeQueueList');if(!el)return;const 
    The written date is preserved while a separate action date is calculated. */
 function chequeDateIso(x){if(typeof x==='string')return String(x).slice(0,10);if(x?.originalDueDate)return String(x.originalDueDate).slice(0,10);return BankCheques?BankCheques.writtenDate(x):String(x?.dueDate||x?.chequeDate||'').slice(0,10)}
 const DEFAULT_BANK_WEEKENDS=Object.freeze([0,6]),NO_BANK_HOLIDAYS=Object.freeze([]);
+function requiredBankWeekendDays(value){const source=Array.isArray(value)?value:[];return Array.from(new Set([...DEFAULT_BANK_WEEKENDS,...source.map(Number).filter(day=>Number.isInteger(day)&&day>=0&&day<=6)])).sort((a,b)=>a-b)}
 let bankCalendarMemo={settings:null,weekends:null,holidays:null,options:null,effective:new Map(),closed:new Map()};
 function resetBankCalendarMemo(){bankCalendarMemo={settings:null,weekends:null,holidays:null,options:null,effective:new Map(),closed:new Map()}}
 function bankCalendarOptions(){
   /* Calendar settings are global metadata; reading them must not build a
      store-scoped copy and filter every business-data array for each cheque. */
-  const settings=(db().settings||{}),weekends=Array.isArray(settings.bankWeekendDays)?settings.bankWeekendDays:DEFAULT_BANK_WEEKENDS,holidays=Array.isArray(settings.bankHolidays)?settings.bankHolidays:NO_BANK_HOLIDAYS;
-  if(bankCalendarMemo.options&&bankCalendarMemo.settings===settings&&bankCalendarMemo.weekends===weekends&&bankCalendarMemo.holidays===holidays)return bankCalendarMemo.options;
-  bankCalendarMemo={settings,weekends,holidays,options:{weekendDays:weekends,holidays},effective:new Map(),closed:new Map()};
+  const settings=(db().settings||{}),weekendSource=Array.isArray(settings.bankWeekendDays)?settings.bankWeekendDays:DEFAULT_BANK_WEEKENDS,holidays=Array.isArray(settings.bankHolidays)?settings.bankHolidays:NO_BANK_HOLIDAYS;
+  if(bankCalendarMemo.options&&bankCalendarMemo.settings===settings&&bankCalendarMemo.weekends===weekendSource&&bankCalendarMemo.holidays===holidays)return bankCalendarMemo.options;
+  const weekends=requiredBankWeekendDays(weekendSource);
+  bankCalendarMemo={settings,weekends:weekendSource,holidays,options:{weekendDays:weekends,holidays},effective:new Map(),closed:new Map()};
   return bankCalendarMemo.options;
 }
 function isBankClosedDate(value){const iso=chequeDateIso(value);if(!isoParts(iso))return false;const options=bankCalendarOptions();if(bankCalendarMemo.closed.has(iso))return bankCalendarMemo.closed.get(iso);const closed=DateTools?!DateTools.isBankingDay(iso,options):(isoDay(iso)===0||isoDay(iso)===6);bankCalendarMemo.closed.set(iso,closed);return closed}
@@ -1354,7 +1356,7 @@ function downloadRoomsCSV(){const d=sdb();const roomOf={};for(let n=1;n<=4;n++){
 function renderEstimates(){const d=sdb();const q=($('estimateSearch')?.value||'').toLowerCase();const st=$('estimateStatusFilter')?.value||'';const estimates=d.estimateBills||[];const open=estimates.filter(estimateOpen);const approved=estimates.filter(x=>x.status==='approved');const closed=estimates.filter(x=>['rejected','expired'].includes(String(x.status||'')));const sum=arr=>arr.reduce((s,x)=>s+A.num(x.amount),0);$('estimateSummary').innerHTML=[metric('Open estimates',open.length,A.money(sum(open))+' draft/sent value','rgba(6,182,212,.20)'),metric('Approved value',A.money(sum(approved)),approved.length+' approved','rgba(34,197,94,.18)'),metric('Closed / lost',closed.length,'Rejected or expired','rgba(239,68,68,.16)'),metric('All estimate value',A.money(sum(estimates)),estimates.length+' total records','rgba(124,58,237,.18)')].join('');const allEst=A.byDate(estimates,'date').filter(x=>(x.customer+' '+x.phone+' '+x.items+' '+x.note+' '+x.amount).toLowerCase().includes(q)).filter(x=>!st||x.status===st);const tp=Math.ceil(allEst.length/PER_PAGE)||1;const pg=pgState.estimates=Math.max(1,Math.min(pgState.estimates,tp));const rows=allEst.slice((pg-1)*PER_PAGE,pg*PER_PAGE);const act=(x,st,label,cls)=>`<button class="btn ${cls} btn-sm" data-estimate-status="${st}" data-id="${A.esc(x.id)}" ${x.status===st?'disabled':''}>${label}</button>`;$('estimateRows').innerHTML=rows.length?rows.map(x=>{const passed=x.validUntil&&String(x.validUntil).slice(0,10)<A.today()&&estimateOpen(x);const valid=x.validUntil?`${npDate(x.validUntil)}${passed?'<div class="small amount-red">validity passed</div>':''}`:'<span style="opacity:.4">-</span>';return `<tr><td>${npDate(x.date)}</td><td><b>${A.esc(x.customer)}</b><div class="small">${A.esc(x.phone||x.note||'')}</div></td><td>${A.esc(x.items||'-')}</td><td><b>${A.money(x.amount)}</b></td><td>${valid}</td><td>${estimateBadge(x.status)}</td><td>${act(x,'sent','Sent','btn-soft')} ${act(x,'approved','Approve','btn-green')} ${act(x,'rejected','Reject','btn-red')} ${act(x,'expired','Expire','btn-amber')} <button class="btn btn-primary btn-sm" data-estimate-credit="${A.esc(x.id)}" title="Add this amount as customer credit">&#8594; Credit</button> <button class="btn btn-soft btn-sm" data-delete-estimate="${A.esc(x.id)}">Delete</button></td></tr>`}).join(''):`<tr><td colspan="7"><div class="empty">${q||st?'No estimate bills found for this filter.':'No estimate bills saved yet.'}</div></td></tr>`;if($('estimatesPagination'))$('estimatesPagination').innerHTML=paginationHTML('estimates',pg,allEst.length,PER_PAGE);renderParties(d)}
 function renderReports(){const d=sdb();const balances=allCustomerBalances(d);const pending=balances.reduce((s,x)=>s+x.balance,0);const paid=balances.reduce((s,x)=>s+x.paid,0);const totalSales=d.dailySales.reduce((s,x)=>s+totalDaily(x),0);$('reportCards').innerHTML=[metric('Total daily sales',A.money(totalSales),`${d.dailySales.length} records`,'rgba(6,182,212,.20)'),metric('Credit pending',A.money(pending),'Need collection','rgba(239,68,68,.16)'),metric('Credit collected',A.money(paid),'Received from customers','rgba(34,197,94,.18)'),metric('Party payments',A.money(d.partyPayments.reduce((s,x)=>s+A.num(x.amount),0)),`${d.partyPayments.length} records`,'rgba(124,58,237,.18)')].join('');renderBars('reportBars',last7().map(date=>({label:shortDate(date),value:d.dailySales.filter(x=>x.date===date).reduce((s,x)=>s+totalDaily(x),0)})));renderBars('dailySalesBars',last7().map(date=>({label:shortDate(date),value:d.dailySales.filter(x=>x.date===date).reduce((s,x)=>s+totalDaily(x),0)})));const rate=paid+pending>0?Math.round((paid/(paid+pending))*100):100;$('reportCreditBox').innerHTML=`<div class="metric-label">Collection progress</div><div class="metric-value">${rate}%</div><div class="progress"><span style="width:${rate}%"></span></div><div class="small" style="margin-top:12px">Collected ${A.money(paid)} out of ${A.money(paid+pending)} total customer credit.</div>`;const nowD=new Date(),months=[];for(let i=5;i>=0;i--){const dt=new Date(nowD.getFullYear(),nowD.getMonth()-i,1);months.push(dt.toISOString().slice(0,7))}const adML=ym=>{const[,m]=ym.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(m)-1]};renderBars('monthlyTrendBars',months.map(ym=>({label:adML(ym),value:d.dailySales.filter(x=>String(x.date).startsWith(ym)).reduce((s,x)=>s+totalDaily(x),0)})));const topCr=allCustomerBalances(d).filter(x=>x.balance>0).sort((a,b)=>b.balance-a.balance).slice(0,5);renderBars('topCreditBars',topCr.length?topCr.map(x=>({label:x.customer.name,value:x.balance})):[{label:'No pending credit',value:0}]);const weekEnd=addDaysIso(A.today(),7);const weekChq=d.cheques.filter(x=>{const cd=String(x.chequeDate||'').slice(0,10);return cd>=A.today()&&cd<=weekEnd&&x.status!=='bounce'}).sort((a,b)=>String(a.chequeDate).localeCompare(String(b.chequeDate))).slice(0,15);renderBars('weekChequeBars',weekChq.length?weekChq.map(x=>({label:`${x.party} · ${shortDate(x.chequeDate)}${x.status==='clear'?' ✓':''}`,value:A.num(x.amount)})):[{label:'No cheques dated in the next 7 days',value:0}]);const bsMonthPrefix=bsKey(A.today()).slice(0,7);const byParty={};d.cheques.forEach(x=>{if(x.status!=='bounce'&&bsKey(x.chequeDate).startsWith(bsMonthPrefix)){const p=String(x.party||'').trim()||'Unknown';byParty[p]=(byParty[p]||0)+A.num(x.amount)}});const topParty=Object.entries(byParty).sort((a,b)=>b[1]-a[1]).slice(0,10);renderBars('monthPartyBars',topParty.length?topParty.map(([p,v])=>({label:p,value:v})):[{label:'No cheques this BS month',value:0}]);renderMonthlyReport()}
 function renderBankCalendarSettings(){
-  const d=db(),form=$('bankCalendarForm');if(!form)return;const weekends=Array.isArray(d.settings.bankWeekendDays)?d.settings.bankWeekendDays:[0,6],holidays=Array.isArray(d.settings.bankHolidays)?d.settings.bankHolidays:[];
+  const d=db(),form=$('bankCalendarForm');if(!form)return;const weekends=requiredBankWeekendDays(d.settings.bankWeekendDays),holidays=Array.isArray(d.settings.bankHolidays)?d.settings.bankHolidays:[];
   form.querySelectorAll('[name="weekendDay"]').forEach(input=>{input.checked=weekends.includes(Number(input.value))});
   if(document.activeElement!==form.elements.holidayDates)form.elements.holidayDates.value=holidays.map(date=>{try{return bsKey(date)}catch(_){return date}}).join('\n');
   const names=weekends.map(day=>['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][day]),preview=$('bankCalendarPreview'),count=$('bankCalendarHolidayCount');
@@ -1565,7 +1567,7 @@ async function runAutoBackupCheck({force=false,quiet=true}={}){
   if((!isMainAdmin()&&!isStoreAdmin())||!window.KhataBackup)return{skipped:true};
   try{
     const result=force?await KhataBackup.backupNow(db()):await KhataBackup.runIfDue(db());
-    if(result?.created){if(result.external||KhataBackup.config().mode!=='folder')markBackupDone(result.envelope.createdAt);if(!quiet)toast(`Backup verified in ${result.external?'your backup folder':'protected browser storage'}${result.warning?' (folder needs attention)':''}`,result.warning?'err':'ok')}
+    if(result?.created){markBackupDone(result.envelope.createdAt);if(!quiet)toast(`Backup verified in ${result.external?'your backup folder':'protected browser storage'}${result.warning?' (folder needs attention)':''}`,result.warning?'err':'ok')}
     await refreshAutoBackupStatus();return result;
   }catch(error){await refreshAutoBackupStatus();if(quiet)console.warn('Automatic backup failed:',error);else toast('Backup failed: '+(error.message||String(error)),'err');return{error}}
 }
@@ -1704,7 +1706,23 @@ function getPortalUrl(){
 }
 function qrApiUrl(url,size){if(window.MartQR){try{return MartQR.dataUrl(url,size)}catch(e){console.warn('Local QR failed:',e)}}return'https://api.qrserver.com/v1/create-qr-code/?size='+size+'x'+size+'&data='+encodeURIComponent(url)+'&color=1e1b4b&bgcolor=ffffff&margin=10'}
 function openQrModal(url,title){if(isLocalUrl(url))toast('⚠ This link only works on this computer. Save your public portal link in Settings so the QR works everywhere.','err');$('qrModalTitle').textContent=title||'Customer Portal QR';$('qrModalUrl').textContent=url;const img=$('qrImg');if(img){img.src=qrApiUrl(url,220);img.onerror=()=>{img.alt='QR failed to load. Check internet connection.';img.style.background='var(--surface-3)'}}openModal('qrModal')}
-function backupJson(){if(!isMainAdmin())return toast('Only the main admin can export backups','err');try{const data=window.KhataBackup?.createEnvelope?KhataBackup.createEnvelope(db()):db(),name=String(data.storeName||db().settings?.martName||'RD MART').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase()||'store';A.download(`KHATA-PANA__${name}__manual__${A.today()}.json`,JSON.stringify(data,null,2));toast('Backup file downloaded');markBackupDone()}catch(error){toast('Could not create the backup file: '+(error.message||String(error)),'err')}}
+function downloadBackupEnvelope(envelope){const data=envelope||(window.KhataBackup?.createEnvelope?KhataBackup.createEnvelope(db()):db()),name=String(data.storeName||db().settings?.martName||'RD MART').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase()||'store';A.download(`KHATA-PANA__${name}__manual__${A.today()}.json`,JSON.stringify(data,null,2));return data}
+function backupJson(){if(!isMainAdmin())return toast('Only the main admin can export backups','err');try{downloadBackupEnvelope();toast('Backup file downloaded');markBackupDone(new Date())}catch(error){toast('Could not create the backup file: '+(error.message||String(error)),'err')}}
+async function runManualBackup(button,{downloadCopy=false}={}){
+  if(!isMainAdmin())return toast('Only the main admin can run a manual backup','err');
+  const old=button?.textContent||'Back up now';if(button){button.disabled=true;button.textContent='Backing up...'}
+  try{
+    if(!window.KhataBackup){const envelope=downloadBackupEnvelope();markBackupDone(new Date());toast('Backup file downloaded');return{created:true,downloaded:true,envelope}}
+    let result;
+    try{result=await KhataBackup.backupNow(db(),{requestPermission:true})}
+    catch(error){const envelope=downloadBackupEnvelope();markBackupDone(envelope.createdAt||new Date());toast('Protected backup storage was unavailable, so a verified backup file was downloaded instead','err');await refreshAutoBackupStatus();return{created:true,downloaded:true,envelope,warning:error.message||String(error)}}
+    if(result?.created){markBackupDone(result.envelope.createdAt);if(downloadCopy)downloadBackupEnvelope(result.envelope);const where=result.external?'your backup folder':'protected browser storage';toast(`Backup verified in ${where}${downloadCopy?' and downloaded':''}${result.warning?' (folder needs attention)':''}`,result.warning?'err':'ok')}
+    else if(result?.skipped)toast('Another tab is already backing up this store. Try again after it finishes.','err');
+    else throw new Error('The backup did not create a verified copy');
+    await refreshAutoBackupStatus();return result;
+  }catch(error){toast('Backup failed: '+(error.message||String(error)),'err');return{error}}
+  finally{if(button){button.disabled=false;button.textContent=old}}
+}
 function commandBtn(label,attrs,cls='btn-soft'){return `<button class="btn ${cls} btn-sm" type="button" ${attrs}>${label}</button>`}
 function commandRow(type,title,sub,badge,actions){return `<div class="command-result"><div><div class="small command-type">${type}</div><b>${title}</b><div class="small">${sub||''}</div>${badge?`<div style="margin-top:6px">${badge}</div>`:''}</div><div class="command-actions">${actions||''}</div></div>`}
 function commandMatch(q,...parts){if(!q)return true;return parts.join(' ').toLowerCase().includes(q)}
@@ -1744,7 +1762,7 @@ $('pwConfirmCancel')?.addEventListener('click',()=>pwConfirmDone(false));
 $('pwConfirmForm')?.addEventListener('submit',async e=>{e.preventDefault();const btn=$('pwConfirmBtn');btn.disabled=true;btn.textContent='Checking...';try{const ok=await A.verifyAdminPassword($('pwConfirmInput').value);if(ok)pwConfirmDone(true);else{const el=$('pwConfirmError');el.textContent='Wrong password. Please try again.';el.style.display='block';$('pwConfirmInput').select()}}catch(err){const el=$('pwConfirmError');el.textContent=err.message||'Could not verify password.';el.style.display='block'}finally{btn.disabled=false;btn.textContent='Confirm'}});
 $('autoBackupEnabled')?.addEventListener('change',async e=>{if(!isMainAdmin())return toast('Only the main admin can change backup settings','err');if(!window.KhataBackup)return;KhataBackup.setEnabled(db(),e.target.checked);if(e.target.checked)await runAutoBackupCheck({quiet:false});else{toast('Automatic backup paused');await refreshAutoBackupStatus()}});
 $('chooseAutoBackupFolderBtn')?.addEventListener('click',async e=>{if(!isMainAdmin())return toast('Only the main admin can change the backup folder','err');if(!window.KhataBackup)return;const button=e.currentTarget,old=button.textContent;button.disabled=true;button.textContent='Opening folder...';try{const result=await KhataBackup.configureFolder(db());if(result?.created){markBackupDone(result.envelope.createdAt);toast('Backup folder connected and verified')}await refreshAutoBackupStatus()}catch(error){if(error.name!=='AbortError')toast('Could not connect backup folder: '+(error.message||String(error)),'err')}finally{button.disabled=false;button.textContent=old;await refreshAutoBackupStatus()}});
-$('runAutoBackupNowBtn')?.addEventListener('click',async e=>{if(!isMainAdmin())return toast('Only the main admin can run a manual backup','err');const button=e.currentTarget,old=button.textContent;button.disabled=true;button.textContent='Backing up...';try{await runAutoBackupCheck({force:true,quiet:false})}finally{button.disabled=false;button.textContent=old}});
+$('runAutoBackupNowBtn')?.addEventListener('click',e=>runManualBackup(e.currentTarget));
 $('restoreLatestAutoBackupBtn')?.addEventListener('click',async e=>{
   if(!isMainAdmin())return toast('Only the main admin can restore backups','err');if(!window.KhataBackup)return;
   const button=e.currentTarget,old=button.textContent;button.disabled=true;button.textContent='Checking backup...';
@@ -1757,7 +1775,7 @@ $('restoreLatestAutoBackupBtn')?.addEventListener('click',async e=>{
   }catch(error){toast('Could not restore automatic backup: '+(error.message||String(error)),'err')}
   finally{button.disabled=false;button.textContent=old;await refreshAutoBackupStatus()}
 });
-$('backupNowBtn')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();if(!isMainAdmin())return;const button=e.currentTarget,old=button.textContent;button.disabled=true;button.textContent='Backing up...';runAutoBackupCheck({force:true,quiet:false}).finally(()=>{button.disabled=false;button.textContent=old})});
+$('dashboardBackupNowBtn')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();runManualBackup(e.currentTarget,{downloadCopy:true})});
 $('dismissReminderBtn')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();localStorage.setItem(BACKUP_DISMISS_KEY+backupScopeId(),A.today());$('backupReminderBanner').style.display='none'});
 window.addEventListener('khata-backup-status',()=>{if(currentPage==='settings')refreshAutoBackupStatus()});
 /* Pagination changes only what is visible. Handle it in capture phase so the
