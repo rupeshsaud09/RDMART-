@@ -75,6 +75,18 @@ test('RD MART always rolls Saturday and Sunday cheques to Monday', () => {
   }
 });
 
+test('a new cheque cannot silently fall back to today when its date is blank', () => {
+  const { A } = bootStore(database());
+
+  assert.throws(
+    () => A.addCheque(A.getDB(), {
+      party: 'Supplier', chequeNo: '001', amount: 5000, chequeDate: ''
+    }),
+    /Cheque date is required/
+  );
+  assert.equal(A.getDB().cheques.length, 0);
+});
+
 test('legacy cheque schemas delete the remote row instead of resurrecting it', async () => {
   const seed = database({
     cheques: [{

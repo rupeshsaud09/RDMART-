@@ -48,3 +48,11 @@ test('cheque and reusable dropdowns are wired to the body portal controller', fu
   assert.match(css, /z-index:9999!important/);
   assert.match(css, /transition:opacity 180ms ease-out,transform 180ms ease-out/);
 });
+
+test('cheque dates are manual and dialogs are portalled above page scrolling', function () {
+  const dashboard = read('dashboard.html');
+  assert.match(dashboard, /name="chequeDate"[^>]+data-manual-date[^>]+placeholder="Select Nepali date"/);
+  assert.match(dashboard, /setTodayInputs\(\)[\s\S]*?!i\.hasAttribute\('data-manual-date'\)/);
+  assert.match(dashboard, /Select the cheque date before saving\./);
+  assert.match(dashboard, /document\.body\.appendChild\(root\)/);
+});

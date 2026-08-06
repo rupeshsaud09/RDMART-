@@ -1782,6 +1782,8 @@ body:has(.drawer-backdrop.active) .mbot-bubble{display:none!important}
 .cheque-entry-modal .field label{display:flex;justify-content:space-between}
 .cheque-entry-modal .field label span{color:var(--faint);font-size:9px;letter-spacing:.07em;text-transform:uppercase}
 .cheque-entry-modal .input,.cheque-entry-modal .select{height:46px}
+.cheque-entry-modal [data-manual-date]:placeholder-shown{border-color:var(--amber);background:var(--amber-soft)}
+.cheque-entry-modal [data-manual-date]:focus{border-color:var(--brand);background:var(--surface)}
 .cheque-entry-modal .textarea{min-height:80px}
 .cheque-entry-modal .cheque-advanced{margin-top:18px}
 .cheque-entry-modal .cheque-advanced>summary{
