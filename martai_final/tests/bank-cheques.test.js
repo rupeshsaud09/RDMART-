@@ -123,14 +123,15 @@ test('quick views return distinct upcoming, overdue, and cleared banking queues'
   assert.deepEqual(ids('cleared'), ['cleared']);
 });
 
-test('one shared quick-view index keeps rail counts and records in agreement', function () {
+test('All cheques quick view includes every entered cheque regardless of status', function () {
   const asOf = '2026-07-28';
   const quickViewRecords = [
     { id: 'today', chequeDate: asOf, amount: 100, status: 'hold' },
     { id: 'weekend-overdue', chequeDate: '2026-07-25', amount: 200, status: 'hold' },
     { id: 'upcoming', chequeDate: '2026-07-30', amount: 300, status: 'hold' },
     { id: 'cleared', chequeDate: asOf, amount: 400, status: 'clear' },
-    { id: 'bounced', chequeDate: asOf, amount: 500, status: 'bounce' }
+    { id: 'bounced', chequeDate: asOf, amount: 500, status: 'bounce' },
+    { id: 'cancelled', chequeDate: asOf, amount: 600, lifecycleStatus: 'cancelled', status: 'cancel' }
   ];
   const index = BankCheques.indexForViews(quickViewRecords, asOf, { weekendDays: [0, 6] });
   assert.deepEqual(index.today.map(item => item.id), ['today']);
@@ -139,12 +140,15 @@ test('one shared quick-view index keeps rail counts and records in agreement', f
   assert.deepEqual(index.active.map(item => item.id), ['today', 'weekend-overdue', 'upcoming']);
   assert.deepEqual(index.cleared.map(item => item.id), ['cleared']);
   assert.deepEqual(index.bounced.map(item => item.id), ['bounced']);
-  assert.equal(index.all.length, 5);
+  assert.deepEqual(index.all.map(item => item.id), quickViewRecords.map(item => item.id));
+  assert.deepEqual(BankCheques.recordsForView(quickViewRecords, 'all', asOf, { weekendDays: [0, 6] }).map(item => item.id), quickViewRecords.map(item => item.id));
   assert.equal(index.active.reduce((sum, item) => sum + item.amount, 0), 600);
 });
 
 test('quick-view controls reset stale refinements and resync their active state', function () {
   const dashboard = fs.readFileSync(path.join(__dirname, '..', 'dashboard.html'), 'utf8');
+  assert.match(dashboard, /data-cheque-quick="all"[^>]*>[\s\S]*?<b>All cheques<\/b>[\s\S]*?<small>Every entered cheque<\/small>/);
+  assert.match(dashboard, /<option value="all">All Cheques<\/option>/);
   assert.match(dashboard, /BankCheques\.indexForViews\(d\.cheques,A\.today\(\),bankCalendarOptions\(\)\)/);
   assert.match(dashboard, /function applyChequeQuickView\(value,\{reset=true\}=\{\}\)/);
   assert.match(dashboard, /if\(reset\)resetChequeRefinements\(\)/);
